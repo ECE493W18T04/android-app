@@ -101,9 +101,9 @@ int main(void)
 
     /* SpinWait for initialization to complete. This is necessary because the
      * BLE object is used in the main loop below. */
-    while (ble.hasInitialized()  == false) { /* spin loop */ }
+    while (ble.hasInitialized() == false) { /* spin loop */ }
 
     while (true) {
-        ble.waitForEvent();
+        ble.processEvents();
     }
 }
