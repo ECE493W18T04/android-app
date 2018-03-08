@@ -1,18 +1,19 @@
 package com.example.reem.hudmobileapp;
 
 import android.app.Service;
-import android.bluetooth.BluetoothClass;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
-import android.content.ServiceConnection;
 
 
 import com.openxc.VehicleManager;
 import com.openxc.measurements.EngineSpeed;
+import com.openxc.measurements.FuelLevel;
 import com.openxc.measurements.Measurement;
+import com.openxc.measurements.TurnSignalStatus;
 import com.openxc.measurements.VehicleSpeed;
 
 /**
@@ -21,56 +22,101 @@ import com.openxc.measurements.VehicleSpeed;
 
 public class VehicleMonitoringService extends Service {
     public VehicleManager VehicleManager;
-    private static final String TAG = "VehicleMonitor";
+    private static final String TAG = "VehicleMonitoring";
 
     private VehicleSpeed.Listener speedListener;
     private double vSpeed = 0.0;
 
+    private EngineSpeed.Listener rpmListener;
+    private double rpm = 0.0;
+
+    private TurnSignalStatus.Listener turnSignalListener;
+    private String signalPosition = "OFF";
+
+    private FuelLevel.Listener fuelListener;
+    private double fuelLevel = 0.0;
+
     public ServiceConnection connection;
 
+    // required but does nothing
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
-    public double getvehicleSpeed() {
+
+
+    /*
+     * Getter Functions
+     */
+    public double getVehicleSpeed() {
         return vSpeed;
+    }
+    public double getFuelLevel() {
+        return fuelLevel;
+    }
+    public double getRpm() {
+        return rpm;
+    }
+    public String getSignalPosition() {
+        return signalPosition;
     }
 
     //maybe add requested listeners as arguments
     public VehicleMonitoringService () {
 
-        //define listeners
+        /*
+         * Define Listeners
+         */
+
         speedListener = new VehicleSpeed.Listener() {
             @Override
             public void receive(Measurement measurement) {
                 final VehicleSpeed speed = (VehicleSpeed) measurement;
-
                 vSpeed = speed.getValue().doubleValue();
             }
         };
 
-        /* This is an OpenXC measurement listener object - the type is recognized
-        * by the VehicleManager as something that can receive measurement updates.
-        * Later in the file, we'll ask the VehicleManager to call the receive()
-        * function here whenever a new EngineSpeed value arrives.
-        */
+        rpmListener = new EngineSpeed.Listener() {
+            @Override
+            public void receive(Measurement measurement) {
+                final EngineSpeed eSpeed = (EngineSpeed) measurement;
+
+                rpm = eSpeed.getValue().doubleValue();
+            }
+        };
+
+        turnSignalListener = new TurnSignalStatus.Listener() {
+            @Override
+            public void receive(Measurement measurement) {
+                final TurnSignalStatus turnSignalStatus = (TurnSignalStatus) measurement;
+                signalPosition = turnSignalStatus.toString();
+            }
+        };
+
+        fuelListener = new FuelLevel.Listener() {
+            @Override
+            public void receive(Measurement measurement) {
+                fuelLevel = ((FuelLevel) measurement).getValue().doubleValue();
+            }
+        };
+
+
+        /*
+         * Service Connection
+         */
         connection = new ServiceConnection() {
             // Called when the connection with the VehicleManager service is
             // established, i.e. bound.
             public void onServiceConnected(ComponentName className,
                                            IBinder service) {
                 Log.i(TAG, "Bound to VehicleManager");
-                // When the VehicleManager starts up, we store a reference to it
-                // here in "VehicleManager" so we can call functions on it
-                // elsewhere in our code.
-                VehicleManager = ((VehicleManager.VehicleBinder) service)
-                        .getService();
 
-                // We want to receive updates whenever the EngineSpeed changes. We
-                // have an EngineSpeed.Listener (see above, mSpeedListener) and here
-                // we request that the VehicleManager call its receive() method
-                // whenever the EngineSpeed changes
+                VehicleManager = ((VehicleManager.VehicleBinder) service).getService();
+
                 VehicleManager.addListener(VehicleSpeed.class, speedListener);
+                VehicleManager.addListener(EngineSpeed.class, rpmListener);
+                VehicleManager.addListener(TurnSignalStatus.class, turnSignalListener);
+                VehicleManager.addListener(FuelLevel.class, fuelListener);
 
             }
 
@@ -86,8 +132,10 @@ public class VehicleMonitoringService extends Service {
             Log.i(TAG, "Unbinding from Vehicle Manager");
             // Remember to remove your listeners, in typical Android
             // fashion.
-            VehicleManager.removeListener(EngineSpeed.class,
-                    speedListener);
+            VehicleManager.removeListener(EngineSpeed.class, rpmListener);
+            VehicleManager.removeListener(VehicleSpeed.class, speedListener);
+            VehicleManager.removeListener(TurnSignalStatus.class, turnSignalListener);
+            VehicleManager.removeListener(FuelLevel.class, fuelListener);
             unbindService(connection);
             VehicleManager = null;
         }

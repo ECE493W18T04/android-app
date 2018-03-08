@@ -2,18 +2,12 @@ package com.example.reem.hudmobileapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
 import android.widget.TextView;
 
 import com.openxc.VehicleManager;
-import com.openxc.measurements.EngineSpeed;
-import com.openxc.measurements.Measurement;
-import com.openxc.measurements.VehicleSpeed;
+
 
 public class MainActivity extends AppCompatActivity {
     private VehicleMonitoringService vMonitor;
@@ -23,20 +17,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         vMonitor = new VehicleMonitoringService();
-        final TextView SpeedView = (TextView) findViewById(R.id.engine_speed);
+        final TextView speedView = (TextView) findViewById(R.id.vehicle_speed);
+        final TextView rpmView = (TextView) findViewById(R.id.engine_speed);
+        final TextView turnSignalView = (TextView) findViewById(R.id.turn_signal);
+        final TextView fuelView = (TextView) findViewById(R.id.fuel_level);
         Thread t = new Thread() {
-
             @Override
             public void run() {
                 try {
                     while (!isInterrupted()) {
-                        Thread.sleep(1000);
+                        Thread.sleep(10);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 // update TextView here!
-                                SpeedView.setText("Engine speed (RPM): "
-                                        + vMonitor.getvehicleSpeed());
+                                speedView.setText("Vehicle speed (Km/h): "
+                                        + vMonitor.getVehicleSpeed());
+                                rpmView.setText("Engine speed (RPM): " + vMonitor.getRpm());
+                                fuelView.setText("Fuel level (%): " + vMonitor.getFuelLevel());
+                                turnSignalView.setText("Turn Signal Status: " + vMonitor.getSignalPosition());
                             }
                         });
                     }
@@ -48,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         t.start();
 
     }
+    //we want the service to remain bound in the background
 /*
     @Override
     public void onPause() {
