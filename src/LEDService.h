@@ -17,15 +17,16 @@
 #ifndef __BLE_LED_SERVICE_H__
 #define __BLE_LED_SERVICE_H__
 
-class LEDService {
+class WNHService {
 public:
     const static uint16_t LED_SERVICE_UUID              = 0xA000;
     const static uint16_t LED_STATE_CHARACTERISTIC_UUID = 0xA001;
+    const static uint16_t NAME_STATE_CHARACTERISTIC_UUID = 0xA002;
 
-    LEDService(BLEDevice &_ble, bool initialValueForLEDCharacteristic) :
-        ble(_ble), ledState(LED_STATE_CHARACTERISTIC_UUID, &initialValueForLEDCharacteristic)
+    WNHService(BLEDevice &_ble, bool initialValueForLEDCharacteristic) :
+        ble(_ble), ledState(LED_STATE_CHARACTERISTIC_UUID, &initialValueForLEDCharacteristic), nameState(NAME_STATE_CHARACTERISTIC_UUID, "I AM THE VERY BEST PERSON IN THE WORLD CAUSE I JUST AM AND THAT IS THE WAY IT IS BALHHH. YOU CAN't STOP MEEEE HAHAHA. BEFORE TOT HE HANDS TO THE MOVE IT HADN AND THE TMOVE AGAINS BEFORE. I AM INE IN A CHURCH MUAHAHA.")
     {
-        GattCharacteristic *charTable[] = {&ledState};
+        GattCharacteristic *charTable[] = {&ledState, &nameState};
         GattService         ledService(LED_SERVICE_UUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
         ble.gattServer().addService(ledService);
     }
@@ -37,6 +38,7 @@ public:
 private:
     BLEDevice                         &ble;
     ReadWriteGattCharacteristic<bool>  ledState;
+    ReadWriteArrayGattCharacteristic<char, 300>  nameState;
 };
 
 #endif /* #ifndef __BLE_LED_SERVICE_H__ */
