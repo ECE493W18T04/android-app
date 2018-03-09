@@ -67,7 +67,6 @@ public class VehicleMonitoringService extends Service {
         /*
          * Define Listeners
          */
-
         speedListener = new VehicleSpeed.Listener() {
             @Override
             public void receive(Measurement measurement) {
@@ -75,7 +74,6 @@ public class VehicleMonitoringService extends Service {
                 vSpeed = speed.getValue().doubleValue();
             }
         };
-
         rpmListener = new EngineSpeed.Listener() {
             @Override
             public void receive(Measurement measurement) {
@@ -84,7 +82,6 @@ public class VehicleMonitoringService extends Service {
                 rpm = eSpeed.getValue().doubleValue();
             }
         };
-
         turnSignalListener = new TurnSignalStatus.Listener() {
             @Override
             public void receive(Measurement measurement) {
@@ -92,7 +89,6 @@ public class VehicleMonitoringService extends Service {
                 signalPosition = turnSignalStatus.toString();
             }
         };
-
         fuelListener = new FuelLevel.Listener() {
             @Override
             public void receive(Measurement measurement) {
@@ -105,10 +101,10 @@ public class VehicleMonitoringService extends Service {
          * Service Connection
          */
         connection = new ServiceConnection() {
+
             // Called when the connection with the VehicleManager service is
             // established, i.e. bound.
-            public void onServiceConnected(ComponentName className,
-                                           IBinder service) {
+            public void onServiceConnected(ComponentName className, IBinder service) {
                 Log.i(TAG, "Bound to VehicleManager");
 
                 VehicleManager = ((VehicleManager.VehicleBinder) service).getService();
@@ -130,8 +126,7 @@ public class VehicleMonitoringService extends Service {
     public void Disconnect() {
         if(VehicleManager != null) {
             Log.i(TAG, "Unbinding from Vehicle Manager");
-            // Remember to remove your listeners, in typical Android
-            // fashion.
+
             VehicleManager.removeListener(EngineSpeed.class, rpmListener);
             VehicleManager.removeListener(VehicleSpeed.class, speedListener);
             VehicleManager.removeListener(TurnSignalStatus.class, turnSignalListener);
