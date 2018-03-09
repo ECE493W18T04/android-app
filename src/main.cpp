@@ -21,10 +21,10 @@
 DigitalOut alivenessLED(LED1, 0);
 DigitalOut actuatedLED(LED2, 0);
 
-const static char     DEVICE_NAME[] = "LED";
-static const uint16_t uuid16_list[] = {LEDService::LED_SERVICE_UUID};
+const static char     DEVICE_NAME[] = "WNH";
+static const uint16_t uuid16_list[] = {WNHService::LED_SERVICE_UUID};
 
-LEDService *ledServicePtr;
+WNHService *ledServicePtr;
 
 Ticker ticker;
 
@@ -81,7 +81,7 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
     ble.gattServer().onDataWritten(onDataWrittenCallback);
 
     bool initialValueForLEDCharacteristic = false;
-    ledServicePtr = new LEDService(ble, initialValueForLEDCharacteristic);
+    ledServicePtr = new WNHService(ble, initialValueForLEDCharacteristic);
 
     /* setup advertising */
     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::BREDR_NOT_SUPPORTED | GapAdvertisingData::LE_GENERAL_DISCOVERABLE);
