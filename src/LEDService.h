@@ -24,7 +24,7 @@ public:
     const static uint16_t NAME_STATE_CHARACTERISTIC_UUID = 0xA002;
 
     WNHService(BLEDevice &_ble, bool initialValueForLEDCharacteristic) :
-        ble(_ble), ledState(LED_STATE_CHARACTERISTIC_UUID, &initialValueForLEDCharacteristic), nameState(NAME_STATE_CHARACTERISTIC_UUID, "I AM THE VERY BEST PERSON IN THE WORLD CAUSE I JUST AM AND THAT IS THE WAY IT IS BALHHH. YOU CAN't STOP MEEEE HAHAHA. BEFORE TOT HE HANDS TO THE MOVE IT HADN AND THE TMOVE AGAINS BEFORE. I AM INE IN A CHURCH MUAHAHA.")
+        ble(_ble), ledState(LED_STATE_CHARACTERISTIC_UUID, &initialValueForLEDCharacteristic, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY), nameState(NAME_STATE_CHARACTERISTIC_UUID, "I AM THE VERY BEST PERSON IN THE WORLD CAUSE I JUST AM AND THAT IS THE WAY IT IS BALHHH. YOU CAN't STOP MEEEE HAHAHA. BEFORE TOT HE HANDS TO THE MOVE IT HADN AND THE TMOVE AGAINS BEFORE. I AM INE IN A CHURCH MUAHAHA.")
     {
         GattCharacteristic *charTable[] = {&ledState, &nameState};
         GattService         ledService(LED_SERVICE_UUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
@@ -37,7 +37,7 @@ public:
 
 private:
     BLEDevice                         &ble;
-    ReadWriteGattCharacteristic<bool>  ledState;
+    ReadOnlyGattCharacteristic<bool>  ledState;
     ReadWriteArrayGattCharacteristic<char, 300>  nameState;
 };
 
