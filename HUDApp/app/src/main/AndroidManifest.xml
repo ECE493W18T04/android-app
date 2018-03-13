@@ -32,6 +32,14 @@
         </activity>
         <activity
             android:name=".activities.PriorityQueueActivity" />
+
+        <service android:name=".notifications.WNHNotificationListener"
+            android:label="WNHNotificationListener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
