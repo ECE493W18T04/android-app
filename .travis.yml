@@ -32,7 +32,7 @@ install:
     - pip install -U platformio
 
 script:
-    - platformio run
+    - platformio run -e nrf52
 
 
 #
