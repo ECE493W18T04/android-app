@@ -1,8 +1,11 @@
 package com.example.reem.hudmobileapp.notifications;
 
 import android.app.Notification;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
@@ -14,6 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created by Reem on 2018-03-09.
@@ -45,31 +52,24 @@ public class WNHNotificationListener extends NotificationListenerService
         if (sbn.getPackageName().equals(GOOGLE_MAPS) && !sbn.isClearable()) {
             // initialize ble stuff here
 
-
-            Bundle extras = sbn.getNotification().extras;
-            String text;
-            if (extras.get(Notification.EXTRA_TEXT) instanceof String) {
-                text = (String) extras.get(Notification.EXTRA_TEXT);
-            } else {
-                text = extras.get(Notification.EXTRA_TEXT).toString();
-            }
-            Log.d(DEBUG_TAG, text);
-
             RemoteViews rv = sbn.getNotification().bigContentView;
             RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
             notificationManager = new GoogleMapsNotificationManager(rl);
             byte[] content=notificationManager.getContent();
+            Bitmap b = BitmapFactory.decodeByteArray(content, 0, content.length);
+
 
         }
         if (sbn.getPackageName().equals(GOOGLE_CALLER) && !sbn.isClearable())  {
-            Log.d(DEBUG_TAG,"Caller Notification");
-
             notificationManager = new CallNotificationManager(sbn);
             byte[] content=notificationManager.getContent();
-
         }
         if (sbn.getPackageName().equals(SPOTIFY) && !sbn.isClearable()) {
             notificationManager = new SpotifyMusicNotificationManager(sbn);
+            byte[] content=notificationManager.getContent();
+        }
+        if (sbn.getPackageName().equals(GOOGLE_SMS)) {
+            notificationManager = new SMSNotificationManager(sbn);
             byte[] content=notificationManager.getContent();
         }
         super.onNotificationPosted(sbn);

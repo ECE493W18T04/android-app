@@ -30,6 +30,7 @@ public class SpotifyMusicNotificationManager extends NotificationManager {
 
 
         //Log.d("Package",pack);
+
         //ticker contains all needed information;
         Log.d("Ticker",ticker);
         //Log.d("Title",title);
