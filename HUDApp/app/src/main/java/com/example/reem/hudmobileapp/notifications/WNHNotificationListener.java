@@ -52,6 +52,12 @@ public class WNHNotificationListener extends NotificationListenerService
         if (sbn.getPackageName().equals(GOOGLE_MAPS) && !sbn.isClearable()) {
             // initialize ble stuff here
 
+            //no useful information in extras
+            //Bundle extras = sbn.getNotification().extras;
+            //Log.d(DEBUG_TAG, extras.toString());
+
+
+
             RemoteViews rv = sbn.getNotification().bigContentView;
             RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
             notificationManager = new GoogleMapsNotificationManager(rl);

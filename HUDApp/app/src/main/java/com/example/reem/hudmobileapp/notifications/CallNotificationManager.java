@@ -34,6 +34,7 @@ public class CallNotificationManager extends NotificationManager {
         Log.d("Title",title);
         Log.d("Text",text);
     }
+
     @Override
     public byte[] getContent() {
         ParseCallNotification();
