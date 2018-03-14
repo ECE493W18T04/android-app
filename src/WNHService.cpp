@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "ble/BLE.h"
 #include "TSL2561_I2C.h"
-#include "LEDService.h"
+#include "WNHService.h"
 
 DigitalOut alivenessLED(LED1, 0);
 DigitalOut actuatedLED(LED2, 0);

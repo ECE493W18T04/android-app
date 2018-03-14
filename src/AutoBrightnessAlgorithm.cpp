@@ -1,4 +1,4 @@
-#include "AutoBrightnessAlg.h"
+#include "AutoBrightnessAlgorithm.h"
 
 #define DEFAULT_INSTANCE 0.1
 #define MIN_STATE 1
