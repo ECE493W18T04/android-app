@@ -26,6 +26,10 @@ public class GoogleMapsNotificationManager extends NotificationManager {
 
     @Override
     public byte[] getContent() {
+<<<<<<< HEAD
+
+        return new byte[0];
+=======
         parseNotification(layout);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bMap.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -53,6 +57,7 @@ public class GoogleMapsNotificationManager extends NotificationManager {
         Log.d(DEBUG_TAG, "Distance: "+distance.getText().toString());
         Log.d(DEBUG_TAG, "ETA: "+eta.getText().toString());
         Log.d(DEBUG_TAG, "StreetNumber: "+StreetName.getText().toString());
+>>>>>>> eefd6fe45e6370f560ed358cef9aa8835c489c70
     }
 
 
