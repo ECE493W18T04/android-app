@@ -7,6 +7,7 @@ package com.example.reem.hudmobileapp.notifications;
 public class GoogleMapsNotificationManager extends NotificationManager {
     @Override
     public byte[] getContent() {
+
         return new byte[0];
     }
 }

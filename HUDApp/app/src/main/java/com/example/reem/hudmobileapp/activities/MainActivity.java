@@ -3,6 +3,7 @@ package com.example.reem.hudmobileapp.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.R;
 import com.example.reem.hudmobileapp.ble.BLEService;
+import com.example.reem.hudmobileapp.dialogs.ColorPickerDialog;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,13 +31,28 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 //                startBluetoothService();
-                Intent intent = new Intent(MainActivity.this,PriorityQueueActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(MainActivity.this,PriorityQueueActivity.class);
+//                startActivity(intent);
+
+                int initialColor = Color.WHITE;
+
+                ColorPickerDialog colorPickerDialog = new ColorPickerDialog(MainActivity.this, initialColor, new ColorPickerDialog.OnColorSelectedListener() {
+
+                    @Override
+                    public void onColorSelected(int color) {
+                        showToast(color);
+                    }
+
+                });
+                colorPickerDialog.show();
             }
         });
 
     }
-
+    private void showToast(int color) {
+        String rgbString = "R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color);
+        Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
+    }
     public void startBluetoothService()
     {
 
@@ -48,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                     COARSE_LOCATION_PERMISSIONS);
+
         }
         else
         {
