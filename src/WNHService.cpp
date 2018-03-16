@@ -75,7 +75,11 @@ WNHService::WNHService(BLEDevice &_ble) :
         &speedUnitsCharacteristic,
         &signalStatusCharacteristic
     };
-    GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
+    uint16_t sizeOfGattCharTable = sizeof(charTable) / sizeof(GattCharacteristic *);
+    for (int i = 0; i < sizeOfGattCharTable; i++) {
+        charTable[i]->requireSecurity(SecurityManager::SECURITY_MODE_ENCRYPTION_WITH_MITM);
+    }
+    GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeOfGattCharTable);
     ble.gattServer().addService(WNHBLEService);
     // btnMgr.setPairingHandler(this, &WNHService::beginPairingMode);
     // btnMgr.setVoiceCommandHandler(this, &WNHService::sendVoiceCommandTrigger);
@@ -110,18 +114,57 @@ void WNHService::onBleInitError(BLE &ble, ble_error_t error) {
     // TODO set a blink pattern to LED 2
 }
 
+void passkeyDisplayCallback(Gap::Handle_t handle, const SecurityManager::Passkey_t passkey)
+{
+    printf("Input passKey: ");
+    for (unsigned i = 0; i < Gap::ADDR_LEN; i++) {
+        printf("%c ", passkey[i]);
+    }
+    printf("\r\n");
+}
+
+void securitySetupCompletedCallback(Gap::Handle_t handle, SecurityManager::SecurityCompletionStatus_t status)
+{
+    if (status == SecurityManager::SEC_STATUS_SUCCESS) {
+        printf("Security success\r\n");
+    } else {
+        printf("Security failed: %d\r\n", status);
+    }
+}
+
 void WNHService::setupGapAdvertising(bool discoverable) {
     uint8_t flags = GapAdvertisingData::BREDR_NOT_SUPPORTED;
+    bool enableBonding = true;
+    bool requireMITM   = true;
+    // const static SecurityManager::Passkey_t key = {'0', '0', '0', '0', '0', '0'};
+
+    ble.securityManager().init(enableBonding, requireMITM, SecurityManager::IO_CAPS_DISPLAY_ONLY);
     if (discoverable) {
         flags |= GapAdvertisingData::LE_GENERAL_DISCOVERABLE;
     }
+
     ble.gap().accumulateAdvertisingPayload(flags);
     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LOCAL_NAME, (uint8_t *)DEVICE_NAME, sizeof(DEVICE_NAME));
     ble.gap().setAdvertisingType(GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED);
     ble.gap().setAdvertisingInterval(1000); /* 1000ms. */
     ble.gap().startAdvertising();
+    ble.securityManager().onPasskeyDisplay(passkeyDisplayCallback);
+    ble.securityManager().onSecuritySetupCompleted(securitySetupCompletedCallback);
 }
+void printMacAddress()
+{
+    /* Print out device MAC address to the console*/
+    Gap::AddressType_t addr_type;
+    Gap::Address_t address;
+    BLE::Instance().gap().getAddress(&addr_type, address);
+    printf("DEVICE MAC ADDRESS: ");
+    for (int i = 5; i >= 1; i--){
+            printf("%02x:", address[i]);
+        }
+    printf("%02x\r\n", address[0]);
+}
+
 /**
  * Callback triggered when the ble initialization process has finished
  */
@@ -143,4 +186,5 @@ void WNHService::bleInitComplete(BLE::InitializationCompleteCallbackContext *par
     ble.gap().onDisconnection(this, &WNHService::disconnectionCallback);
     ble.gattServer().onDataWritten(this, &WNHService::onDataWrittenCallback);
     setupGapAdvertising(false);
+    printMacAddress();
 }
