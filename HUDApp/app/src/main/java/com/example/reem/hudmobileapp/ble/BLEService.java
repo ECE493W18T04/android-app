@@ -20,6 +20,9 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.reem.hudmobileapp.activities.MainActivity;
+import com.example.reem.hudmobileapp.helper.FileManager;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -49,6 +52,7 @@ public class BLEService extends Service {
     private Thread blueToothScanThread = null;
 
 
+    // when the ble service is initialized.
     public class BLEBinder extends Binder {
         BLEService getService() {
             // Return this instance of LocalService so clients can call public methods
@@ -68,21 +72,39 @@ public class BLEService extends Service {
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
-            if (!devices.contains(device)) {
-                Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
+            String macAddress=FileManager.readMACAddress(BLEService.this);
+                if (!devices.contains(device)) {
+                    Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
+                    // store the address in a file or something
+                    if (macAddress==null)
+                    {
+                        if ("LED".equals(device.getName())) {
 
-                if ("WNH".equals(device.getName())) {
+                            Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
+                            bluetoothDevice = device;
+                            connect(device.getAddress());
+                            Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
 
-                    Log.i("BLUETOOTH DEVICE FOUND","wnh found");
-                    bluetoothDevice = device;
-                    connect(device.getAddress());
-                    Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-
-                    stopScan();
-                } else {
-                    devices.add(device);
+                            stopScan();
+                        } else {
+                            devices.add(device);
+                        }
+//
+                    }
+                    else
+                    {
+                        Log.i("MAC ADDRESS", "The mac adress looking for is"+macAddress);
+                        if (macAddress.equals(device.getAddress())){
+                            Log.i("BLUETOOTH DEVICE FOUND ", "wnh found via mac address");
+                            bluetoothDevice = device;
+                            connect(device.getAddress());
+                            Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
+                            stopScan();
+                        } else {
+                            devices.add(device);
+                        }
+                    }
                 }
-            }
         }
     };
 
@@ -252,7 +274,7 @@ public class BLEService extends Service {
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
-
+        FileManager.saveMACAddress(this,bluetoothDeviceMACAdress);
         return true;
 
     }
@@ -296,8 +318,12 @@ public class BLEService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        bluetoothGatt.disconnect();
+        if (bluetoothGatt!= null)
+            bluetoothGatt.disconnect();
+        Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
     }
+
+
 
     @Override
     public IBinder onBind(Intent intent) {

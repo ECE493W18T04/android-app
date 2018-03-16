@@ -23,7 +23,10 @@ import com.example.reem.hudmobileapp.R;
 import com.example.reem.hudmobileapp.ble.BLEService;
 
 import com.example.reem.hudmobileapp.dialogs.ColorPickerDialog;
+import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
+
+import java.io.File;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -32,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private AlertDialog enableNotificationListenerAlertDialog;
-
+    private boolean activeMode =false;
 
     private Button navButton;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
@@ -42,35 +45,51 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         navButton = (Button) findViewById(R.id.navButton);
         System.out.println(navButton);
+
+//        File file = new File(this.getFilesDir(), "mac.sav");
+//        FileManager.saveMACAddress(this,"");
+//        Log.e("The address is: ",FileManager.readMACAddress(this));
+
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                startBluetoothService();
+//                Intent tempIntent = new Intent(MainActivity.this,PreferencesActivity.class);
+//                startActivity(tempIntent);
+                if (activeMode == false)
+                    startBluetoothService();
+                else
+                    stopBluetoothService();
 //                Intent intent = new Intent(MainActivity.this,PriorityQueueActivity.class);
 //                startActivity(intent);
 
-                int initialColor = Color.WHITE;
-
-                ColorPickerDialog colorPickerDialog = new ColorPickerDialog(MainActivity.this, initialColor, new ColorPickerDialog.OnColorSelectedListener() {
-
-                    @Override
-                    public void onColorSelected(int color) {
-                        showToast(color);
-                    }
-
-                });
-                colorPickerDialog.show();
+//                int initialColor = Color.WHITE;
+//
+//                ColorPickerDialog colorPickerDialog = new ColorPickerDialog(MainActivity.this, initialColor, new ColorPickerDialog.OnColorSelectedListener() {
+//
+//                    @Override
+//                    public void onColorSelected(int color) {
+//                        showToast(color);
+//                    }
+//
+//                });
+//                colorPickerDialog.show();
             }
         });
-        if(!isNotificationServiceEnabled()){
-            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-            enableNotificationListenerAlertDialog.show();
-        }
+//        if(!isNotificationServiceEnabled()){
+//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+//            enableNotificationListenerAlertDialog.show();
+//        }
 
         //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
         //startService(notificationIntent);
     }
 
+
+    public void stopBluetoothService()
+    {
+        stopService(mServiceIntent);
+        activeMode=false;
+    }
     /**
      * Is Notification Service Enabled.
      * Verifies if the notification listener service is enabled.
@@ -141,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
         else
         {
             System.out.println("About to call BLE service ");
+            activeMode=true;
             mServiceIntent = new Intent(MainActivity.this, BLEService.class);
             startService(mServiceIntent);
         }
@@ -159,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
                     System.out.println("About to call BLE service ");
+                    activeMode=true;
                     mServiceIntent = new Intent(MainActivity.this, BLEService.class);
                     startService(mServiceIntent);
 
