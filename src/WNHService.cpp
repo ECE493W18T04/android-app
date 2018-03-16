@@ -81,8 +81,8 @@ WNHService::WNHService(BLEDevice &_ble) :
     }
     GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeOfGattCharTable);
     ble.gattServer().addService(WNHBLEService);
-    // btnMgr.setPairingHandler(this, &WNHService::beginPairingMode);
-    // btnMgr.setVoiceCommandHandler(this, &WNHService::sendVoiceCommandTrigger);
+    btnMgr.setPairingHandler(Callback<void()>(this, &WNHService::beginPairingMode));
+    btnMgr.setVoiceCommandHandler(Callback<void()>(this, &WNHService::sendVoiceCommandTrigger));
 }
 
 void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
@@ -105,9 +105,7 @@ void WNHService::beginPairingMode() {
 
 void WNHService::sendVoiceCommandTrigger() {
     voiceControl = !voiceControl;
-    // TODO add gap write
-    // uint8_t val = (uint8_t)luxDevice.getLux();
-    // BLE::Instance().gattServer().write(ledServicePtr->getValueHandle(), &val, 1);
+    BLE::Instance().gattServer().write(voiceControlCharacteristic.getValueHandle(), (uint8_t*)&voiceControl, sizeof(voiceControl));
 }
 
 void WNHService::onBleInitError(BLE &ble, ble_error_t error) {
@@ -152,6 +150,7 @@ void WNHService::setupGapAdvertising(bool discoverable) {
     ble.securityManager().onPasskeyDisplay(passkeyDisplayCallback);
     ble.securityManager().onSecuritySetupCompleted(securitySetupCompletedCallback);
 }
+
 void printMacAddress()
 {
     /* Print out device MAC address to the console*/
