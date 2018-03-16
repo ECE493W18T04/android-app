@@ -3,7 +3,7 @@
 const char*    WNHService::DEVICE_NAME = "WNH";
 const uint16_t WNHService::uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
 
-WNHService::WNHService(BLEDevice &_ble) :
+WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     voiceControl(VOICE_CONTROL_DEFAULT),
     currentTime(CURRENT_TIME_INVALID),
     stateOverride(STATE_OVERRIDE_INVALID),
@@ -28,6 +28,8 @@ WNHService::WNHService(BLEDevice &_ble) :
     speedUnits(SPEED_UNITS_ENUM_DEFAULT),
     signalStatus(SIGNAL_STATUS_ENUM_DEFAULT),
     ble(_ble),
+    eventQueue(_eventQueue),
+    btnMgr(_eventQueue),
 
     voiceControlCharacteristic(VOICE_CONTROL_CHARACTERISTIC_UUID, &voiceControl, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
     currentTimeCharacteristic(CURRENT_TIME_CHARACTERISTIC_UUID, &currentTime),
@@ -53,7 +55,11 @@ WNHService::WNHService(BLEDevice &_ble) :
     speedUnitsCharacteristic(SPEED_UNITS_CHARACTERISTIC_UUID, &speedUnits),
     signalStatusCharacteristic(SIGNAL_STATUS_CHARACTERISTIC_UUID, &signalStatus)
 {
+    // setup initial BLE callbacks
+    ble.onEventsToProcess(BLE::OnEventsToProcessCallback_t(this, &WNHService::scheduleBleEventsProcessing));
     ble.init(this, &WNHService::bleInitComplete);
+
+    // setup WNH Service
     GattCharacteristic *charTable[] = {
         &voiceControlCharacteristic,
         &currentTimeCharacteristic,
@@ -81,8 +87,14 @@ WNHService::WNHService(BLEDevice &_ble) :
     }
     GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeOfGattCharTable);
     ble.gattServer().addService(WNHBLEService);
+
+    // setup handlers
     btnMgr.setPairingHandler(Callback<void()>(this, &WNHService::beginPairingMode));
     btnMgr.setVoiceCommandHandler(Callback<void()>(this, &WNHService::sendVoiceCommandTrigger));
+}
+void WNHService::scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackContext* context) {
+    BLE &ble = BLE::Instance();
+    eventQueue.call(Callback<void()>(&ble, &BLE::processEvents));
 }
 
 void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)

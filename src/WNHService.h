@@ -1,6 +1,7 @@
 #ifndef __WNH_BLE_SERVICE_H__
 #define __WNH_BLE_SERVICE_H__
 
+#include <events/mbed_events.h>
 #include "ble/BLE.h"
 #include "mbed.h"
 #include "ButtonManager.h"
@@ -70,7 +71,7 @@ public:
     const static char    *DEVICE_NAME;
     const static uint16_t uuid16_list[];
 
-    WNHService(BLEDevice &_ble);
+    WNHService(BLEDevice &_ble, EventQueue &_eventQueue);
 
     void bleInitComplete(BLE::InitializationCompleteCallbackContext *params);
     void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params);
@@ -80,6 +81,7 @@ private:
     void beginPairingMode();
     void sendVoiceCommandTrigger();
     void onBleInitError(BLE &ble, ble_error_t error);
+    void scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackContext* context);
 
     bool voiceControl;
     uint32_t currentTime;
@@ -106,6 +108,9 @@ private:
     uint8_t signalStatus;
 
     BLEDevice                         &ble;
+    EventQueue                        &eventQueue;
+    ButtonManager                     btnMgr;
+
     ReadOnlyGattCharacteristic<bool>  voiceControlCharacteristic;
     WriteOnlyGattCharacteristic<uint32_t>  currentTimeCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  stateOverrideCharacteristic;
@@ -129,7 +134,6 @@ private:
     WriteOnlyGattCharacteristic<uint8_t>  mapsUnitsCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  speedUnitsCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  signalStatusCharacteristic;
-    ButtonManager btnMgr;
 };
 
 #endif /* __WNH_BLE_SERVICE_H__ */
