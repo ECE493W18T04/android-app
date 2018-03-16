@@ -1,22 +1,88 @@
-#include "ble/BLE.h"
-#include "mbed.h"
 #include "WNHService.h"
 
-const static char     DEVICE_NAME[] = "WNH";
-static const uint16_t uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
+const char*    WNHService::DEVICE_NAME = "WNH";
+const uint16_t WNHService::uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
 
+WNHService::WNHService(BLEDevice &_ble) :
+    voiceControl(VOICE_CONTROL_DEFAULT),
+    currentTime(CURRENT_TIME_INVALID),
+    stateOverride(STATE_OVERRIDE_INVALID),
+
+    clockPriority(CLOCK_PRIORITY_DEFAULT),
+    mapsPriority(MAPS_PRIORITY_DEFAULT),
+    callPriority(CALL_PRIORITY_DEFAULT),
+    musicPriority(MUSIC_PRIORITY_DEFAULT),
+    speedPriority(SPEED_PRIORITY_DEFAULT),
+    fuelPriority(FUEL_PRIORITY_DEFAULT),
+
+    mapsStreetName(MAPS_STREET_NAME_DEFAULT),
+    musicSongName(MUSIC_SONG_NAME_DEFAULT),
+    callName(CALL_NAME_DEFAULT),
+
+    mapsDistanceNumber(MAPS_DISTANCE_VALUE_DEFAULT),
+    speedNumber(SPEED_VALUE_DEFAULT),
+    fuelNumber(FUEL_VALUE_DEFAULT),
+
+    mapsDirection(MAPS_DIRECTION_ENUM_DEFAULT),
+    mapsUnits(MAPS_UNITS_ENUM_DEFAULT),
+    speedUnits(SPEED_UNITS_ENUM_DEFAULT),
+    signalStatus(SIGNAL_STATUS_ENUM_DEFAULT),
+    ble(_ble),
+
+    voiceControlCharacteristic(VOICE_CONTROL_CHARACTERISTIC_UUID, &voiceControl, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
+    currentTimeCharacteristic(CURRENT_TIME_CHARACTERISTIC_UUID, &currentTime),
+    stateOverrideCharacteristic(STATE_OVERRIDE_CHARACTERISTIC_UUID, &stateOverride),
+
+    clockPriorityCharacteristic(CLOCK_PRIORITY_CHARACTERISTIC_UUID, &clockPriority),
+    mapsPriorityCharacteristic(MAPS_PRIORITY_CHARACTERISTIC_UUID, &mapsPriority),
+    callPriorityCharacteristic(CALL_NAME_CHARACTERISTIC_UUID, &callPriority),
+    musicPriorityCharacteristic(MUSIC_PRIORITY_CHARACTERISTIC_UUID, &musicPriority),
+    speedPriorityCharacteristic(SPEED_PRIORITY_CHARACTERISTIC_UUID, &speedPriority),
+    fuelPriorityCharacteristic(FUEL_PRIORITY_CHARACTERISTIC_UUID, &fuelPriority),
+
+    mapsStreetNameCharacteristic(MAPS_STREET_CHARACTERISTIC_UUID, ""),
+    musicSongNameCharacteristic(MUSIC_SONG_CHARACTERISTIC_UUID, ""),
+    callNameCharacteristic(CALL_NAME_CHARACTERISTIC_UUID, ""),
+
+    mapsDistanceNumberCharacteristic(MAPS_DISTANCE_CHARACTERISTIC_UUID, &mapsDistanceNumber),
+    speedNumberCharacteristic(SPEED_VALUE_CHARACTERISTIC_UUID, &speedNumber),
+    fuelNumberCharacteristic(FUEL_VALUE_CHARACTERISTIC_UUID, &fuelNumber),
+
+    mapsDirectionCharacteristic(MAPS_DIRECTION_CHARACTERISTIC_UUID, &mapsDirection),
+    mapsUnitsCharacteristic(MAPS_UNITS_CHARACTERISTIC_UUID, &mapsUnits),
+    speedUnitsCharacteristic(SPEED_UNITS_CHARACTERISTIC_UUID, &speedUnits),
+    signalStatusCharacteristic(SIGNAL_STATUS_CHARACTERISTIC_UUID, &signalStatus)
+{
+    ble.init(this, &WNHService::bleInitComplete);
+    GattCharacteristic *charTable[] = {
+        &voiceControlCharacteristic,
+        &currentTimeCharacteristic,
+        &stateOverrideCharacteristic,
+        &clockPriorityCharacteristic,
+        &mapsPriorityCharacteristic,
+        &callPriorityCharacteristic,
+        &musicPriorityCharacteristic,
+        &speedPriorityCharacteristic,
+        &fuelPriorityCharacteristic,
+        &mapsStreetNameCharacteristic,
+        &musicSongNameCharacteristic,
+        &callNameCharacteristic,
+        &mapsDistanceNumberCharacteristic,
+        &speedNumberCharacteristic,
+        &fuelNumberCharacteristic,
+        &mapsDirectionCharacteristic,
+        &mapsUnitsCharacteristic,
+        &speedUnitsCharacteristic,
+        &signalStatusCharacteristic
+    };
+    GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
+    ble.gattServer().addService(WNHBLEService);
+}
 void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
 {
     BLE::Instance().gap().startAdvertising();
 }
 
-
-/**
- * This callback allows the LEDService to receive updates to the ledState Characteristic.
- *
- * @param[in] params
- *     Information about the characterisitc being updated.
- */
 void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == 4)) {
         currentTime = *(params->data);

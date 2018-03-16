@@ -1,9 +1,9 @@
-#include "mbed.h"
-#include "ble/BLE.h"
 #include "WNHService.h"
-// #include "ButtonManager.h"
+#include "ButtonManager.h"
 
-// ButtonManager btnMgr = ButtonManager();
+#define EVER ;;
+
+ButtonManager btnMgr;
 Ticker ticker;
 DigitalOut alivenessLED(LED1, 0);
 DigitalOut actuatedLED(LED2, 0);
@@ -21,7 +21,7 @@ void btnCallback(void) {
 int main(void)
 {
     ticker.attach(periodicCallback, 1); /* Blink LED every second */
-    // btnMgr.setPairingHandler(btnCallback);
+    btnMgr.setPairingHandler(btnCallback);
 
     BLE &ble = BLE::Instance();
     WNHService wnhService(ble);
@@ -33,7 +33,7 @@ int main(void)
      * BLE object is used in the main loop below. */
     while (ble.hasInitialized() == false) { /* spin loop */ }
     //
-    for (;;) {
+    for(EVER) {
         ble.processEvents();
     }
 }

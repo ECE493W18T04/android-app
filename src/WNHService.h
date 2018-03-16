@@ -1,15 +1,37 @@
 #ifndef __WNH_BLE_SERVICE_H__
 #define __WNH_BLE_SERVICE_H__
 
+#include "ble/BLE.h"
+#include "mbed.h"
 
 /* A: Default Values */
-#define VOICE_CONTROL_DEFAULT false
-#define CURRENT_TIME_INVALID 0
-#define STATE_OVERRIDE_INVALID 0xFF
+#define VOICE_CONTROL_DEFAULT       false
+#define CURRENT_TIME_INVALID        0
+#define STATE_OVERRIDE_INVALID      0xFF
 
 /* B: Default Values */
-#define CLOCK_PRIORITY_DEFAULT 15
-#define MAPS_PRIORITY_DEFAULT 14
+#define CLOCK_PRIORITY_DEFAULT      15
+#define MAPS_PRIORITY_DEFAULT       14
+#define CALL_PRIORITY_DEFAULT       13
+#define MUSIC_PRIORITY_DEFAULT      12
+#define SPEED_PRIORITY_DEFAULT      11
+#define FUEL_PRIORITY_DEFAULT       10
+
+/* C: Char arrays */
+#define MAPS_STREET_NAME_DEFAULT    ""
+#define MUSIC_SONG_NAME_DEFAULT     ""
+#define CALL_NAME_DEFAULT           ""
+
+/* D: Decimals */
+#define MAPS_DISTANCE_VALUE_DEFAULT 0
+#define SPEED_VALUE_DEFAULT         0
+#define FUEL_VALUE_DEFAULT          0
+
+/* E: Enum */
+#define MAPS_DIRECTION_ENUM_DEFAULT 0
+#define MAPS_UNITS_ENUM_DEFAULT     0
+#define SPEED_UNITS_ENUM_DEFAULT    0
+#define SIGNAL_STATUS_ENUM_DEFAULT  0
 
 class WNHService {
 public:
@@ -43,21 +65,11 @@ public:
     const static uint16_t SPEED_UNITS_CHARACTERISTIC_UUID    = 0xE002;
     const static uint16_t SIGNAL_STATUS_CHARACTERISTIC_UUID  = 0xE003;
 
-    WNHService(BLEDevice &_ble) :
-        voiceControl(VOICE_CONTROL_DEFAULT),
-        ble(_ble),
+    /* misc */
+    const static char    *DEVICE_NAME;
+    const static uint16_t uuid16_list[];
 
-        voiceControlCharacteristic(VOICE_CONTROL_CHARACTERISTIC_UUID, &voiceControl, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
-        currentTimeCharacteristic(CURRENT_TIME_CHARACTERISTIC_UUID, &currentTime),
-        stateOverrideCharacteristic(STATE_OVERRIDE_CHARACTERISTIC_UUID, &stateOverride),
-        clockPriorityCharacteristic(CLOCK_PRIORITY_CHARACTERISTIC_UUID, &clockPriority),
-        mapsPriorityCharacteristic(MAPS_PRIORITY_CHARACTERISTIC_UUID, &mapsPriority)
-    {
-        ble.init(this, &WNHService::bleInitComplete);
-        GattCharacteristic *charTable[] = {&voiceControlCharacteristic, &stateOverrideCharacteristic};
-        GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
-        ble.gattServer().addService(WNHBLEService);
-    }
+    WNHService(BLEDevice &_ble);
 
     void bleInitComplete(BLE::InitializationCompleteCallbackContext *params);
     void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params);
@@ -71,6 +83,23 @@ private:
 
     uint8_t clockPriority;
     uint8_t mapsPriority;
+    uint8_t callPriority;
+    uint8_t musicPriority;
+    uint8_t speedPriority;
+    uint8_t fuelPriority;
+
+    char *mapsStreetName;
+    char *musicSongName;
+    char *callName;
+
+    uint32_t mapsDistanceNumber;
+    uint16_t speedNumber;
+    uint8_t fuelNumber;
+
+    uint8_t mapsDirection;
+    uint8_t mapsUnits;
+    uint8_t speedUnits;
+    uint8_t signalStatus;
 
     BLEDevice                         &ble;
     ReadOnlyGattCharacteristic<bool>  voiceControlCharacteristic;
@@ -79,23 +108,23 @@ private:
 
     WriteOnlyGattCharacteristic<uint8_t>  clockPriorityCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  mapsPriorityCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  callPriorityCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  musicPriorityCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  speedPriorityCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  fuelPriorityCharacteristic;
-    //
-    // WriteOnlyArrayGattCharacteristic<char, 256>  mapsStreetNameCharacteristic;
-    // WriteOnlyArrayGattCharacteristic<char, 256>  musicSongNameCharacteristic;
-    // WriteOnlyArrayGattCharacteristic<char, 256>  callNameCharacteristic;
-    //
-    // WriteOnlyGattCharacteristic<uint32_t>  mapsDistanceNumberCharacteristic;
-    // WriteOnlyGattCharacteristic<uint16_t>  speedNumberCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  fuelNumberCharacteristic;
-    //
-    // WriteOnlyGattCharacteristic<uint8_t>  mapsDirectionCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  mapsUnitsCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  speedUnitsCharacteristic;
-    // WriteOnlyGattCharacteristic<uint8_t>  signalStatusCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  callPriorityCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  musicPriorityCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  speedPriorityCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  fuelPriorityCharacteristic;
+
+    WriteOnlyArrayGattCharacteristic<char, 256>  mapsStreetNameCharacteristic;
+    WriteOnlyArrayGattCharacteristic<char, 256>  musicSongNameCharacteristic;
+    WriteOnlyArrayGattCharacteristic<char, 256>  callNameCharacteristic;
+
+    WriteOnlyGattCharacteristic<uint32_t>  mapsDistanceNumberCharacteristic;
+    WriteOnlyGattCharacteristic<uint16_t>  speedNumberCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  fuelNumberCharacteristic;
+
+    WriteOnlyGattCharacteristic<uint8_t>  mapsDirectionCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  mapsUnitsCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  speedUnitsCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  signalStatusCharacteristic;
 };
 
 #endif /* __WNH_BLE_SERVICE_H__ */
