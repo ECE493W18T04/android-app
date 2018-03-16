@@ -3,6 +3,7 @@
 
 #include "ble/BLE.h"
 #include "mbed.h"
+#include "ButtonManager.h"
 
 /* A: Default Values */
 #define VOICE_CONTROL_DEFAULT       false
@@ -76,6 +77,9 @@ public:
     void onDataWrittenCallback(const GattWriteCallbackParams *params);
 private:
     void setupGapAdvertising(bool discoverable);
+    void beginPairingMode();
+    void sendVoiceCommandTrigger();
+    void onBleInitError(BLE &ble, ble_error_t error);
 
     bool voiceControl;
     uint32_t currentTime;
@@ -125,6 +129,7 @@ private:
     WriteOnlyGattCharacteristic<uint8_t>  mapsUnitsCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  speedUnitsCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  signalStatusCharacteristic;
+    ButtonManager btnMgr;
 };
 
 #endif /* __WNH_BLE_SERVICE_H__ */

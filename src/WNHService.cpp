@@ -77,10 +77,14 @@ WNHService::WNHService(BLEDevice &_ble) :
     };
     GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeof(charTable) / sizeof(GattCharacteristic *));
     ble.gattServer().addService(WNHBLEService);
+    // btnMgr.setPairingHandler(this, &WNHService::beginPairingMode);
+    // btnMgr.setVoiceCommandHandler(this, &WNHService::sendVoiceCommandTrigger);
 }
+
 void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
 {
-    BLE::Instance().gap().startAdvertising();
+    setupGapAdvertising(false);
+    // TODO shutdown external hardware
 }
 
 void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
@@ -89,11 +93,21 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     }
 }
 
-/**
- * This function is called when the ble initialization process has failed
- */
-void onBleInitError(BLE &ble, ble_error_t error)
-{
+void WNHService::beginPairingMode() {
+    setupGapAdvertising(true);
+    // TODO set time limit
+    // TODO trigger display to show key
+}
+
+void WNHService::sendVoiceCommandTrigger() {
+    voiceControl = !voiceControl;
+    // TODO add gap write
+    // uint8_t val = (uint8_t)luxDevice.getLux();
+    // BLE::Instance().gattServer().write(ledServicePtr->getValueHandle(), &val, 1);
+}
+
+void WNHService::onBleInitError(BLE &ble, ble_error_t error) {
+    // TODO set a blink pattern to LED 2
 }
 
 void WNHService::setupGapAdvertising(bool discoverable) {
@@ -129,5 +143,4 @@ void WNHService::bleInitComplete(BLE::InitializationCompleteCallbackContext *par
     ble.gap().onDisconnection(this, &WNHService::disconnectionCallback);
     ble.gattServer().onDataWritten(this, &WNHService::onDataWrittenCallback);
     setupGapAdvertising(false);
-
 }

@@ -1,27 +1,18 @@
 #include "WNHService.h"
-#include "ButtonManager.h"
 
 #define EVER ;;
 
-ButtonManager btnMgr;
 Ticker ticker;
 DigitalOut alivenessLED(LED1, 0);
-DigitalOut actuatedLED(LED2, 0);
 
 void periodicCallback(void) {
-    alivenessLED = !alivenessLED; /* Do blinky on LED1 to indicate system aliveness. */
-    // uint8_t val = (uint8_t)luxDevice.getLux();
-    // BLE::Instance().gattServer().write(ledServicePtr->getValueHandle(), &val, 1);
-}
-
-void btnCallback(void) {
-    actuatedLED = !actuatedLED;
+    // blink LED1 at 1Hz to show we are alive
+    alivenessLED = !alivenessLED; 
 }
 
 int main(void)
 {
     ticker.attach(periodicCallback, 1); /* Blink LED every second */
-    btnMgr.setPairingHandler(btnCallback);
 
     BLE &ble = BLE::Instance();
     WNHService wnhService(ble);
