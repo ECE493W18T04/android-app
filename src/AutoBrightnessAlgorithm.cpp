@@ -1,4 +1,5 @@
 #include "AutoBrightnessAlgorithm.h"
+#include "TSL2561_I2C.h"
 
 #define DEFAULT_INSTANCE 0.1
 #define MIN_STATE 1
@@ -8,6 +9,7 @@
 #define HYSTERISIS_THRESHOLD 2 //update
 #define LOCK_TICK_THRESHOLD 16
 #define DEFAULT_ALPHA 0.5
+TSL2561_I2C luxDevice = TSL2561_I2C(I2C_SDA0, I2C_SCL0);
 
 AutoBrightnessAlg::AutoBrightnessAlg() : _alpha(DEFAULT_ALPHA) {}
 

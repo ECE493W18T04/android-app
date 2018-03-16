@@ -1,30 +1,15 @@
-#include "mbed.h"
 #include "ble/BLE.h"
-#include "TSL2561_I2C.h"
+#include "mbed.h"
 #include "WNHService.h"
 
-DigitalOut alivenessLED(LED1, 0);
-DigitalOut actuatedLED(LED2, 0);
-
 const static char     DEVICE_NAME[] = "WNH";
-static const uint16_t uuid16_list[] = {WNHService::LED_SERVICE_UUID};
+static const uint16_t uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
 
-TSL2561_I2C luxDevice = TSL2561_I2C(I2C_SDA0, I2C_SCL0);
-WNHService *ledServicePtr;
-
-Ticker ticker;
-
-void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
+void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
 {
     BLE::Instance().gap().startAdvertising();
 }
 
-void periodicCallback(void)
-{
-    alivenessLED = !alivenessLED; /* Do blinky on LED1 to indicate system aliveness. */
-    uint8_t val = (uint8_t)luxDevice.getLux();
-    BLE::Instance().gattServer().write(ledServicePtr->getValueHandle(), &val, 1);
-}
 
 /**
  * This callback allows the LEDService to receive updates to the ledState Characteristic.
@@ -32,9 +17,9 @@ void periodicCallback(void)
  * @param[in] params
  *     Information about the characterisitc being updated.
  */
-void onDataWrittenCallback(const GattWriteCallbackParams *params) {
-    if ((params->handle == ledServicePtr->getValueHandle()) && (params->len == 1)) {
-        actuatedLED = *(params->data);
+void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
+    if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == 4)) {
+        currentTime = *(params->data);
     }
 }
 
@@ -43,13 +28,24 @@ void onDataWrittenCallback(const GattWriteCallbackParams *params) {
  */
 void onBleInitError(BLE &ble, ble_error_t error)
 {
-    /* Initialization error handling should go here */
 }
 
+void WNHService::setupGapAdvertising(bool discoverable) {
+    uint8_t flags = GapAdvertisingData::BREDR_NOT_SUPPORTED;
+    if (discoverable) {
+        flags |= GapAdvertisingData::LE_GENERAL_DISCOVERABLE;
+    }
+    ble.gap().accumulateAdvertisingPayload(flags);
+    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
+    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LOCAL_NAME, (uint8_t *)DEVICE_NAME, sizeof(DEVICE_NAME));
+    ble.gap().setAdvertisingType(GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED);
+    ble.gap().setAdvertisingInterval(1000); /* 1000ms. */
+    ble.gap().startAdvertising();
+}
 /**
  * Callback triggered when the ble initialization process has finished
  */
-void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
+void WNHService::bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
 {
     BLE&        ble   = params->ble;
     ble_error_t error = params->error;
@@ -64,37 +60,8 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
     if(ble.getInstanceID() != BLE::DEFAULT_INSTANCE) {
         return;
     }
+    ble.gap().onDisconnection(this, &WNHService::disconnectionCallback);
+    ble.gattServer().onDataWritten(this, &WNHService::onDataWrittenCallback);
+    setupGapAdvertising(false);
 
-    ble.gap().onDisconnection(disconnectionCallback);
-    ble.gattServer().onDataWritten(onDataWrittenCallback);
-
-    bool initialValueForLEDCharacteristic = false;
-    ledServicePtr = new WNHService(ble, initialValueForLEDCharacteristic);
-
-    /* setup advertising */
-    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::BREDR_NOT_SUPPORTED | GapAdvertisingData::LE_GENERAL_DISCOVERABLE);
-    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
-    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LOCAL_NAME, (uint8_t *)DEVICE_NAME, sizeof(DEVICE_NAME));
-    ble.gap().setAdvertisingType(GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED);
-    ble.gap().setAdvertisingInterval(1000); /* 1000ms. */
-    ble.gap().startAdvertising();
-}
-
-int main(void)
-{
-    ticker.attach(periodicCallback, 1); /* Blink LED every second */
-
-    BLE &ble = BLE::Instance();
-    ble.init(bleInitComplete);
-
-    if (!luxDevice.enablePower()) {}
-    luxDevice.setIntegrationTime(101);
-
-    /* SpinWait for initialization to complete. This is necessary because the
-     * BLE object is used in the main loop below. */
-    while (ble.hasInitialized() == false) { /* spin loop */ }
-
-    while (true) {
-        ble.processEvents();
-    }
 }
