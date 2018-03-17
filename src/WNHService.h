@@ -28,12 +28,16 @@
 #define MAPS_DISTANCE_VALUE_DEFAULT 0
 #define SPEED_VALUE_DEFAULT         0
 #define FUEL_VALUE_DEFAULT          0
+#define BRIGHTNESS_VALUE_DEFAULT    50
+#define HUE_COLOR_VALUE_DEFAULT     0
+#define SAT_COLOR_VALUE_DEFAULT     0
 
 /* E: Enum */
 #define MAPS_DIRECTION_ENUM_DEFAULT 0
 #define MAPS_UNITS_ENUM_DEFAULT     0
 #define SPEED_UNITS_ENUM_DEFAULT    0
 #define SIGNAL_STATUS_ENUM_DEFAULT  0
+#define AUTO_BRIGHT_ENUM_DEFAULT    1
 
 class WNHService {
 public:
@@ -60,12 +64,16 @@ public:
     const static uint16_t MAPS_DISTANCE_CHARACTERISTIC_UUID  = 0xD000;
     const static uint16_t SPEED_VALUE_CHARACTERISTIC_UUID    = 0xD001;
     const static uint16_t FUEL_VALUE_CHARACTERISTIC_UUID     = 0xD002;
+    const static uint16_t BRIGHTNESS_CHARACTERISTIC_UUID     = 0xD003;
+    const static uint16_t HUE_COLOR_CHARACTERISTIC_UUID      = 0xD004;
+    const static uint16_t SAT_COLOR_CHARACTERISTIC_UUID      = 0xD005;
 
     /* E: Enums */
     const static uint16_t MAPS_DIRECTION_CHARACTERISTIC_UUID = 0xE000;
     const static uint16_t MAPS_UNITS_CHARACTERISTIC_UUID     = 0xE001;
     const static uint16_t SPEED_UNITS_CHARACTERISTIC_UUID    = 0xE002;
     const static uint16_t SIGNAL_STATUS_CHARACTERISTIC_UUID  = 0xE003;
+    const static uint16_t AUTO_BRIGHT_CHARACTERISTIC_UUID    = 0xE004;
 
     /* misc */
     const static char    *DEVICE_NAME;
@@ -101,18 +109,22 @@ private:
     uint32_t mapsDistanceNumber;
     uint16_t speedNumber;
     uint8_t fuelNumber;
+    uint8_t brightnessNumber;
+    uint16_t hueColorNumber;
+    uint8_t satColorNumber;
 
     uint8_t mapsDirection;
     uint8_t mapsUnits;
     uint8_t speedUnits;
     uint8_t signalStatus;
+    uint8_t autoBrightness;
 
     BLEDevice                         &ble;
     EventQueue                        &eventQueue;
     ButtonManager                     btnMgr;
 
-    ReadOnlyGattCharacteristic<bool>  voiceControlCharacteristic;
-    WriteOnlyGattCharacteristic<uint32_t>  currentTimeCharacteristic;
+    ReadOnlyGattCharacteristic<bool>      voiceControlCharacteristic;
+    WriteOnlyGattCharacteristic<uint32_t> currentTimeCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  stateOverrideCharacteristic;
 
     WriteOnlyGattCharacteristic<uint8_t>  clockPriorityCharacteristic;
@@ -128,12 +140,16 @@ private:
 
     WriteOnlyGattCharacteristic<uint32_t>  mapsDistanceNumberCharacteristic;
     WriteOnlyGattCharacteristic<uint16_t>  speedNumberCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  fuelNumberCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>   fuelNumberCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  brightnessCharacteristic;
+    WriteOnlyGattCharacteristic<uint16_t>  hueColorCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>   satColorCharacteristic;
 
     WriteOnlyGattCharacteristic<uint8_t>  mapsDirectionCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  mapsUnitsCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  speedUnitsCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  signalStatusCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  autoBrightCharacteristic;
 };
 
 #endif /* __WNH_BLE_SERVICE_H__ */

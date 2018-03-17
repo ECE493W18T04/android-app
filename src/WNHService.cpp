@@ -49,11 +49,15 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     mapsDistanceNumberCharacteristic(MAPS_DISTANCE_CHARACTERISTIC_UUID, &mapsDistanceNumber),
     speedNumberCharacteristic(SPEED_VALUE_CHARACTERISTIC_UUID, &speedNumber),
     fuelNumberCharacteristic(FUEL_VALUE_CHARACTERISTIC_UUID, &fuelNumber),
+    brightnessCharacteristic(BRIGHTNESS_CHARACTERISTIC_UUID, &brightnessNumber),
+    hueColorCharacteristic(HUE_COLOR_CHARACTERISTIC_UUID, &hueColorNumber),
+    satColorCharacteristic(SAT_COLOR_CHARACTERISTIC_UUID, &satColorNumber),
 
     mapsDirectionCharacteristic(MAPS_DIRECTION_CHARACTERISTIC_UUID, &mapsDirection),
     mapsUnitsCharacteristic(MAPS_UNITS_CHARACTERISTIC_UUID, &mapsUnits),
     speedUnitsCharacteristic(SPEED_UNITS_CHARACTERISTIC_UUID, &speedUnits),
-    signalStatusCharacteristic(SIGNAL_STATUS_CHARACTERISTIC_UUID, &signalStatus)
+    signalStatusCharacteristic(SIGNAL_STATUS_CHARACTERISTIC_UUID, &signalStatus),
+    autoBrightCharacteristic(AUTO_BRIGHT_CHARACTERISTIC_UUID, &autoBrightness)
 {
     // setup initial BLE callbacks
     ble.onEventsToProcess(BLE::OnEventsToProcessCallback_t(this, &WNHService::scheduleBleEventsProcessing));
