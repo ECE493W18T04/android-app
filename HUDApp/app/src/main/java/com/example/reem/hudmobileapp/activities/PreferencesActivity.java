@@ -18,9 +18,9 @@ public class PreferencesActivity extends FragmentActivity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        showNoticeDialog();
+        showBrightnessDialog();
     }
-    public void showNoticeDialog() {
+    public void showBrightnessDialog() {
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new BrightnessDialog();
 

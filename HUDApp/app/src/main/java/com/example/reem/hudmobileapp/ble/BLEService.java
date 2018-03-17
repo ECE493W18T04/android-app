@@ -72,16 +72,18 @@ public class BLEService extends Service {
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
-            String macAddress=FileManager.readMACAddress(BLEService.this);
+//            String macAddress=FileManager.readMACAddress(BLEService.this);
+            String macAddress=null;
                 if (!devices.contains(device)) {
                     Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
                     // store the address in a file or something
                     if (macAddress==null)
                     {
-                        if ("LED".equals(device.getName())) {
+                        if ("WNH".equals(device.getName())) {
 
                             Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
                             bluetoothDevice = device;
+                            bluetoothDevice.createBond();
                             connect(device.getAddress());
                             Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
 
@@ -97,6 +99,7 @@ public class BLEService extends Service {
                         if (macAddress.equals(device.getAddress())){
                             Log.i("BLUETOOTH DEVICE FOUND ", "wnh found via mac address");
                             bluetoothDevice = device;
+                            bluetoothDevice.createBond();
                             connect(device.getAddress());
                             Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
                             stopScan();
@@ -120,6 +123,7 @@ public class BLEService extends Service {
                 Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
                 isConnected = false;
                 bluetoothDevice = null;
+                bluetoothGatt.close();
                 //scanForDevices();
             }
         }
@@ -185,6 +189,7 @@ public class BLEService extends Service {
 
         }
 
+
         public void setCharacteristicNotification(BluetoothGatt gatt)
         {   if (bluetoothAdapter == null || bluetoothGatt == null) {
                 Log.w(DEBUG_TAG, "BluetoothAdapter not initialized");
@@ -242,15 +247,6 @@ public class BLEService extends Service {
         System.out.println("About to scan for devices");
 
         scanForDevices();
-//        while(true) {
-//            if (isConnected) {
-//                // do a read thing
-//                BluetoothGattCharacteristic cr = bluetoothGattService.getCharacteristic(UUID.fromString(READ_CHARACTERISTIC));
-//                bluetoothGatt.readCharacteristic(cr);
-//                Toast.makeText(getApplicationContext(), "CHARACTERISTIC READ", Toast.LENGTH_SHORT).show();
-//                break;
-//            }
-//        }
     }
 
 
@@ -299,11 +295,12 @@ public class BLEService extends Service {
                         break;
                 }
 
-                bluetoothAdapter.stopLeScan(mLeScanCallback);
 
+                bluetoothAdapter.stopLeScan(mLeScanCallback);
                 if (bluetoothDevice == null) {
                     run();
                 }
+
             }
         };
 
@@ -318,8 +315,11 @@ public class BLEService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopScan();
         if (bluetoothGatt!= null)
+        {
             bluetoothGatt.disconnect();
+        }
         Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
     }
 

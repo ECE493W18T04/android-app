@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
         navButton = (Button) findViewById(R.id.navButton);
         System.out.println(navButton);
 
@@ -56,9 +59,14 @@ public class MainActivity extends AppCompatActivity {
 //                Intent tempIntent = new Intent(MainActivity.this,PreferencesActivity.class);
 //                startActivity(tempIntent);
                 if (activeMode == false)
+                {
                     startBluetoothService();
-                else
+                    navButton.setText("Stop");
+                }
+                else {
                     stopBluetoothService();
+                    navButton.setText("Activate");
+                }
 //                Intent intent = new Intent(MainActivity.this,PriorityQueueActivity.class);
 //                startActivity(intent);
 
