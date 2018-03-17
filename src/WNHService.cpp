@@ -117,6 +117,7 @@ void WNHService::scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackConte
 void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
 {
     setupGapAdvertising(false);
+    printf("Device Disconnected\n");
     // TODO shutdown external hardware
 }
 
@@ -182,6 +183,10 @@ void WNHService::setupGapAdvertising(bool discoverable) {
     ble.securityManager().onSecuritySetupCompleted(securitySetupCompletedCallback);
 }
 
+void WNHService::connectionCallback(const Gap::ConnectionCallbackParams_t *params) {
+    printf("Connected\n");
+}
+
 void printMacAddress()
 {
     /* Print out device MAC address to the console*/
@@ -215,6 +220,7 @@ void WNHService::bleInitComplete(BLE::InitializationCompleteCallbackContext *par
     }
     ble.gap().onDisconnection(this, &WNHService::disconnectionCallback);
     ble.gattServer().onDataWritten(this, &WNHService::onDataWrittenCallback);
+    ble.gap().onConnection(this, &WNHService::connectionCallback);
     setupGapAdvertising(false);
     printMacAddress();
 }

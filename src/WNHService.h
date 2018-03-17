@@ -86,6 +86,7 @@ public:
     void bleInitComplete(BLE::InitializationCompleteCallbackContext *params);
     void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params);
     void onDataWrittenCallback(const GattWriteCallbackParams *params);
+    void connectionCallback(const Gap::ConnectionCallbackParams_t *params);
 private:
     void setupGapAdvertising(bool discoverable);
     void beginPairingMode();
