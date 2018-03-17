@@ -31,6 +31,7 @@
 #define BRIGHTNESS_VALUE_DEFAULT    50
 #define HUE_COLOR_VALUE_DEFAULT     0
 #define SAT_COLOR_VALUE_DEFAULT     0
+#define MAX_CURRENT_VALUE_DEFAULT   1000
 
 /* E: Enum */
 #define MAPS_DIRECTION_ENUM_DEFAULT 0
@@ -67,6 +68,7 @@ public:
     const static uint16_t BRIGHTNESS_CHARACTERISTIC_UUID     = 0xD003;
     const static uint16_t HUE_COLOR_CHARACTERISTIC_UUID      = 0xD004;
     const static uint16_t SAT_COLOR_CHARACTERISTIC_UUID      = 0xD005;
+    const static uint16_t MAX_CURRENT_CHARACTERISTIC_UUID    = 0xD006;
 
     /* E: Enums */
     const static uint16_t MAPS_DIRECTION_CHARACTERISTIC_UUID = 0xE000;
@@ -112,6 +114,7 @@ private:
     uint8_t brightnessNumber;
     uint16_t hueColorNumber;
     uint8_t satColorNumber;
+    uint16_t maxCurrent;
 
     uint8_t mapsDirection;
     uint8_t mapsUnits;
@@ -141,9 +144,10 @@ private:
     WriteOnlyGattCharacteristic<uint32_t>  mapsDistanceNumberCharacteristic;
     WriteOnlyGattCharacteristic<uint16_t>  speedNumberCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>   fuelNumberCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  brightnessCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>   brightnessCharacteristic;
     WriteOnlyGattCharacteristic<uint16_t>  hueColorCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>   satColorCharacteristic;
+    WriteOnlyGattCharacteristic<uint16_t>  maxCurrentCharacteristic;
 
     WriteOnlyGattCharacteristic<uint8_t>  mapsDirectionCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  mapsUnitsCharacteristic;

@@ -22,11 +22,16 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     mapsDistanceNumber(MAPS_DISTANCE_VALUE_DEFAULT),
     speedNumber(SPEED_VALUE_DEFAULT),
     fuelNumber(FUEL_VALUE_DEFAULT),
+    brightnessNumber(BRIGHTNESS_VALUE_DEFAULT),
+    hueColorNumber(HUE_COLOR_VALUE_DEFAULT),
+    satColorNumber(SAT_COLOR_VALUE_DEFAULT),
+    maxCurrent(MAX_CURRENT_VALUE_DEFAULT),
 
     mapsDirection(MAPS_DIRECTION_ENUM_DEFAULT),
     mapsUnits(MAPS_UNITS_ENUM_DEFAULT),
     speedUnits(SPEED_UNITS_ENUM_DEFAULT),
     signalStatus(SIGNAL_STATUS_ENUM_DEFAULT),
+    autoBrightness(AUTO_BRIGHT_ENUM_DEFAULT),
     ble(_ble),
     eventQueue(_eventQueue),
     btnMgr(_eventQueue),
@@ -52,6 +57,7 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     brightnessCharacteristic(BRIGHTNESS_CHARACTERISTIC_UUID, &brightnessNumber),
     hueColorCharacteristic(HUE_COLOR_CHARACTERISTIC_UUID, &hueColorNumber),
     satColorCharacteristic(SAT_COLOR_CHARACTERISTIC_UUID, &satColorNumber),
+    maxCurrentCharacteristic(MAX_CURRENT_CHARACTERISTIC_UUID, &maxCurrent),
 
     mapsDirectionCharacteristic(MAPS_DIRECTION_CHARACTERISTIC_UUID, &mapsDirection),
     mapsUnitsCharacteristic(MAPS_UNITS_CHARACTERISTIC_UUID, &mapsUnits),
@@ -80,10 +86,15 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
         &mapsDistanceNumberCharacteristic,
         &speedNumberCharacteristic,
         &fuelNumberCharacteristic,
+        &brightnessCharacteristic,
+        &hueColorCharacteristic,
+        &satColorCharacteristic,
+        &maxCurrentCharacteristic,
         &mapsDirectionCharacteristic,
         &mapsUnitsCharacteristic,
         &speedUnitsCharacteristic,
-        &signalStatusCharacteristic
+        &signalStatusCharacteristic,
+        &maxCurrentCharacteristic
     };
     uint16_t sizeOfGattCharTable = sizeof(charTable) / sizeof(GattCharacteristic *);
     for (int i = 0; i < sizeOfGattCharTable; i++) {
