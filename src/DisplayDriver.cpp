@@ -1,39 +1,70 @@
-// #include <mbed.h>
-// #include <APA102.h>
-//
-// // APA102 matrix = APA102(p23, p24, p25, 2000000);
-// SPI _spi = SPI(p23, p24, p25);
-//
+#include <mbed.h>
+#include "DisplayDriver.h"
+
+DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed) : port(MOSI, MISO, SCLK) {
+    port.format(8,3);
+    port.frequency(clockSpeed);
+}
+
+void DisplayDriver::setBuffer(uint16_t _width, uint16_t _height, uint32_t _buffer[]) {
+    width = _width;
+    height = _height;
+    buffer = _buffer;
+}
+
+void DisplayDriver::draw() {
+    port.write(0X00);  // Start
+    port.write(0X00);
+    port.write(0X00);
+    port.write(0X00);
+
+    bool zig = false;
+    for (uint16_t x = 0; x < width; x++) {
+        if (zig) {
+            for (int16_t y = 0; y < height; y++) {
+                drawPixel(x, y);
+            }
+        } else {
+            for (int16_t y = height - 1; y >= 0; y--) {
+                drawPixel(x, y);
+            }
+        }
+        zig = !zig;
+    }
+
+    port.write(0XFF); // Stop
+    port.write(0XFF);
+    port.write(0XFF);
+    port.write(0XFF);
+}
+
+uint32_t DisplayDriver::getColor(uint8_t red, uint8_t green, uint8_t blue) {
+}
+
+void DisplayDriver::drawPixel(uint16_t x, uint16_t y) {
+    uint32_t pixel = buffer[x*height + y];
+    port.write((pixel >> 24) & 0xFF);
+    port.write((pixel >> 16) & 0xFF);
+    port.write((pixel >> 8) & 0xFF);
+    port.write(pixel & 0xFF);
+}
+
 // int main() {
-//     unsigned int data[256] = {0};
-//     _spi.format(8,3);
-//     _spi.frequency(2000000);
-//     for (int i = 0; i < 256; i++) {
-//         data[i] = 0xE0000000;
-//     }
-//     // matrix.SetBuffer(data, 8, 32, 8, 0, true, false);
-//     // matrix.Repaint();
-//     while (1) {
-//         for (uint16_t i = 0; i < 256; i++) {
-//             data[i] = 0xEF0000FF;
-// 	    _spi.write(0X00);  // Start
-// 	    _spi.write(0X00);
-// 	    _spi.write(0X00);
-// 	    _spi.write(0X00);
-// 	    
-// 	    for(int index = 0; index < 256; index++)
-// 	    {
-// 		unsigned int val = data[index];
-// 		_spi.write((val>>24)&0xFF);  
-// 		_spi.write((val>>16)&0xFF);  
-// 		_spi.write((val>>8)&0xFF);  
-// 		_spi.write(val&0xFF);  
-// 	    }
-// 	    _spi.write(0XFF); // Stop
-// 	    _spi.write(0XFF);
-// 	    _spi.write(0XFF);
-// 	    _spi.write(0XFF);
-//             wait_ms(100);
+//     DisplayDriver dp(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PSELSCK0, 2000000);
+//     uint32_t data[256] = {0};
+//     printf("start\n");
+//     dp.setBuffer(32, 8, data);
+//     for (int i = 0; i < 32; i++) {
+//         for (int j = 0; j < 8; j++) {
+//             data[i*8 + j] = 0xE0000000;
 //         }
+//     }
+//     dp.draw();
+//     for (uint8_t i = 0; i < 32; i++) {
+//         data[i*8 + (i % 8)] = 0xFF00000A;
+//         dp.draw();
+//         wait_ms(100);
+//     }
+//     while (1) {
 //     }
 // }
