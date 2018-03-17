@@ -1,5 +1,7 @@
 #include "WNHService.h"
 
+#define PAIRING_TIMEOUT_MS 20000 // 20s
+
 const char*    WNHService::DEVICE_NAME = "WNH";
 const uint16_t WNHService::uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
 
@@ -126,9 +128,11 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
 
 void WNHService::beginPairingMode() {
     setupGapAdvertising(true);
-    // TODO set time limit
+    eventQueue.call_in(PAIRING_TIMEOUT_MS, this, &WNHService::pairingModeTimeout);
     // TODO trigger display to show key
 }
+
+void WNHService::pairingModeTimeout() {}
 
 void WNHService::sendVoiceCommandTrigger() {
     voiceControl = !voiceControl;

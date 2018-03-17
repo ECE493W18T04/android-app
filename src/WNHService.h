@@ -92,6 +92,7 @@ private:
     void sendVoiceCommandTrigger();
     void onBleInitError(BLE &ble, ble_error_t error);
     void scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackContext* context);
+    void pairingModeTimeout();
 
     bool voiceControl;
     uint32_t currentTime;
