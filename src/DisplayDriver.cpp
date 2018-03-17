@@ -12,7 +12,7 @@ void DisplayDriver::setBuffer(uint16_t _width, uint16_t _height, uint32_t _buffe
     buffer = _buffer;
 }
 
-void DisplayDriver::draw() {
+void DisplayDriver::innerDraw() {
     port.write(0X00);  // Start
     port.write(0X00);
     port.write(0X00);
@@ -38,7 +38,18 @@ void DisplayDriver::draw() {
     port.write(0XFF);
 }
 
+void DisplayDriver::draw() {
+    /**
+     * No Idea why, but for some dumb reason
+     * the last few LEDs won't turn on without
+     * multiple writes
+     */
+    innerDraw();
+    innerDraw();
+}
+
 uint32_t DisplayDriver::getColor(uint8_t red, uint8_t green, uint8_t blue) {
+    return 0xFF000000 | (red & 0xFF) | ((green & 0xFF) << 8) | ((blue & 0xFF) << 16);
 }
 
 void DisplayDriver::drawPixel(uint16_t x, uint16_t y) {
@@ -60,8 +71,8 @@ void DisplayDriver::drawPixel(uint16_t x, uint16_t y) {
 //         }
 //     }
 //     dp.draw();
-//     for (uint8_t i = 0; i < 32; i++) {
-//         data[i*8 + (i % 8)] = 0xFF00000A;
+//     for (uint16_t i = 0; i < 256; i++) {
+//         data[i] = dp.getColor(i, 0, 0);
 //         dp.draw();
 //         wait_ms(100);
 //     }

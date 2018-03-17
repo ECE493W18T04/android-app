@@ -8,6 +8,7 @@ public:
     uint32_t getColor(uint8_t red, uint8_t green, uint8_t blue);
 private:
     void drawPixel(uint16_t x, uint16_t y);
+    void innerDraw();
     SPI port;
     uint16_t width;
     uint16_t height;
