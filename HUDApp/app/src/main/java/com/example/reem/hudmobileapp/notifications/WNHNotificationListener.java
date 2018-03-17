@@ -3,28 +3,18 @@ package com.example.reem.hudmobileapp.notifications;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 import android.util.Pair;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 
-import com.example.reem.hudmobileapp.ImagePHash;
+import com.example.reem.hudmobileapp.helper.ImagePHash;
 import com.example.reem.hudmobileapp.R;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by Reem on 2018-03-09.
@@ -70,34 +60,38 @@ public class WNHNotificationListener extends NotificationListenerService
         //Log.d(DEBUG_TAG, "Notification Posted: " + sbn.getPackageName());
 
         NotificationManager notificationManager;
-        if (sbn.getPackageName().equals(GOOGLE_MAPS) && !sbn.isClearable()) {
-            // initialize ble stuff here
+        byte[] content;
+        switch (sbn.getPackageName()) {
+            case GOOGLE_MAPS:
+                // initialize ble stuff here if not already initialized
 
-            //no useful information in extras
-            //Bundle extras = sbn.getNotification().extras;
-            //Log.d(DEBUG_TAG, extras.toString());
+                //no useful information in extras
+                //Bundle extras = sbn.getNotification().extras;
+                //Log.d(DEBUG_TAG, extras.toString());
 
-            RemoteViews rv = sbn.getNotification().bigContentView;
-            RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
-            notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
-            byte[] content=notificationManager.getContent();
-            if (content != null) {
-                //send byte data
-            }
+                RemoteViews rv = sbn.getNotification().bigContentView;
+                RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
+                notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
+                content=notificationManager.getContent();
+                break;
+            case GOOGLE_CALLER:
+                notificationManager = new CallNotificationManager(sbn);
+                content=notificationManager.getContent();
+                break;
+            case GOOGLE_SMS:
+                notificationManager = new SMSNotificationManager(sbn);
+                content=notificationManager.getContent();
+                break;
+            case SPOTIFY:
+                notificationManager = new SpotifyMusicNotificationManager(sbn);
+                content=notificationManager.getContent();
+                break;
+            default:
 
         }
-        if (sbn.getPackageName().equals(GOOGLE_CALLER) && !sbn.isClearable())  {
-            notificationManager = new CallNotificationManager(sbn);
-            byte[] content=notificationManager.getContent();
-        }
-        if (sbn.getPackageName().equals(SPOTIFY) && !sbn.isClearable()) {
-            notificationManager = new SpotifyMusicNotificationManager(sbn);
-            byte[] content=notificationManager.getContent();
-        }
-        if (sbn.getPackageName().equals(GOOGLE_SMS)) {
-            notificationManager = new SMSNotificationManager(sbn);
-            byte[] content=notificationManager.getContent();
-        }
+
+        //TODO: package content with proper BLE Characteristic  and send with BLEService
+
         super.onNotificationPosted(sbn);
     }
 

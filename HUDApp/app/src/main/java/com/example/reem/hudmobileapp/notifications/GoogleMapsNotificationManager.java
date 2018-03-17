@@ -4,7 +4,6 @@ package com.example.reem.hudmobileapp.notifications;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -14,9 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.reem.hudmobileapp.ImagePHash;
+import com.example.reem.hudmobileapp.helper.ImagePHash;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 
