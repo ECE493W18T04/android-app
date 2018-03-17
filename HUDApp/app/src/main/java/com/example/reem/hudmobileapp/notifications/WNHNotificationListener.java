@@ -1,26 +1,30 @@
 package com.example.reem.hudmobileapp.notifications;
 
-import android.app.Notification;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
-import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.util.Pair;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
-import android.widget.TextView;
 
+import com.example.reem.hudmobileapp.ImagePHash;
+import com.example.reem.hudmobileapp.R;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Reem on 2018-03-09.
@@ -35,18 +39,35 @@ public class WNHNotificationListener extends NotificationListenerService
     private static final String GOOGLE_SMS = "com.google.android.apps.messaging";
     private static final String SPOTIFY = "com.spotify.music";
 
+    private ArrayList<Pair<Long, Integer>> resArray;
+
 
 
     @Override
-    public void onCreate()
-    {
+    public void onCreate() {
+
+        Field[] ID_Fields = R.drawable.class.getFields();
+        resArray = new ArrayList<>();
+        ImagePHash pHash = new ImagePHash();
+
+        for(int i = 0; i < ID_Fields.length; i++) {
+            try {
+                if(getResources().getResourceEntryName(ID_Fields[i].getInt(null)).toString().substring(0,2).equalsIgnoreCase("da")) {
+                    Bitmap b = BitmapFactory.decodeResource(getResources(), ID_Fields[i].getInt(null));
+                    b = b.createScaledBitmap(b,126,126,false);
+                    resArray.add(Pair.create(pHash.calcPHash(b),ID_Fields[i].getInt(null)));
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
         super.onCreate();
     }
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn)
     {
-        Log.d(DEBUG_TAG, "Notification Posted: " + sbn.getPackageName());
+        //Log.d(DEBUG_TAG, "Notification Posted: " + sbn.getPackageName());
 
         NotificationManager notificationManager;
         if (sbn.getPackageName().equals(GOOGLE_MAPS) && !sbn.isClearable()) {
@@ -56,14 +77,13 @@ public class WNHNotificationListener extends NotificationListenerService
             //Bundle extras = sbn.getNotification().extras;
             //Log.d(DEBUG_TAG, extras.toString());
 
-
-
             RemoteViews rv = sbn.getNotification().bigContentView;
             RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
-            notificationManager = new GoogleMapsNotificationManager(rl);
+            notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
             byte[] content=notificationManager.getContent();
-            Bitmap b = BitmapFactory.decodeByteArray(content, 0, content.length);
-
+            if (content != null) {
+                //send byte data
+            }
 
         }
         if (sbn.getPackageName().equals(GOOGLE_CALLER) && !sbn.isClearable())  {
