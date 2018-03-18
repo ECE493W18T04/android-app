@@ -59,23 +59,3 @@ void DisplayDriver::drawPixel(uint16_t x, uint16_t y) {
     port.write((pixel >> 8) & 0xFF);
     port.write(pixel & 0xFF);
 }
-
-// int main() {
-//     DisplayDriver dp(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PSELSCK0, 2000000);
-//     uint32_t data[256] = {0};
-//     printf("start\n");
-//     dp.setBuffer(32, 8, data);
-//     for (int i = 0; i < 32; i++) {
-//         for (int j = 0; j < 8; j++) {
-//             data[i*8 + j] = 0xE0000000;
-//         }
-//     }
-//     dp.draw();
-//     for (uint16_t i = 0; i < 256; i++) {
-//         data[i] = dp.getColor(i, 0, 0);
-//         dp.draw();
-//         wait_ms(100);
-//     }
-//     while (1) {
-//     }
-// }
