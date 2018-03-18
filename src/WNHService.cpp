@@ -1,4 +1,5 @@
 #include "WNHService.h"
+#include <Gap.h>
 
 #define PAIRING_TIMEOUT_MS 20000 // 20s
 
@@ -9,6 +10,7 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     voiceControl(VOICE_CONTROL_DEFAULT),
     currentTime(CURRENT_TIME_INVALID),
     stateOverride(STATE_OVERRIDE_INVALID),
+    disconnect(DISCONNECT_DEFAULT),
 
     clockPriority(CLOCK_PRIORITY_DEFAULT),
     mapsPriority(MAPS_PRIORITY_DEFAULT),
@@ -41,6 +43,7 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     voiceControlCharacteristic(VOICE_CONTROL_CHARACTERISTIC_UUID, &voiceControl, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
     currentTimeCharacteristic(CURRENT_TIME_CHARACTERISTIC_UUID, &currentTime),
     stateOverrideCharacteristic(STATE_OVERRIDE_CHARACTERISTIC_UUID, &stateOverride),
+    disconnectCharacteristic(DISCONNECT_CHARACTERISTIC_UUID, &disconnect),
 
     clockPriorityCharacteristic(CLOCK_PRIORITY_CHARACTERISTIC_UUID, &clockPriority),
     mapsPriorityCharacteristic(MAPS_PRIORITY_CHARACTERISTIC_UUID, &mapsPriority),
@@ -76,6 +79,7 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
         &voiceControlCharacteristic,
         &currentTimeCharacteristic,
         &stateOverrideCharacteristic,
+        &disconnectCharacteristic,
         &clockPriorityCharacteristic,
         &mapsPriorityCharacteristic,
         &callPriorityCharacteristic,
@@ -124,6 +128,8 @@ void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t 
 void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == 4)) {
         currentTime = *(params->data);
+    } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
+        ble.gap().disconnect(Gap::REMOTE_USER_TERMINATED_CONNECTION);
     }
 }
 
@@ -133,7 +139,9 @@ void WNHService::beginPairingMode() {
     // TODO trigger display to show key
 }
 
-void WNHService::pairingModeTimeout() {}
+void WNHService::pairingModeTimeout() {
+    // TODO handle pairing timoeut
+}
 
 void WNHService::sendVoiceCommandTrigger() {
     voiceControl = !voiceControl;

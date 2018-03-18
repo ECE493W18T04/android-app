@@ -10,6 +10,7 @@
 #define VOICE_CONTROL_DEFAULT       false
 #define CURRENT_TIME_INVALID        0
 #define STATE_OVERRIDE_INVALID      0xFF
+#define DISCONNECT_DEFAULT          0
 
 /* B: Default Values */
 #define CLOCK_PRIORITY_DEFAULT      15
@@ -47,6 +48,7 @@ public:
     const static uint16_t VOICE_CONTROL_CHARACTERISTIC_UUID  = 0xA001;
     const static uint16_t CURRENT_TIME_CHARACTERISTIC_UUID   = 0xA002;
     const static uint16_t STATE_OVERRIDE_CHARACTERISTIC_UUID = 0xA003;
+    const static uint16_t DISCONNECT_CHARACTERISTIC_UUID     = 0xA004;
 
     /* B: Priorities (who is Best) */
     const static uint16_t CLOCK_PRIORITY_CHARACTERISTIC_UUID = 0xB000;
@@ -98,6 +100,7 @@ private:
     bool voiceControl;
     uint32_t currentTime;
     uint8_t stateOverride;
+    uint8_t disconnect;
 
     uint8_t clockPriority;
     uint8_t mapsPriority;
@@ -131,6 +134,7 @@ private:
     ReadOnlyGattCharacteristic<bool>      voiceControlCharacteristic;
     WriteOnlyGattCharacteristic<uint32_t> currentTimeCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  stateOverrideCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  disconnectCharacteristic;
 
     WriteOnlyGattCharacteristic<uint8_t>  clockPriorityCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  mapsPriorityCharacteristic;
