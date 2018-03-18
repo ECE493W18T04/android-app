@@ -1,3 +1,6 @@
+#ifndef DISPLAYDRIVER_h
+#define DISPLAYDRIVER_h
+
 #include "mbed.h"
 
 class DisplayDriver {
@@ -14,3 +17,5 @@ private:
     uint16_t height;
     uint32_t *buffer;
 };
+
+#endif // DISPLAYDRIVER_h

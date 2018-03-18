@@ -1,3 +1,6 @@
+#ifndef GRAPHICSMANAGER_h
+#define GRAPHICSMANAGER_h
+
 #include "mbed.h"
 #include "DisplayDriver.h"
 
@@ -11,3 +14,5 @@ private:
     DisplayDriver driver;
     uint32_t buffer[DISPLAY_WIDTH*DISPLAY_HEIGHT];
 };
+
+#endif // GRAPHICSMANAGER_h
