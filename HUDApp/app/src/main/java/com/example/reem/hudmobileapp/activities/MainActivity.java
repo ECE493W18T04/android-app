@@ -49,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
         navButton = (Button) findViewById(R.id.navButton);
         System.out.println(navButton);
 
-//        File file = new File(this.getFilesDir(), "mac.sav");
-//        FileManager.saveMACAddress(this,"");
+        File file = new File(this.getFilesDir(), "mac.sav");
+        FileManager.saveMACAddress(this,"");
 //        Log.e("The address is: ",FileManager.readMACAddress(this));
 
         navButton.setOnClickListener(new View.OnClickListener() {
@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void stopBluetoothService()
     {
+
         stopService(mServiceIntent);
         activeMode=false;
     }

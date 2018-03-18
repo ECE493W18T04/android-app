@@ -11,8 +11,10 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Handler;
@@ -38,7 +40,7 @@ public class BLEService extends Service {
     public static String TEXT_VALUE_CHARACTERISTIC = "0000a002-0000-1000-8000-00805f9b34fb";
     public static String LED_CHARACTERISTIC = "0000a001-0000-1000-8000-00805f9b34fb";
     public static String SERVICE = "0000a000-0000-1000-8000-00805f9b34fb";
-
+    public static String DISCONNECT_CHARACTERISTIC_UUID = "0000a004-0000-1000-8000-00805f9b34fb";
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothManager bluetoothManager;
     private BluetoothDevice bluetoothDevice;
@@ -72,8 +74,8 @@ public class BLEService extends Service {
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
-//            String macAddress=FileManager.readMACAddress(BLEService.this);
-            String macAddress=null;
+            String macAddress=FileManager.readMACAddress(BLEService.this);
+//            String macAddress=null;
                 if (!devices.contains(device)) {
                     Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
                     // store the address in a file or something
@@ -122,11 +124,19 @@ public class BLEService extends Service {
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
                 isConnected = false;
-                bluetoothDevice = null;
                 bluetoothGatt.close();
+//                bluetoothDevice = null;
+//                gatt.disconnect();
+//                gatt.close();
+
+                Log.e(DEBUG_TAG,bluetoothManager.getConnectedDevices(BluetoothProfile.GATT).toString());
+//                bluetoothAdapter.disable();
+//                bluetoothManager=null;
                 //scanForDevices();
             }
         }
+
+        private String valueRead="R";
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
@@ -141,9 +151,11 @@ public class BLEService extends Service {
 //                    bluetoothGatt.readCharacteristic(readCr);
 
 //                    Log.d(DEBUG_TAG,"About to write CR");
-//                    BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(WRITE_CHARACTERTISTIC));
+//                    BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(DISCONNECT_CHARACTERISTIC_UUID));
+//                    writeCr.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
 //                    writeCr.setValue(valueRead.getBytes());
 //                    Log.d(DEBUG_TAG,writeCr.toString());
+//                    Log.d(DEBUG_TAG,"ABout to write characteristic");
 //                    bluetoothGatt.writeCharacteristic(writeCr);
                 }
             } else {
@@ -153,12 +165,15 @@ public class BLEService extends Service {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            Log.d(DEBUG_TAG,"I should be writing now");
             inFlight = false;
             if (status != GATT_SUCCESS) {
                 Log.e(DEBUG_TAG, "Failed to write characteristic ");
+                Log.e(DEBUG_TAG, gatt.toString());
             } else {
                 Log.d(DEBUG_TAG, "SUCCESS");
             }
+            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
 //            bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
             super.onCharacteristicWrite(gatt, characteristic, status);
         }
@@ -220,7 +235,6 @@ public class BLEService extends Service {
     private static final UUID CONFIG_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
 
-    private String valueRead="R";
     @Override
     public void onCreate()
     {
@@ -245,7 +259,7 @@ public class BLEService extends Service {
 
         }
         System.out.println("About to scan for devices");
-
+        mHandler = new Handler();
         scanForDevices();
     }
 
@@ -270,57 +284,70 @@ public class BLEService extends Service {
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
+
         FileManager.saveMACAddress(this,bluetoothDeviceMACAdress);
         return true;
 
     }
 
     private static final long SCAN_PERIOD = 10000;
-    private void scanForDevices() {
-        if (blueToothScanThread != null) {
+    private void scanForDevices()
+    {
+        Toast.makeText(getApplicationContext(), "About to scan for devices", Toast.LENGTH_SHORT).show();
+        if (blueToothScanThread != null)
+        {
             Log.e(DEBUG_TAG, "Scan is currently running, error");
             return;
         }
-
-        isScanActive = true;
-
-        blueToothScanThread = new Thread() {
-            @Override
-            public void run() {
-                Log.d(DEBUG_TAG, "Started LE Scan");
-                bluetoothAdapter.startLeScan(null, mLeScanCallback);
-
-                for (long startTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(3); startTime > System.nanoTime();) {
-                    if (!isScanActive)
-                        break;
+        boolean enable = true;
+        if (enable)
+        {
+            isScanActive = true;
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    isScanActive = false;
+                    bluetoothAdapter.stopLeScan(mLeScanCallback);
                 }
+            }, SCAN_PERIOD);
 
-
-                bluetoothAdapter.stopLeScan(mLeScanCallback);
-                if (bluetoothDevice == null) {
-                    run();
-                }
-
-            }
-        };
-
-        blueToothScanThread.start();
+            isScanActive = true;
+            bluetoothAdapter.startLeScan(mLeScanCallback);
+        }
+        else
+        {
+            isScanActive = false;
+            bluetoothAdapter.stopLeScan(mLeScanCallback);
+        }
     }
 
-    private void stopScan() {
+    private void stopScan()
+    {
         isScanActive = false;
-        blueToothScanThread = null;
+        mHandler=null;
+//        blueToothScanThread = null;
     }
-
     @Override
     public void onDestroy() {
-        super.onDestroy();
+
         stopScan();
-        if (bluetoothGatt!= null)
+        if (bluetoothGatt != null)
         {
-            bluetoothGatt.disconnect();
+            String value = "0";
+            if (bluetoothGattService !=null)
+            {
+                BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(DISCONNECT_CHARACTERISTIC_UUID));
+                writeCr.setValue(value.getBytes());
+                writeCr.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+                Log.d(DEBUG_TAG, writeCr.getValue().toString());
+                Log.d(DEBUG_TAG,writeCr.toString());
+                bluetoothGatt.writeCharacteristic(writeCr);
+            }
+           bluetoothGatt.disconnect();
+
         }
         Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
+        super.onDestroy();
     }
 
 
