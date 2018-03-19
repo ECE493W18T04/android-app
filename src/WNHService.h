@@ -5,6 +5,7 @@
 #include "ble/BLE.h"
 #include "mbed.h"
 #include "ButtonManager.h"
+#include "StateManager.h"
 
 /* A: Default Values */
 #define VOICE_CONTROL_DEFAULT       false
@@ -130,6 +131,7 @@ private:
     BLEDevice                         &ble;
     EventQueue                        &eventQueue;
     ButtonManager                     btnMgr;
+    StateManager                      stateMgr;
 
     ReadOnlyGattCharacteristic<bool>      voiceControlCharacteristic;
     WriteOnlyGattCharacteristic<uint32_t> currentTimeCharacteristic;

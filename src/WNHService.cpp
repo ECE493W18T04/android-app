@@ -39,6 +39,7 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     ble(_ble),
     eventQueue(_eventQueue),
     btnMgr(_eventQueue),
+    stateMgr(_eventQueue),
 
     voiceControlCharacteristic(VOICE_CONTROL_CHARACTERISTIC_UUID, &voiceControl, GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
     currentTimeCharacteristic(CURRENT_TIME_CHARACTERISTIC_UUID, &currentTime),
