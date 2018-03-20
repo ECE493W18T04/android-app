@@ -13,7 +13,7 @@ public:
     void tick();
     void erase();
     void fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
-    void placeText(char text[], int horizonatalOffset);
+    int placeText(char text[], int horizonatalOffset);
     void eraseSection(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
     void drawBitmap(uint8_t bitmap[], uint8_t x, uint8_t y, uint8_t width, uint8_t length);
     void drawBuffer();

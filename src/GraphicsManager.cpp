@@ -306,11 +306,12 @@ void GraphicsManager::fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height) 
     }
 }
 
-void GraphicsManager::placeText(char text[], int horizontalOffset) {
+int GraphicsManager::placeText(char text[], int horizontalOffset) {
     for (int i = 0; i < strlen(text); i++) {
         drawChar(text[i], horizontalOffset);
         horizontalOffset += CHARACTER_WIDTH + 1;
     }
+    return horizontalOffset;
 }
 
 void GraphicsManager::drawChar(char c, int start) {
