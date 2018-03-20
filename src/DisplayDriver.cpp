@@ -51,7 +51,7 @@ void DisplayDriver::draw() {
     innerDraw();
 }
 
-// alg from http://easyrgb.com/index.php?X=MATH&H=19#text19
+// alg from https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
 uint32_t DisplayDriver::getColor(uint16_t hue, uint8_t sat) {
     double      hh, p, q, t, ff, r, g, b;
     long        i;
@@ -62,7 +62,7 @@ uint32_t DisplayDriver::getColor(uint16_t hue, uint8_t sat) {
         r = v;
         g = v;
         b = v;
-        return getColorRGB((uint8_t)r*255, (uint8_t)g*255, (uint8_t)b*255);
+        return getColorRGB((uint8_t)(r*255), (uint8_t)(g*255), (uint8_t)(b*255));
     }
     hh = hue;
     if(hh >= 360.0) hh = 0.0;
