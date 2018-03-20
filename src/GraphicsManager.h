@@ -19,6 +19,8 @@ public:
     void drawBuffer();
     void setColor(uint16_t _hue, uint8_t _saturation);
 private:
+    uint8_t getCharByte(char c, uint8_t offset);
+    void drawChar(char c, int x);
     void clearPixel(uint16_t x, uint16_t y);
     void setPixel(uint16_t x, uint16_t y);
     uint16_t hue;
