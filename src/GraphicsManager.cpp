@@ -276,11 +276,12 @@ GraphicsManager::GraphicsManager() : driver(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PS
 
 void GraphicsManager::tick() {
     // do random testing in here
-    static int i = 0;
+    static int i = 32000;
     erase();
-    fill(0, 0, 32, 8);
-    setColor((i % 360), 70);
-    i++;
+    // fill(0, 0, 32, 8);
+    placeText("Hello Momo", (i % 96) - 32);
+    setColor((i % 360), 100);
+    i--;
     drawBuffer();
 }
 
@@ -319,10 +320,11 @@ void GraphicsManager::drawChar(char c, int start) {
 	uint8_t character = getCharByte(c, x);
 	for (int y = 0; y < CHARACTER_HEIGHT; y++) {
 	    int dx = x + start;
+	    int dy;
 	    if (flipped) {
-		int dy = CHARACTER_HEIGHT - y - 1;
+		dy = CHARACTER_HEIGHT - y - 1;
 	    } else {
-		int dy = y;
+		dy = y;
 	    }
 	    if ((character >> y) & 0x01) {
 		setPixel(dx, dy);
