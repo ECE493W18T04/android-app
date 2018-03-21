@@ -130,7 +130,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == 4)) {
         currentTime = *(params->data);
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
-        ble.gap().disconnect(Gap::REMOTE_USER_TERMINATED_CONNECTION);
+        ble.gap().disconnect(params->connHandle, Gap::REMOTE_USER_TERMINATED_CONNECTION);
     }
     printf("Got write, len: %d\n", params->len);
 }

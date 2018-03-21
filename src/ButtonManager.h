@@ -1,7 +1,7 @@
 #ifndef __WNH_BTN_MANAGER_H__
 #define __WNH_BTN_MANAGER_H__
 
-#include <events/mbed_events.h>
+#include <mbed_events.h>
 #include "mbed.h"
 
 class ButtonManager {

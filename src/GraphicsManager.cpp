@@ -272,6 +272,7 @@ GraphicsManager::GraphicsManager() : driver(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PS
     driver.draw();
     // testing
     setColor(0, 0);
+    flipped = 0;
 }
 
 void GraphicsManager::tick() {
@@ -322,9 +323,9 @@ void GraphicsManager::drawChar(char c, int start) {
 	    int dx = x + start;
 	    int dy;
 	    if (flipped) {
-		dy = CHARACTER_HEIGHT - y - 1;
-	    } else {
 		dy = y;
+	    } else {
+		dy = CHARACTER_HEIGHT - y - 1;
 	    }
 	    if ((character >> y) & 0x01) {
 		setPixel(dx, dy);
