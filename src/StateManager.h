@@ -4,6 +4,7 @@
 #include "mbed.h"
 #include <events/mbed_events.h>
 #include "GraphicsManager.h"
+#include "State.h"
 
 class StateManager {
 public:
@@ -11,6 +12,7 @@ public:
     void tick();
 private:
     GraphicsManager graphicsMgr;
+    State* currentState;
 };
 
 #endif // STATEMANAGER_h

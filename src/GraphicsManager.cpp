@@ -275,17 +275,6 @@ GraphicsManager::GraphicsManager() : driver(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PS
     flipped = 0;
 }
 
-void GraphicsManager::tick() {
-    // do random testing in here
-    static int i = 32000;
-    erase();
-    // fill(0, 0, 32, 8);
-    placeText("Hello Momo", (i % 96) - 32);
-    setColor((i % 360), 100);
-    i--;
-    drawBuffer();
-}
-
 void GraphicsManager::setPixel(uint16_t x, uint16_t y) {
     if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return;
     buffer[x*DISPLAY_HEIGHT + y] = 1;
