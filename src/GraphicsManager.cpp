@@ -319,7 +319,11 @@ void GraphicsManager::drawChar(char c, int start) {
 	uint8_t character = getCharByte(c, x);
 	for (int y = 0; y < CHARACTER_HEIGHT; y++) {
 	    int dx = x + start;
-	    int dy = CHARACTER_HEIGHT - y - 1;
+	    if (flipped) {
+		int dy = CHARACTER_HEIGHT - y - 1;
+	    } else {
+		int dy = y;
+	    }
 	    if ((character >> y) & 0x01) {
 		setPixel(dx, dy);
 	    } else {

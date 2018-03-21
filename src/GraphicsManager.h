@@ -25,6 +25,7 @@ private:
     void setPixel(uint16_t x, uint16_t y);
     uint16_t hue;
     uint8_t sat;
+    bool flipped;
     DisplayDriver driver;
     uint32_t buffer[DISPLAY_WIDTH*DISPLAY_HEIGHT];
 };
