@@ -132,6 +132,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
         ble.gap().disconnect(Gap::REMOTE_USER_TERMINATED_CONNECTION);
     }
+    printf("Got write, len: %d\n", params->len);
 }
 
 void WNHService::beginPairingMode() {
