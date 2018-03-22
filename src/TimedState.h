@@ -12,6 +12,6 @@ protected:
 private:
     int ticksLeft;
     int resetTo;
-}
+};
 
 #endif // TIMEDSTATE_h
