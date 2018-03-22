@@ -4,7 +4,7 @@
 #include "mbed.h"
 #include "TimedState.h"
 
-class FuelLevel : TimedState {
+class FuelLevel : public TimedState {
 public:
     FuelLevel(StateManager& _stateMgr);
     void update(uint8_t fuelLevel);

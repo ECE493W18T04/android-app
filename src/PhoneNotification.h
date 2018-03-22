@@ -3,8 +3,11 @@
 
 #include "TempState.h"
 
-class PhoneNotification : TempState {
+#define MAX_CHAR_LENGTH 256
+
+class PhoneNotification : public TempState {
 public:
+    PhoneNotification(StateManager& _stateMgr);
     bool tick();
     void update(char data[], int len);
 private:
