@@ -1,6 +1,8 @@
 #ifndef STATE_h
 #define STATE_h
 
+#include "mbed.h"
+
 class StateManager;
 
 class State {
