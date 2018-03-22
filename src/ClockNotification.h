@@ -3,7 +3,7 @@
 
 #include "DefaultState.h"
 
-class ClockNotification : DefaultState {
+class ClockNotification : public DefaultState {
 public:
     ClockNotification(StateManager& _stateMgr);
     bool tick();

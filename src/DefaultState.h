@@ -3,7 +3,7 @@
 
 #include "State.h"
 
-class DefaultState : State {
+class DefaultState : public State {
 public:
     DefaultState(StateManager& _stateMgr);
     virtual bool tick();
