@@ -1,12 +1,15 @@
 #ifndef NAVIGATIONNOTIFICATION_h
 #define NAVIGATIONNOTIFICATION_h
 
+#include "TempState.h"
+
 #define MAX_CHAR_LENGTH 256
 
-class NavigationNotification : TempState {
+class NavigationNotification : public TempState {
 public:
+    NavigationNotification(StateManager& _stateMgr);
     bool tick();
-    void update(char[] street, int len);
+    void update(char street[], int len);
     void update(uint8_t direction);
     void update(uint16_t distance, uint8_t distanceUnits);
 private:
