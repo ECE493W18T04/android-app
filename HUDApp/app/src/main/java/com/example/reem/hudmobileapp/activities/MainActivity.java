@@ -2,17 +2,22 @@ package com.example.reem.hudmobileapp.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
+
 import android.app.DialogFragment;
+
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+
 import android.provider.Settings;
 
+import android.speech.RecognizerIntent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,7 +29,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+
 import android.widget.ListView;
+
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.R;
@@ -39,7 +47,7 @@ import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
+
 
 
 public class MainActivity extends AppCompatActivity  implements BrightnessDialog.BrightnessDialogListener{
@@ -47,16 +55,19 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
+    private final int REQ_CODE_SPEECH_INPUT = 100;
     private AlertDialog enableNotificationListenerAlertDialog;
     private boolean activeMode =false;
     private HUDObject hud;
     private Button navButton;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
+    private static final int RECORD_AUDIO_PERMISSION = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         navButton = (Button) findViewById(R.id.navButton);
+
         getHudItem();
         checkPreviousConnection();
 
@@ -72,6 +83,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         preferencesView.setAdapter(itemsAdapter);
         restoreView.setAdapter(restoreAdaptor);
         final Drawable mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
+
 
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,10 +115,18 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 getItemClicked(parent,view,position,id);
             }
         });
-//        if(!isNotificationServiceEnabled()){
-//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-//            enableNotificationListenerAlertDialog.show();
-//        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},RECORD_AUDIO_PERMISSION);
+        }
+
+
+
+        if(!isNotificationServiceEnabled()){
+            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            enableNotificationListenerAlertDialog.show();
+        }
 
         //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
         //startService(notificationIntent);
@@ -256,6 +276,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     }
 
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -274,6 +295,22 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
                 } else {
                     Toast.makeText(getApplicationContext(), "Coarse location permisssions not granted", Toast.LENGTH_SHORT).show();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            case RECORD_AUDIO_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("RECORD AUDIO:", "Permission Granted");
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }

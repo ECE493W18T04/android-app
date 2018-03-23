@@ -17,14 +17,17 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.activities.MainActivity;
 import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.helper.FileManager;
+import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -44,6 +47,7 @@ public class BLEService extends Service {
     public static String LED_CHARACTERISTIC = "0000a001-0000-1000-8000-00805f9b34fb";
     public static String SERVICE = "0000a000-0000-1000-8000-00805f9b34fb";
     public static String DISCONNECT_CHARACTERISTIC_UUID = "0000a004-0000-1000-8000-00805f9b34fb";
+    public static String VOICE_COMMAND_CHARACTERISTIC = "0000a001-0000-1000-8000-00805f9b34fb";
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothManager bluetoothManager;
     private BluetoothDevice bluetoothDevice;
@@ -51,6 +55,7 @@ public class BLEService extends Service {
     private BluetoothGattService bluetoothGattService;
     private final IBinder mBinder = new BLEBinder();
     private Handler mHandler;
+    private Handler voiceCommaneHandler;
 
     private String bluetoothDeviceMACAdress=null;
     private int lastTransmittedCode = 0;
@@ -215,7 +220,24 @@ public class BLEService extends Service {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 //            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             Log.i(DEBUG_TAG, "Characteristic Changed");
-            Log.i(DEBUG_TAG, characteristic.getStringValue(0));
+            Log.i(DEBUG_TAG,characteristic.getUuid().toString() );
+            //TODO launch voice command when appropriate characteristic received
+            if (characteristic.getUuid().toString().equalsIgnoreCase(VOICE_COMMAND_CHARACTERISTIC)) {
+                //startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                voiceCommaneHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        VoiceCommandManager vCommand = new VoiceCommandManager(getApplicationContext());
+                        Log.d(DEBUG_TAG, "Voice CommandManager started");
+                        vCommand.startListener();
+                    }
+                });
+
+            }
 
         }
 
@@ -273,6 +295,7 @@ public class BLEService extends Service {
 
 
         }
+        voiceCommaneHandler = new Handler();
         System.out.println("About to scan for devices");
         mHandler = new Handler();
         scanForDevices();
