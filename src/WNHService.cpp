@@ -12,12 +12,9 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     stateOverride(STATE_OVERRIDE_INVALID),
     disconnect(DISCONNECT_DEFAULT),
 
-    clockPriority(CLOCK_PRIORITY_DEFAULT),
-    mapsPriority(MAPS_PRIORITY_DEFAULT),
-    callPriority(CALL_PRIORITY_DEFAULT),
-    musicPriority(MUSIC_PRIORITY_DEFAULT),
-    speedPriority(SPEED_PRIORITY_DEFAULT),
-    fuelPriority(FUEL_PRIORITY_DEFAULT),
+    clockMapsPriority(CLOCK_PRIORITY_DEFAULT),
+    callMusicPriority(CALL_PRIORITY_DEFAULT),
+    speedFuelPriority(SPEED_PRIORITY_DEFAULT),
 
     mapsStreetName(MAPS_STREET_NAME_DEFAULT),
     musicSongName(MUSIC_SONG_NAME_DEFAULT),
@@ -27,14 +24,11 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     speedNumber(SPEED_VALUE_DEFAULT),
     fuelNumber(FUEL_VALUE_DEFAULT),
     brightnessNumber(BRIGHTNESS_VALUE_DEFAULT),
-    hueColorNumber(HUE_COLOR_VALUE_DEFAULT),
-    satColorNumber(SAT_COLOR_VALUE_DEFAULT),
+    colorNumber(SAT_COLOR_VALUE_DEFAULT),
     maxCurrent(MAX_CURRENT_VALUE_DEFAULT),
 
-    mapsDirection(MAPS_DIRECTION_ENUM_DEFAULT),
-    mapsUnits(MAPS_UNITS_ENUM_DEFAULT),
-    speedUnits(SPEED_UNITS_ENUM_DEFAULT),
-    signalStatus(SIGNAL_STATUS_ENUM_DEFAULT),
+    mapsDirectionAndUnits(MAPS_DIRECTION_ENUM_DEFAULT),
+    speedUnitsAndSignalStatus(SPEED_UNITS_ENUM_DEFAULT),
     autoBrightness(AUTO_BRIGHT_ENUM_DEFAULT),
     ble(_ble),
     eventQueue(_eventQueue),
@@ -46,12 +40,9 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     stateOverrideCharacteristic(STATE_OVERRIDE_CHARACTERISTIC_UUID, &stateOverride),
     disconnectCharacteristic(DISCONNECT_CHARACTERISTIC_UUID, &disconnect),
 
-    clockPriorityCharacteristic(CLOCK_PRIORITY_CHARACTERISTIC_UUID, &clockPriority),
-    mapsPriorityCharacteristic(MAPS_PRIORITY_CHARACTERISTIC_UUID, &mapsPriority),
-    callPriorityCharacteristic(CALL_NAME_CHARACTERISTIC_UUID, &callPriority),
-    musicPriorityCharacteristic(MUSIC_PRIORITY_CHARACTERISTIC_UUID, &musicPriority),
-    speedPriorityCharacteristic(SPEED_PRIORITY_CHARACTERISTIC_UUID, &speedPriority),
-    fuelPriorityCharacteristic(FUEL_PRIORITY_CHARACTERISTIC_UUID, &fuelPriority),
+    clockMapsPriorityCharacteristic(CLOCK_MAPS_PRIORITY_CHARACTERISTIC_UUID, &clockMapsPriority),
+    callMusicPriorityCharacteristic(CALL_MUSIC_PRIORITY_CHARACTERISTIC_UUID, &callMusicPriority),
+    speedFuelPriorityCharacteristic(SPEED_FUEL_PRIORITY_CHARACTERISTIC_UUID, &speedFuelPriority),
 
     mapsStreetNameCharacteristic(MAPS_STREET_CHARACTERISTIC_UUID, ""),
     musicSongNameCharacteristic(MUSIC_SONG_CHARACTERISTIC_UUID, ""),
@@ -61,14 +52,11 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     speedNumberCharacteristic(SPEED_VALUE_CHARACTERISTIC_UUID, &speedNumber),
     fuelNumberCharacteristic(FUEL_VALUE_CHARACTERISTIC_UUID, &fuelNumber),
     brightnessCharacteristic(BRIGHTNESS_CHARACTERISTIC_UUID, &brightnessNumber),
-    hueColorCharacteristic(HUE_COLOR_CHARACTERISTIC_UUID, &hueColorNumber),
-    satColorCharacteristic(SAT_COLOR_CHARACTERISTIC_UUID, &satColorNumber),
+    colorCharacteristic(COLOR_CHARACTERISTIC_UUID, &colorNumber),
     maxCurrentCharacteristic(MAX_CURRENT_CHARACTERISTIC_UUID, &maxCurrent),
 
-    mapsDirectionCharacteristic(MAPS_DIRECTION_CHARACTERISTIC_UUID, &mapsDirection),
-    mapsUnitsCharacteristic(MAPS_UNITS_CHARACTERISTIC_UUID, &mapsUnits),
-    speedUnitsCharacteristic(SPEED_UNITS_CHARACTERISTIC_UUID, &speedUnits),
-    signalStatusCharacteristic(SIGNAL_STATUS_CHARACTERISTIC_UUID, &signalStatus),
+    mapsDirAndUnitsCharacteristic(MAPS_DIRECTION_AND_UNITS_CHARACTERISTIC_UUID, &mapsDirectionAndUnits),
+    speedUnitsAndSignalCharacteristic(SPEED_UNITS_AND_SIGNAL_CHARACTERISTIC_UUID, &speedUnitsAndSignalStatus),
     autoBrightCharacteristic(AUTO_BRIGHT_CHARACTERISTIC_UUID, &autoBrightness)
 {
     // setup initial BLE callbacks
@@ -81,12 +69,9 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
         &currentTimeCharacteristic,
         &stateOverrideCharacteristic,
         &disconnectCharacteristic,
-        &clockPriorityCharacteristic,
-        &mapsPriorityCharacteristic,
-        &callPriorityCharacteristic,
-        &musicPriorityCharacteristic,
-        &speedPriorityCharacteristic,
-        &fuelPriorityCharacteristic,
+        &clockMapsPriorityCharacteristic,
+        &callMusicPriorityCharacteristic,
+        &speedFuelPriorityCharacteristic,
         &mapsStreetNameCharacteristic,
         &musicSongNameCharacteristic,
         &callNameCharacteristic,
@@ -94,21 +79,22 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
         &speedNumberCharacteristic,
         &fuelNumberCharacteristic,
         &brightnessCharacteristic,
-        &hueColorCharacteristic,
-        &satColorCharacteristic,
+        &colorCharacteristic,
         &maxCurrentCharacteristic,
-        &mapsDirectionCharacteristic,
-        &mapsUnitsCharacteristic,
-        &speedUnitsCharacteristic,
-        &signalStatusCharacteristic,
-        &maxCurrentCharacteristic
+        &mapsDirAndUnitsCharacteristic,
+        &speedUnitsAndSignalCharacteristic,
+        &maxCurrentCharacteristic,
+        &autoBrightCharacteristic
     };
     uint16_t sizeOfGattCharTable = sizeof(charTable) / sizeof(GattCharacteristic *);
     for (int i = 0; i < sizeOfGattCharTable; i++) {
         charTable[i]->requireSecurity(SecurityManager::SECURITY_MODE_ENCRYPTION_WITH_MITM);
     }
     GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeOfGattCharTable);
-    ble.gattServer().addService(WNHBLEService);
+    ble_error_t err = ble.gattServer().addService(WNHBLEService);
+    if (BLE_ERROR_NONE != err) {
+        printf("there was an error adding the service: %d\n", err);
+    }
 
     // setup handlers
     btnMgr.setPairingHandler(Callback<void()>(this, &WNHService::beginPairingMode));

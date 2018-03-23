@@ -52,12 +52,9 @@ public:
     const static uint16_t DISCONNECT_CHARACTERISTIC_UUID     = 0xA004;
 
     /* B: Priorities (who is Best) */
-    const static uint16_t CLOCK_PRIORITY_CHARACTERISTIC_UUID = 0xB000;
-    const static uint16_t MAPS_PRIORITY_CHARACTERISTIC_UUID  = 0xB001;
-    const static uint16_t CALL_PRIORITY_CHARACTERISTIC_UUID  = 0xB002;
-    const static uint16_t MUSIC_PRIORITY_CHARACTERISTIC_UUID = 0xB003;
-    const static uint16_t SPEED_PRIORITY_CHARACTERISTIC_UUID = 0xB004;
-    const static uint16_t FUEL_PRIORITY_CHARACTERISTIC_UUID  = 0xB005;
+    const static uint16_t CLOCK_MAPS_PRIORITY_CHARACTERISTIC_UUID = 0xB000;
+    const static uint16_t CALL_MUSIC_PRIORITY_CHARACTERISTIC_UUID  = 0xB001;
+    const static uint16_t SPEED_FUEL_PRIORITY_CHARACTERISTIC_UUID = 0xB002;
 
     /* C: Char Arrays */
     const static uint16_t MAPS_STREET_CHARACTERISTIC_UUID    = 0xC000;
@@ -69,16 +66,13 @@ public:
     const static uint16_t SPEED_VALUE_CHARACTERISTIC_UUID    = 0xD001;
     const static uint16_t FUEL_VALUE_CHARACTERISTIC_UUID     = 0xD002;
     const static uint16_t BRIGHTNESS_CHARACTERISTIC_UUID     = 0xD003;
-    const static uint16_t HUE_COLOR_CHARACTERISTIC_UUID      = 0xD004;
-    const static uint16_t SAT_COLOR_CHARACTERISTIC_UUID      = 0xD005;
-    const static uint16_t MAX_CURRENT_CHARACTERISTIC_UUID    = 0xD006;
+    const static uint16_t COLOR_CHARACTERISTIC_UUID          = 0xD004;
+    const static uint16_t MAX_CURRENT_CHARACTERISTIC_UUID    = 0xD005;
 
     /* E: Enums */
-    const static uint16_t MAPS_DIRECTION_CHARACTERISTIC_UUID = 0xE000;
-    const static uint16_t MAPS_UNITS_CHARACTERISTIC_UUID     = 0xE001;
-    const static uint16_t SPEED_UNITS_CHARACTERISTIC_UUID    = 0xE002;
-    const static uint16_t SIGNAL_STATUS_CHARACTERISTIC_UUID  = 0xE003;
-    const static uint16_t AUTO_BRIGHT_CHARACTERISTIC_UUID    = 0xE004;
+    const static uint16_t MAPS_DIRECTION_AND_UNITS_CHARACTERISTIC_UUID = 0xE000;
+    const static uint16_t SPEED_UNITS_AND_SIGNAL_CHARACTERISTIC_UUID    = 0xE001;
+    const static uint16_t AUTO_BRIGHT_CHARACTERISTIC_UUID    = 0xE002;
 
     /* misc */
     const static char    *DEVICE_NAME;
@@ -103,12 +97,9 @@ private:
     uint8_t stateOverride;
     uint8_t disconnect;
 
-    uint8_t clockPriority;
-    uint8_t mapsPriority;
-    uint8_t callPriority;
-    uint8_t musicPriority;
-    uint8_t speedPriority;
-    uint8_t fuelPriority;
+    uint8_t clockMapsPriority;
+    uint8_t callMusicPriority;
+    uint8_t speedFuelPriority;
 
     char *mapsStreetName;
     char *musicSongName;
@@ -118,14 +109,11 @@ private:
     uint16_t speedNumber;
     uint8_t fuelNumber;
     uint8_t brightnessNumber;
-    uint16_t hueColorNumber;
-    uint8_t satColorNumber;
+    uint16_t colorNumber;
     uint16_t maxCurrent;
 
-    uint8_t mapsDirection;
-    uint8_t mapsUnits;
-    uint8_t speedUnits;
-    uint8_t signalStatus;
+    uint8_t mapsDirectionAndUnits;
+    uint8_t speedUnitsAndSignalStatus;
     uint8_t autoBrightness;
 
     BLEDevice                         &ble;
@@ -138,29 +126,23 @@ private:
     WriteOnlyGattCharacteristic<uint8_t>  stateOverrideCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  disconnectCharacteristic;
 
-    WriteOnlyGattCharacteristic<uint8_t>  clockPriorityCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  mapsPriorityCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  callPriorityCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  musicPriorityCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  speedPriorityCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  fuelPriorityCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  clockMapsPriorityCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  callMusicPriorityCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  speedFuelPriorityCharacteristic;
 
-    WriteOnlyArrayGattCharacteristic<char, 256>  mapsStreetNameCharacteristic;
-    WriteOnlyArrayGattCharacteristic<char, 256>  musicSongNameCharacteristic;
-    WriteOnlyArrayGattCharacteristic<char, 256>  callNameCharacteristic;
+    WriteOnlyArrayGattCharacteristic<char, 128>  mapsStreetNameCharacteristic;
+    WriteOnlyArrayGattCharacteristic<char, 128>  musicSongNameCharacteristic;
+    WriteOnlyArrayGattCharacteristic<char, 128>  callNameCharacteristic;
 
     WriteOnlyGattCharacteristic<uint32_t>  mapsDistanceNumberCharacteristic;
     WriteOnlyGattCharacteristic<uint16_t>  speedNumberCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>   fuelNumberCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>   brightnessCharacteristic;
-    WriteOnlyGattCharacteristic<uint16_t>  hueColorCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>   satColorCharacteristic;
+    WriteOnlyGattCharacteristic<uint16_t>  colorCharacteristic;
     WriteOnlyGattCharacteristic<uint16_t>  maxCurrentCharacteristic;
 
-    WriteOnlyGattCharacteristic<uint8_t>  mapsDirectionCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  mapsUnitsCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  speedUnitsCharacteristic;
-    WriteOnlyGattCharacteristic<uint8_t>  signalStatusCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  mapsDirAndUnitsCharacteristic;
+    WriteOnlyGattCharacteristic<uint8_t>  speedUnitsAndSignalCharacteristic;
     WriteOnlyGattCharacteristic<uint8_t>  autoBrightCharacteristic;
 };
 
