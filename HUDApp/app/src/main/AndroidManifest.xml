@@ -32,6 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activities.PriorityQueueActivity" />
         <activity android:name=".activities.PreferencesActivity"/>
@@ -42,6 +43,10 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <service android:name="com.openxc.VehicleManager"/>
+
+
+
     </application>
 
 </manifest>
