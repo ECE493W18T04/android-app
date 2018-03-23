@@ -31,6 +31,7 @@ public class CharacteristicWriter {
 
     public void initialConnectWrite()
     {
+
         writeMaxCurrent();
         writeHUDBrightness();
         writeSaturation();

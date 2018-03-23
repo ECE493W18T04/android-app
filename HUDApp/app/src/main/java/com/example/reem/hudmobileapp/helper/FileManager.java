@@ -28,11 +28,8 @@ public class FileManager {
     // Code taken from Lonely Twitter from github: https://github.com/watts1/lonelyTwitter Sept 22, 2016
     public static HUDObject loadFromFile(Context context) {
         try {
-            Log.e("ABOUTTOOPENFILE","ABout to open hud.sav");
             FileInputStream fis = context.openFileInput("hud.sav");
-            Log.e("FOUNDHUD","Was about to file HUD");
             BufferedReader in = new BufferedReader(new InputStreamReader(fis));
-            Log.e("CREATEDBUFFERREADER","Buffer reader created");
             Gson gson = new Gson();
             HUDObject hudObject = gson.fromJson(in, HUDObject.class);
 
