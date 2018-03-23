@@ -8,12 +8,15 @@ class StateManager;
 class State {
 public:
     State(StateManager& _stateMgr);
-    void setPriority(int priority);
-    void setActive(bool state);
+    void setPriority(int _priority);
+    void setActive(bool _state);
+    bool getActive();
     int getPriority();
     virtual bool tick() = 0;
+    StateManager& getManager();
 private:
     int priority;
+    bool state;
     StateManager& stateMgr;
 };
 
