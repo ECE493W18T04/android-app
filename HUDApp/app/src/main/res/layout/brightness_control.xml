@@ -1,35 +1,52 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/gray"
+    android:backgroundTint="@color/darkGray">
+
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="289dp"
         android:layout_height="40dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="16dp"
-        android:textColor="@color/black"
-        android:textSize="20dp"
-        android:text="Brightness Control"/>
+        android:text="Brightness Control"
+        android:textColor="@android:color/white"
+        android:textSize="20dp" />
+
     <View
-        android:layout_width="match_parent"
+        android:layout_width="291dp"
         android:layout_height="2dp"
-        android:background="@android:color/black"/>
+        android:layout_marginLeft="10dp"
+        android:background="@android:color/white" />
+
     <CheckBox
         android:id="@+id/autoBrightness"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Auto Brightness"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="0dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="4dp"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginTop="30dp"
+        android:text="Auto Brightness"
+        android:textColor="@android:color/white" />
+
     <SeekBar
         android:id="@+id/brightnessSeekBar"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_width="285dp"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginBottom="16dp"
-        android:fontFamily="sans-serif" />
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif"
+        android:progressBackgroundTint="@android:color/white" />
+
+    <ImageView
+        android:layout_width="37dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="275dp"
+        android:layout_marginTop="-35dp"
+        app:srcCompat="@drawable/sun" />
 </LinearLayout>

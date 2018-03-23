@@ -36,9 +36,16 @@ public class BrightnessDialog extends DialogFragment {
                 mListener.onDialogNegativeClick(BrightnessDialog.this);
             }
         });
+
         return builder.create();
     }
 
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        getDialog().getWindow().setBackgroundDrawableResource(R.color.darkGray);
+    }
     public interface BrightnessDialogListener {
         public void onDialogPositiveClick(DialogFragment dialog);
         public void onDialogNegativeClick(DialogFragment dialog);

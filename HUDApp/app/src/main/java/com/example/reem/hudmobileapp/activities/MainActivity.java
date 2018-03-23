@@ -2,11 +2,15 @@ package com.example.reem.hudmobileapp.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.provider.Settings;
 
 import android.support.v4.app.ActivityCompat;
@@ -17,70 +21,86 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.R;
 import com.example.reem.hudmobileapp.ble.BLEService;
 
+import com.example.reem.hudmobileapp.constants.HUDObject;
+import com.example.reem.hudmobileapp.constants.PreferencesEnum;
+import com.example.reem.hudmobileapp.dialogs.BrightnessDialog;
 import com.example.reem.hudmobileapp.dialogs.ColorPickerDialog;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity  implements BrightnessDialog.BrightnessDialogListener{
 
     private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private AlertDialog enableNotificationListenerAlertDialog;
     private boolean activeMode =false;
-
+    private HUDObject hud;
     private Button navButton;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
         navButton = (Button) findViewById(R.id.navButton);
-        System.out.println(navButton);
+        getHudItem();
+        checkPreviousConnection();
 
-        File file = new File(this.getFilesDir(), "mac.sav");
-        FileManager.saveMACAddress(this,"");
-//        Log.e("The address is: ",FileManager.readMACAddress(this));
+        String[] options = new String[]{"Priority Queue","Brightness Control","HUD Color"};
+        ArrayAdapter<String> itemsAdapter =
+                new ArrayAdapter<String>(this, R.layout.list_item, options);
+        String[] restore = new String[]{"Restore Default HUD Settings"};
+        ArrayAdapter<String> restoreAdaptor =
+                new ArrayAdapter<String>(this, R.layout.list_item, restore);
+
+        final ListView preferencesView = (ListView) findViewById(R.id.preferencesList);
+        final ListView restoreView = (ListView) findViewById(R.id.restoreList);
+        preferencesView.setAdapter(itemsAdapter);
+        restoreView.setAdapter(restoreAdaptor);
+        final Drawable mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
 
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent tempIntent = new Intent(MainActivity.this,PreferencesActivity.class);
-//                startActivity(tempIntent);
                 if (activeMode == false)
                 {
                     startBluetoothService();
-                    navButton.setText("Stop");
+//                    navButton.setText("Stop");
+//                    navButton.setBackgroundColor(getResources().getColor(R.color.gray));
+                    mDrawable.setColorFilter(new
+                            PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
+                    navButton.setBackground(mDrawable);
+                    activeMode = true;
                 }
                 else {
                     stopBluetoothService();
-                    navButton.setText("Activate");
+//                    navButton.setText("Activate");
+                    mDrawable.setColorFilter(new
+                            PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
+                    navButton.setBackground(mDrawable);
+                    activeMode=false;
                 }
-//                Intent intent = new Intent(MainActivity.this,PriorityQueueActivity.class);
-//                startActivity(intent);
 
-//                int initialColor = Color.WHITE;
-//
-//                ColorPickerDialog colorPickerDialog = new ColorPickerDialog(MainActivity.this, initialColor, new ColorPickerDialog.OnColorSelectedListener() {
-//
-//                    @Override
-//                    public void onColorSelected(int color) {
-//                        showToast(color);
-//                    }
-//
-//                });
-//                colorPickerDialog.show();
+            }
+        });
+        preferencesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                getItemClicked(parent,view,position,id);
             }
         });
 //        if(!isNotificationServiceEnabled()){
@@ -90,8 +110,61 @@ public class MainActivity extends AppCompatActivity {
 
         //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
         //startService(notificationIntent);
+
     }
 
+    public void getHudItem()
+    {
+
+        File hudFile = new File(this.getFilesDir(),"hud.sav");
+        if (!hudFile.exists())
+        {
+            hud = new HUDObject();
+            FileManager.saveToFile(this,hud);
+        }else
+        {
+            hud = FileManager.loadFromFile(this);
+        }
+    }
+
+    public void checkPreviousConnection()
+    {
+        File file = new File(this.getFilesDir(), "mac.sav");
+        if (!file.exists())
+        {
+            FileManager.saveMACAddress(this,null);
+        }
+        ArrayList<String> value = FileManager.readMACAddress(this);
+        Log.e("MACADDRESSFAILURE",value.toString());
+    }
+
+
+    public void getItemClicked(AdapterView<?> parent,View view, int position,long id)
+    {
+           if (position == PreferencesEnum.PRIORITY_QUEUE.getValue())
+           {
+                Intent intent = new Intent(MainActivity.this,PriorityQueueActivity.class);
+                startActivity(intent);
+           }else if (position == PreferencesEnum.COLOR_CONTROL.getValue())
+           {
+               int initialColor = Color.WHITE;
+
+                ColorPickerDialog colorPickerDialog = new ColorPickerDialog(MainActivity.this, initialColor, new ColorPickerDialog.OnColorSelectedListener() {
+
+                    @Override
+                    public void onColorSelected(int color) {
+                        showToast(color);
+                    }
+
+                });
+                colorPickerDialog.show();
+                colorPickerDialog.getWindow().setBackgroundDrawableResource(R.color.darkGray);
+           }else if (position == PreferencesEnum.BRIGHTNESS_CONTROL.getValue())
+           {
+               DialogFragment dialogFragment = new BrightnessDialog();
+               dialogFragment.show(getFragmentManager(),"BrightnessDialog");
+           }
+    }
 
     public void stopBluetoothService()
     {
@@ -148,15 +221,22 @@ public class MainActivity extends AppCompatActivity {
                 });
         return(alertDialogBuilder.create());
     }
+
+
+
+
+
     private void showToast(int color) {
         String rgbString = "R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color);
         Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
     }
+
+
+
+
+
     public void startBluetoothService()
     {
-
-
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -203,5 +283,15 @@ public class MainActivity extends AppCompatActivity {
             // other 'case' lines to check for other
             // permissions this app might request.
         }
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+
     }
 }

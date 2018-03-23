@@ -9,6 +9,7 @@ import android.widget.RemoteViews;
 
 import com.example.reem.hudmobileapp.R;
 import com.example.reem.hudmobileapp.ble.BLEService;
+import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
 
 /**
  * Created by Reem on 2018-03-08.
@@ -25,7 +26,7 @@ public class WNHWidgetProvider extends AppWidgetProvider {
         {
             int widgetId = widgetIds[i];
 
-            Intent intent = new Intent(context, BLEService.class);
+            Intent intent = new Intent(context, WNHNotificationListener.class);
             PendingIntent pendingIntent = PendingIntent.getService(context,0,intent,0);
 
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.wnh_widget);
