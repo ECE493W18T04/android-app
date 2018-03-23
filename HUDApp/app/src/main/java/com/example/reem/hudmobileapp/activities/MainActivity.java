@@ -2,13 +2,16 @@ package com.example.reem.hudmobileapp.activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Debug;
 import android.provider.Settings;
 
+import android.speech.RecognizerIntent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +21,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.R;
@@ -28,6 +32,8 @@ import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -35,11 +41,14 @@ public class MainActivity extends AppCompatActivity {
     private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
+    private final int REQ_CODE_SPEECH_INPUT = 100;
     private AlertDialog enableNotificationListenerAlertDialog;
     private boolean activeMode =false;
 
     private Button navButton;
+    private TextView voiceString;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
+    private static final int RECORD_AUDIO_PERMISSION = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,9 +57,15 @@ public class MainActivity extends AppCompatActivity {
 //        setSupportActionBar(toolbar);
         navButton = (Button) findViewById(R.id.navButton);
         System.out.println(navButton);
+        Button voiceButton = (Button) findViewById(R.id.btnSpeak);
+
+        voiceString = (TextView) findViewById(R.id.txtSpeechInput);
+        voiceString.setText("Voice Recognized text");
+
 
         File file = new File(this.getFilesDir(), "mac.sav");
-        FileManager.saveMACAddress(this,"");
+        FileManager.saveMACAddress(this, "");
+
 //        Log.e("The address is: ",FileManager.readMACAddress(this));
 
         navButton.setOnClickListener(new View.OnClickListener() {
@@ -83,10 +98,24 @@ public class MainActivity extends AppCompatActivity {
 //                colorPickerDialog.show();
             }
         });
-//        if(!isNotificationServiceEnabled()){
-//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-//            enableNotificationListenerAlertDialog.show();
-//        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},RECORD_AUDIO_PERMISSION);
+        }
+
+        voiceButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        if(!isNotificationServiceEnabled()){
+            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            enableNotificationListenerAlertDialog.show();
+        }
 
         //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
         //startService(notificationIntent);
@@ -175,6 +204,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if (resultCode == RESULT_OK && null != data) {
+
+                    ArrayList<String> result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    voiceString.setText(result.get(0));
+                }
+                break;
+            }
+
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -194,6 +240,22 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     Toast.makeText(getApplicationContext(), "Coarse location permisssions not granted", Toast.LENGTH_SHORT).show();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            case RECORD_AUDIO_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("RECORD AUDIO:", "Permission Granted");
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }

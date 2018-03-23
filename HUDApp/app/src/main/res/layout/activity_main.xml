@@ -10,10 +10,32 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.reem.hudmobileapp.activities.MainActivity">
 
-    <Button
-        android:text="Activate"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/navButton" />
+        android:layout_centerHorizontal="true"
+        android:gravity="top"
+        android:orientation="vertical" >
+        <Button
+            android:text="Activate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/navButton" />
+        <Button
+            android:text="Voice"
+            android:id="@+id/btnSpeak"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/txtSpeechInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="100dp"
+            android:textSize="26dp"
+            android:textStyle="normal" />
+
+    </LinearLayout>
 
 </RelativeLayout>
