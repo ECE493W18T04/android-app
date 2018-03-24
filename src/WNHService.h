@@ -121,28 +121,94 @@ private:
     ButtonManager                     btnMgr;
     StateManager                      stateMgr;
 
+    /**
+     * Changes to a new value when voice control button is pressed
+     */
     ReadOnlyGattCharacteristic<bool>      voiceControlCharacteristic;
+    /**
+     * Time since 1980 jan 1 12:00am (i.e. unix time)
+     */
     WriteOnlyGattCharacteristic<uint32_t> currentTimeCharacteristic;
+    /**
+     * Write a value for the state enum to override the state machine
+     */
     WriteOnlyGattCharacteristic<uint8_t>  stateOverrideCharacteristic;
+    /**
+     * write an arbitrary value to get the device to initiate a disconnect
+     */
     WriteOnlyGattCharacteristic<uint8_t>  disconnectCharacteristic;
 
+    /**
+     * MSB 4..7 clock priority
+     * 0..3 navigation priority
+     */
     WriteOnlyGattCharacteristic<uint8_t>  clockMapsPriorityCharacteristic;
+    /**
+     * MSB 4..7 call priority
+     * 0..3 music priority
+     */
     WriteOnlyGattCharacteristic<uint8_t>  callMusicPriorityCharacteristic;
+    /**
+     * MSB 4..7 speed priority
+     * 0..3 fuel priority
+     */
     WriteOnlyGattCharacteristic<uint8_t>  speedFuelPriorityCharacteristic;
 
+    /**
+     * street name for navigation, max 128 char
+     */
     WriteOnlyArrayGattCharacteristic<char, 128>  mapsStreetNameCharacteristic;
+    /**
+     * song title for music, max 128 char
+     */
     WriteOnlyArrayGattCharacteristic<char, 128>  musicSongNameCharacteristic;
+    /**
+     * name of caller for phone notification
+     */
     WriteOnlyArrayGattCharacteristic<char, 128>  callNameCharacteristic;
 
+    /**
+     * Maps distance units
+     */
     WriteOnlyGattCharacteristic<uint32_t>  mapsDistanceNumberCharacteristic;
+    /**
+     * speed units
+     */
     WriteOnlyGattCharacteristic<uint16_t>  speedNumberCharacteristic;
+    /**
+     * fuel value (in a percent)
+     */
     WriteOnlyGattCharacteristic<uint8_t>   fuelNumberCharacteristic;
+    /**
+     * brightness value (in a percent)
+     */
     WriteOnlyGattCharacteristic<uint8_t>   brightnessCharacteristic;
+    /**
+     * color colorCharacteristic
+     * MSB 7..15 Hue
+     * 0..6 Saturation
+     */
     WriteOnlyGattCharacteristic<uint16_t>  colorCharacteristic;
+    /**
+     * Max current allowed on system
+     * Units is mA
+     */
     WriteOnlyGattCharacteristic<uint16_t>  maxCurrentCharacteristic;
 
+    /**
+     * MSB 4..7 maps dir enum
+     * 0..3 maps units enum
+     */
     WriteOnlyGattCharacteristic<uint8_t>  mapsDirAndUnitsCharacteristic;
+    /**
+     * MSB 4..7 speed units enum
+     * 0..3 Signal enum
+     */
     WriteOnlyGattCharacteristic<uint8_t>  speedUnitsAndSignalCharacteristic;
+    /**
+     * MSB Auto brightness bit
+     * 0..6 Brightness level
+     */
     WriteOnlyGattCharacteristic<uint8_t>  autoBrightCharacteristic;
 };
 

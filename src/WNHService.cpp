@@ -128,7 +128,7 @@ void WNHService::beginPairingMode() {
 }
 
 void WNHService::pairingModeTimeout() {
-    // TODO handle pairing timoeut
+    setupGapAdvertising(false);
 }
 
 void WNHService::sendVoiceCommandTrigger() {
