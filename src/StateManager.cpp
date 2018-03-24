@@ -17,15 +17,41 @@ void StateManager::tick() {
     if (currentState) {
         result = currentState->tick();
     }
+    if (!result) {
+        // something bad happened or we expired the state
+        updateStates();
+    }
+    if (overlay) {
+        overlay->tick();
+    }
 }
 
-void StateManager::pushState(State* state) {
+void StateManager::updateStates() {
+    int i;
+    int maxPriority = 255;
+    for (i = 0; i < STATE_COUNT; i++) {
+        if (!States[i]->getActive()) {
+            // state isn't active, ignore it
+            continue;
+        }
+        int priority = States[i]->getPriority();
+        if (priority < maxPriority) {
+            currentState = States[i];
+            maxPriority = priority;
+        }
+    }
 }
 
 void StateManager::pushOverlay(State* state) {
+    if (state) {
+        overlay = state;
+    }
 }
 
 void StateManager::forceState(State* state) {
+    if (state && state->getActive()) {
+        currentState = state;
+    }
 }
 
 State* StateManager::getState(int id) {

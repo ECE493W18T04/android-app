@@ -29,15 +29,15 @@ class StateManager {
 public:
     StateManager(EventQueue &_eventQueue);
     void tick();
-    void pushState(State* state);
+    void updateStates();
     void pushOverlay(State* state);
     void forceState(State* state);
     State* getState(int id);
 private:
     State* States[STATE_COUNT];
-    State* StateStack[STATE_COUNT];
-    GraphicsManager graphicsMgr;
     State* currentState;
+    State* overlay;
+    GraphicsManager graphicsMgr;
 };
 
 #endif // STATEMANAGER_h
