@@ -3,10 +3,11 @@
 
 #include "TempState.h"
 
-class PairingState : TempState {
+class PairingState : public TempState {
 public:
-    PairingState();
-    update(uint32_t key);
+    PairingState(StateManager& _stateMgr);
+    void update(uint32_t key);
+    bool tick();
 private:
     uint32_t key;
 };

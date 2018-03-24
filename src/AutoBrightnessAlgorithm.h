@@ -21,10 +21,10 @@ public:
 private:
     long map(long x, long in_min, long in_max, long out_min, long out_max);
     double _alpha;
-    uint32_t _current_value = 0;
-    int8_t _current_state = 0;
-    auto_brightness_state _internal_state = UNLOCKED;
-    uint16_t _ticks_in_current_state = 0;
+    uint32_t _current_value;
+    int8_t _current_state;
+    auto_brightness_state _internal_state;
+    uint16_t _ticks_in_current_state;
 };
 
 #endif

@@ -2,10 +2,12 @@
 #define DISPLAYDRIVER_h
 
 #include "mbed.h"
+#include "mbed_events.h"
+#include "AutoBrightnessAlgorithm.h"
 
 class DisplayDriver {
 public:
-    DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed);
+    DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue);
     void setBuffer(uint16_t _width, uint16_t _height, uint32_t _buffer[]);
     void draw();
     uint32_t getColor(uint16_t hue, uint8_t sat);
@@ -14,6 +16,8 @@ private:
     uint32_t getColorRGB(uint8_t red, uint8_t green, uint8_t blue);
     void drawPixel(uint16_t x, uint16_t y);
     void innerDraw();
+    void handleTick();
+    // AutoBrightnessAlgorithm alg;
     SPI port;
     uint8_t brightness;
     uint16_t width;

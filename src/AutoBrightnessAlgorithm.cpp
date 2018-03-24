@@ -9,11 +9,11 @@
 #define HYSTERISIS_THRESHOLD 2 //update
 #define LOCK_TICK_THRESHOLD 16
 #define DEFAULT_ALPHA 0.5
-TSL2561_I2C luxDevice = TSL2561_I2C(I2C_SDA0, I2C_SCL0);
+// TSL2561_I2C luxDevice = TSL2561_I2C(I2C_SDA0, I2C_SCL0);
 
-AutoBrightnessAlg::AutoBrightnessAlg() : _alpha(DEFAULT_ALPHA) {}
+AutoBrightnessAlg::AutoBrightnessAlg() : _alpha(DEFAULT_ALPHA), _current_value(0), _current_state(0), _internal_state(UNLOCKED), _ticks_in_current_state(0) {}
 
-AutoBrightnessAlg::AutoBrightnessAlg(double alpha) : _alpha(alpha) {}
+AutoBrightnessAlg::AutoBrightnessAlg(double alpha) : _alpha(alpha), _current_value(0), _current_state(0), _internal_state(UNLOCKED), _ticks_in_current_state(0) {}
 
 void AutoBrightnessAlg::addSample(uint32_t dataSample) {
     // exponential decay to smooth out the value

@@ -3,7 +3,7 @@
 
 #include "DefaultState.h"
 
-class VehicleSpeed : DefaultState {
+class VehicleSpeed : public DefaultState {
 public:
     VehicleSpeed(StateManager& _stateMgr);
     bool tick();

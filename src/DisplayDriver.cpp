@@ -4,9 +4,10 @@
 #define MAX_SAT 100.0
 #define MAX_BRIGHTNESS 100.0
 
-DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed) : port(MOSI, MISO, SCLK) {
+DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK) {
     port.format(8,3);
     port.frequency(clockSpeed);
+    _eventQueue.call_every(62, this, &DisplayDriver::handleTick); // 16Hz
 }
 
 void DisplayDriver::setBuffer(uint16_t _width, uint16_t _height, uint32_t _buffer[]) {
@@ -120,4 +121,8 @@ void DisplayDriver::drawPixel(uint16_t x, uint16_t y) {
     port.write((pixel >> 16) & 0xFF);
     port.write((pixel >> 8) & 0xFF);
     port.write(pixel & 0xFF);
+}
+
+void DisplayDriver::handleTick() {
+    // alg.addSample(luxDevice.getLux());
 }

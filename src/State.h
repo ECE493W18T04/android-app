@@ -3,6 +3,8 @@
 
 #include "mbed.h"
 
+#define MAX_CHAR_LENGTH 128
+
 class StateManager;
 
 class State {

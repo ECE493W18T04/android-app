@@ -9,7 +9,7 @@
 
 class GraphicsManager {
 public:
-    GraphicsManager();
+    GraphicsManager(EventQueue& _eventQueue);
     void erase();
     void fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
     int placeText(char text[], int horizonatalOffset);

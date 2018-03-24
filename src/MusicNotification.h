@@ -3,9 +3,7 @@
 
 #include "TimedState.h"
 
-#define MAX_CHAR_LENGTH 256
-
-class MusicNotification : TimedState {
+class MusicNotification : public TimedState {
 public:
     MusicNotification(StateManager& _stateMgr);
     bool tick();

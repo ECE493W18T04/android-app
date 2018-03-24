@@ -3,8 +3,6 @@
 
 #include "TempState.h"
 
-#define MAX_CHAR_LENGTH 256
-
 class NavigationNotification : public TempState {
 public:
     NavigationNotification(StateManager& _stateMgr);

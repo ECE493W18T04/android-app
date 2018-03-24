@@ -266,7 +266,7 @@ static const unsigned char font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00  // #255 NBSP
 };
 
-GraphicsManager::GraphicsManager() : driver(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PSELSCK0, SPI_SPEED) {
+GraphicsManager::GraphicsManager(EventQueue& _eventQueue) : driver(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PSELSCK0, SPI_SPEED, _eventQueue) {
     driver.setBuffer(DISPLAY_WIDTH, DISPLAY_HEIGHT, buffer);
     erase();
     driver.draw();
@@ -298,7 +298,7 @@ void GraphicsManager::fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height) 
 }
 
 int GraphicsManager::placeText(char text[], int horizontalOffset) {
-    for (int i = 0; i < strlen(text); i++) {
+    for (uint16_t i = 0; i < strlen(text); i++) {
         drawChar(text[i], horizontalOffset);
         horizontalOffset += CHARACTER_WIDTH + 1;
     }
