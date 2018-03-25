@@ -25,9 +25,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.activities.MainActivity;
+import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -84,12 +87,12 @@ public class BLEService extends Service {
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
-            String macAddress=FileManager.readMACAddress(BLEService.this);
-//            String macAddress=null;
+//            ArrayList<String> macAddresses=FileManager.readMACAddress(BLEService.this);
+            String macAddresses=null;
                 if (!devices.contains(device)) {
                     Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
                     // store the address in a file or something
-                    if (macAddress==null)
+                    if (macAddresses==null)
                     {
                         if ("WNH".equals(device.getName())) {
 
@@ -105,24 +108,50 @@ public class BLEService extends Service {
                         }
 //
                     }
-                    else
-                    {
-                        Log.i("MAC ADDRESS", "The mac adress looking for is"+macAddress);
-                        if (macAddress.equals(device.getAddress())){
-                            Log.i("BLUETOOTH DEVICE FOUND ", "wnh found via mac address");
-                            bluetoothDevice = device;
-                            bluetoothDevice.createBond();
-                            connect(device.getAddress());
-                            Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-                            stopScan();
-                        } else {
-                            devices.add(device);
-                        }
+                    else {
+//                        boolean found=false;
+//                        for (String macAddress : macAddresses) {
+//                            Log.i("MAC ADDRESS", "The mac adress looking for is" + macAddress);
+//                            if (macAddress.equals(device.getAddress())) {
+//                                Log.i("BLUETOOTH DEVICE FOUND ", "wnh found via mac address");
+//                                bluetoothDevice = device;
+//                                bluetoothDevice.createBond();
+//                                connect(device.getAddress());
+//                                Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
+//                                stopScan();
+//                                found = true;
+//                                break;
+//                            } else {
+//                                devices.add(device);
+//                            }
+//                        }
+//                        if (!found)
+//                        {
+//                            if ("WNH".equals(device.getName())) {
+//
+//                                Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
+//                                bluetoothDevice = device;
+//                                bluetoothDevice.createBond();
+//                                connect(device.getAddress());
+//                                Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
+//
+//                                stopScan();
+//                            } else {
+//                                devices.add(device);
+//                            }
+//                        }
+
                     }
                 }
         }
     };
 
+    private void initialWriteCharacteristics()
+    {
+        HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
+        CharacteristicWriter writer = new CharacteristicWriter(bluetoothGattService,hudObject,bluetoothGatt);
+        writer.initialConnectWrite();
+    }
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
@@ -131,18 +160,13 @@ public class BLEService extends Service {
                 isConnected = true;
                 bluetoothGatt.discoverServices();
                 Log.d(DEBUG_TAG, "Connected to bluetooth");
+
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
                 isConnected = false;
                 bluetoothGatt.close();
-//                bluetoothDevice = null;
-//                gatt.disconnect();
-//                gatt.close();
 
                 Log.e(DEBUG_TAG,bluetoothManager.getConnectedDevices(BluetoothProfile.GATT).toString());
-//                bluetoothAdapter.disable();
-//                bluetoothManager=null;
-                //scanForDevices();
             }
         }
 
@@ -157,16 +181,7 @@ public class BLEService extends Service {
                     bluetoothGattService = service;
                     Log.d(DEBUG_TAG, "Discovered service!");
                     setCharacteristicNotification(gatt);
-//                    BluetoothGattCharacteristic readCr = bluetoothGattService.getCharacteristic(UUID.fromString(READ_CHARACTERISTIC));
-//                    bluetoothGatt.readCharacteristic(readCr);
-
-//                    Log.d(DEBUG_TAG,"About to write CR");
-//                    BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(DISCONNECT_CHARACTERISTIC_UUID));
-//                    writeCr.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-//                    writeCr.setValue(valueRead.getBytes());
-//                    Log.d(DEBUG_TAG,writeCr.toString());
-//                    Log.d(DEBUG_TAG,"ABout to write characteristic");
-//                    bluetoothGatt.writeCharacteristic(writeCr);
+                    initialWriteCharacteristics();
                 }
             } else {
                 Log.w(DEBUG_TAG, "onServicesDiscovered received: " + status);
@@ -312,8 +327,10 @@ public class BLEService extends Service {
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
-
-        FileManager.saveMACAddress(this,bluetoothDeviceMACAdress);
+        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
+        if (!macAddresses.contains(bluetoothDeviceMACAdress))
+            macAddresses.add(bluetoothDeviceMACAdress);
+        FileManager.saveMACAddress(this,macAddresses);
         return true;
 
     }
@@ -359,22 +376,25 @@ public class BLEService extends Service {
     public void onDestroy() {
 
         stopScan();
+
         if (bluetoothGatt != null)
         {
+            Log.e(DEBUG_TAG,bluetoothGatt.toString());
             String value = "0";
-            if (bluetoothGattService !=null)
+            if (bluetoothGattService != null)
             {
+                Log.e(DEBUG_TAG,bluetoothGattService.toString());
                 BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(DISCONNECT_CHARACTERISTIC_UUID));
                 writeCr.setValue(value.getBytes());
-                writeCr.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+//                writeCr.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                 Log.d(DEBUG_TAG, writeCr.getValue().toString());
                 Log.d(DEBUG_TAG,writeCr.toString());
                 bluetoothGatt.writeCharacteristic(writeCr);
             }
-           bluetoothGatt.disconnect();
-
+//           bluetoothGatt.disconnect();
         }
         Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
+
         super.onDestroy();
     }
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.widget.RelativeLayout;
 
+import com.example.reem.hudmobileapp.R;
 import com.example.reem.hudmobileapp.views.ColorPicker;
 
 /**
@@ -30,7 +31,7 @@ public class ColorPickerDialog extends AlertDialog{
         relativeLayout.addView(colorPicker, layoutParams);
         setButton(BUTTON_POSITIVE, context.getString(android.R.string.ok), onClickListener);
         setButton(BUTTON_NEGATIVE, context.getString(android.R.string.cancel), onClickListener);
-
+        relativeLayout.setBackgroundColor(getContext().getResources().getColor(R.color.darkGray));
         setView(relativeLayout);
     }
 
