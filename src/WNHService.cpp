@@ -4,6 +4,8 @@
 #define PAIRING_TIMEOUT_MS 20000 // 20s
 #define SAT_MASK 0x7F
 #define HUE_SHIFT 7
+#define UPPER_NIBBLE(X) (X >> 4)
+#define LOWER_NIBBLE(X) (X & 0x0F)
 
 const char*    WNHService::DEVICE_NAME = "WNH";
 const uint16_t WNHService::uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
@@ -121,30 +123,53 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         clk->update(currentTime);
     } else if (params->handle == this->stateOverrideCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
-        // TODO
+        stateOverride = *(params->data);
+        stateMgr.forceState(stateOverride);
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
         // Disconnect Handler, does not handle data
         ble.gap().disconnect(params->connHandle, Gap::REMOTE_USER_TERMINATED_CONNECTION);
     } else if (params->handle == this->clockMapsPriorityCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
-        // TODO
+        clockMapsPriority = *(params->data);
+        uint8_t clockPriority = UPPER_NIBBLE(clockMapsPriority);
+        uint8_t mapsPriority =  LOWER_NIBBLE(clockMapsPriority);
+        ClockNotification * clk = (ClockNotification*)stateMgr.getState(CLOCK_INDEX);
+        NavigationNotification * maps = (NavigationNotification*)stateMgr.getState(NAVIGATION_INDEX);
+        clk->setPriority(clockPriority);
+        maps->setPriority(mapsPriority);
     } else if (params->handle == this->callMusicPriorityCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
-        // TODO
+        callMusicPriority = *(params->data);
+        uint8_t callPriority = UPPER_NIBBLE(callMusicPriority);
+        uint8_t musicPriority = LOWER_NIBBLE(callMusicPriority);
+        PhoneNotification * phone = (PhoneNotification *)stateMgr.getState(PHONE_INDEX);
+        MusicNotification * music = (MusicNotification *)stateMgr.getState(MUSIC_INDEX);
+        phone->setPriority(callPriority);
+        music->setPriority(musicPriority);
     } else if (params->handle == this->speedFuelPriorityCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
-        // TODO
+        speedFuelPriority = *(params->data);
+        uint8_t speedPriority = UPPER_NIBBLE(callMusicPriority);
+        uint8_t fuelPriority = LOWER_NIBBLE(callMusicPriority);
+        VehicleSpeed * speed = (VehicleSpeed *)stateMgr.getState(VEHICLE_SPEED_INDEX);
+        FuelLevel * fuel = (FuelLevel *)stateMgr.getState(FUEL_LEVEL_INDEX);
+        speed->setPriority(speedPriority);
+        fuel->setPriority(fuelPriority);
     } else if (params->handle == this->mapsStreetNameCharacteristic.getValueHandle() &&
             params->len <= MAX_CHAR_LENGTH) {
-        // TODO
+        char * str = (char*)params->data;
+        NavigationNotification * maps = (NavigationNotification*)stateMgr.getState(NAVIGATION_INDEX);
+        maps->update(str, params->len);
     } else if (params->handle == this->musicSongNameCharacteristic.getValueHandle() &&
             params->len <= MAX_CHAR_LENGTH) {
-        // TODO
         char * str = (char*)params->data;
-        printf("Got %s\n", str);
+        MusicNotification * music = (MusicNotification *)stateMgr.getState(MUSIC_INDEX);
+        music->update(str, params->len);
     } else if (params->handle == this->callNameCharacteristic.getValueHandle() &&
             params->len <= MAX_CHAR_LENGTH) {
-        // TODO
+        char * str = (char*)params->data;
+        PhoneNotification * phone = (PhoneNotification *)stateMgr.getState(PHONE_INDEX);
+        phone->update(str, params->len);
     } else if (params->handle == this->mapsStreetNameCharacteristic.getValueHandle() &&
             params->len == sizeof(uint32_t)) {
         // TODO

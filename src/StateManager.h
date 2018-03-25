@@ -31,7 +31,7 @@ public:
     void tick();
     void updateStates();
     void pushOverlay(State* state);
-    void forceState(State* state);
+    void forceState(int id);
     State* getState(int id);
 private:
     State* States[STATE_COUNT];

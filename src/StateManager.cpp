@@ -1,6 +1,6 @@
 #include "StateManager.h"
 
-StateManager::StateManager(EventQueue& _eventQueue) : graphicsMgr(_eventQueue), currentState(NULL), overlay(NULL) {
+StateManager::StateManager(EventQueue& _eventQueue) : currentState(NULL), overlay(NULL), graphicsMgr(_eventQueue) {
     for (int i = 0; i < STATE_COUNT; i++) {
         States[i] = NULL;
     }
@@ -53,10 +53,11 @@ void StateManager::pushOverlay(State* state) {
     }
 }
 
-void StateManager::forceState(State* state) {
-    if (state && state->getActive()) {
-        currentState = state;
-    }
+void StateManager::forceState(int id) {
+    printf("Force State: %d\n", id);
+    // if (state && state->getActive()) {
+    //     currentState = state;
+    // }
 }
 
 State* StateManager::getState(int id) {
