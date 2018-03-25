@@ -1,6 +1,9 @@
 #include "StateManager.h"
 
-StateManager::StateManager(EventQueue& _eventQueue) : graphicsMgr(_eventQueue) {
+StateManager::StateManager(EventQueue& _eventQueue) : graphicsMgr(_eventQueue), currentState(NULL), overlay(NULL) {
+    for (int i = 0; i < STATE_COUNT; i++) {
+        States[i] = NULL;
+    }
     _eventQueue.call_every(100, this, &StateManager::tick);
     States[CLOCK_INDEX] = new ClockNotification(*this);
     States[VEHICLE_SPEED_INDEX] = new VehicleSpeed(*this);
@@ -30,14 +33,16 @@ void StateManager::updateStates() {
     int i;
     int maxPriority = 255;
     for (i = 0; i < STATE_COUNT; i++) {
-        if (!States[i]->getActive()) {
-            // state isn't active, ignore it
-            continue;
-        }
-        int priority = States[i]->getPriority();
-        if (priority < maxPriority) {
-            currentState = States[i];
-            maxPriority = priority;
+        if (States[i]) {
+            if (!States[i]->getActive()) {
+                // state isn't active, ignore it
+                continue;
+            }
+            int priority = States[i]->getPriority();
+            if (priority < maxPriority) {
+                currentState = States[i];
+                maxPriority = priority;
+            }
         }
     }
 }
