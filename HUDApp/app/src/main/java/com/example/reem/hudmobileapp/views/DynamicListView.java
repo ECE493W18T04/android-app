@@ -118,6 +118,10 @@ public class DynamicListView extends ListView {
         mSmoothScrollAmountAtEdge = (int)(SMOOTH_SCROLL_AMOUNT_AT_EDGE / metrics.density);
     }
 
+    public ArrayList<String> getPriorityQueueArray()
+    {
+        return this.priorityQueueArray;
+    }
     /**
      * Listens for long clicks on any items in the listview. When a cell has
      * been selected, the hover cell is created and set up.

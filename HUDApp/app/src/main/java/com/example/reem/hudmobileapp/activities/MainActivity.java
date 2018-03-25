@@ -3,6 +3,7 @@ package com.example.reem.hudmobileapp.activities;
 import android.Manifest;
 import android.app.AlertDialog;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
 
 import android.content.ComponentName;
@@ -30,8 +31,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 
+import android.widget.CheckBox;
 import android.widget.ListView;
 
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -115,10 +118,16 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 getItemClicked(parent,view,position,id);
             }
         });
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+        restoreView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                restore();
+            }
+        });
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},RECORD_AUDIO_PERMISSION);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSIONS);
+
         }
 
 
@@ -158,6 +167,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         Log.e("MACADDRESSFAILURE",value.toString());
     }
 
+    public void restore()
+    {
+        HUDObject hudObject= new HUDObject();
+        FileManager.saveToFile(this,hudObject);
+        hud = hudObject;
+    }
 
     public void getItemClicked(AdapterView<?> parent,View view, int position,long id)
     {
@@ -173,7 +188,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
                     @Override
                     public void onColorSelected(int color) {
-                        showToast(color);
+                        saveColor(color);
                     }
 
                 });
@@ -190,6 +205,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     {
 
         stopService(mServiceIntent);
+
         activeMode=false;
     }
     /**
@@ -235,6 +251,8 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         alertDialogBuilder.setNegativeButton("no",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        Toast.makeText(MainActivity.this,"Notification Listening not granted. App will now shut down.",Toast.LENGTH_SHORT).show();
+//                        finish();
                         // If you choose to not enable the notification listener
                         // the app. will not work as expected
                     }
@@ -246,7 +264,19 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
 
 
-    private void showToast(int color) {
+    private void saveColor(int color) {
+        HUDObject hudObject = FileManager.loadFromFile(this);
+        float[] hsv = new float[3];
+        Color.colorToHSV(color,hsv);
+        int hue = Math.round(hsv[0]);
+        int saturation = Math.round(hsv[1]);
+        if (saturation >= 360 )
+            saturation = 360;
+        if (hue >= 100)
+            hue = 100;
+        hudObject.setHue(hue);
+        hudObject.setSaturation(saturation);
+        FileManager.saveToFile(this,hudObject);
         String rgbString = "R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color);
         Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
     }
@@ -257,22 +287,11 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     public void startBluetoothService()
     {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
 
-            Toast.makeText(getApplicationContext(), "Request for permissions", Toast.LENGTH_SHORT).show();
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                    COARSE_LOCATION_PERMISSIONS);
-
-        }
-        else
-        {
-            System.out.println("About to call BLE service ");
-            activeMode=true;
-            mServiceIntent = new Intent(MainActivity.this, BLEService.class);
-            startService(mServiceIntent);
-        }
+        System.out.println("About to call BLE service ");
+        activeMode=true;
+        mServiceIntent = new Intent(MainActivity.this, BLEService.class);
+        startService(mServiceIntent);
     }
 
 
@@ -285,16 +304,21 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        // Permission is not granted
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},RECORD_AUDIO_PERMISSION);
+                    }
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                    System.out.println("About to call BLE service ");
-                    activeMode=true;
-                    mServiceIntent = new Intent(MainActivity.this, BLEService.class);
-                    startService(mServiceIntent);
+//                    System.out.println("About to call BLE service ");
+//                    activeMode=true;
+//                    mServiceIntent = new Intent(MainActivity.this, BLEService.class);
+//                    startService(mServiceIntent);
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "Coarse location permisssions not granted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Coarse location permisssions not granted. App will now shut down", Toast.LENGTH_SHORT).show();
+                    finish();
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
@@ -324,7 +348,21 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
-
+            // this is for brightness control
+        HUDObject hudObject = FileManager.loadFromFile(this);
+        Dialog view = dialog.getDialog();
+        SeekBar seekBar = (SeekBar)view.findViewById(R.id.brightnessSeekBar);
+        CheckBox autoBrightness = (CheckBox) view.findViewById(R.id.autoBrightness);
+        if (autoBrightness.isChecked())
+        {
+            hudObject.setAuto_brightness(true);
+        }else
+        {
+            hudObject.setAuto_brightness(false);
+        }
+        Integer brightness = seekBar.getProgress();
+        hudObject.setBrightness(brightness);
+        FileManager.saveToFile(this,hudObject);
     }
 
     @Override

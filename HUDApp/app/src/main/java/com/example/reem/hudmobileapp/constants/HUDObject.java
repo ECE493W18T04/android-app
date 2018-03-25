@@ -15,7 +15,7 @@ public class HUDObject {
     private List<String> priorityQueue;
     private int saturation;
     private int hue;
-    private double current;
+    private int current;
     private int brightness;
     private boolean auto_brightness;
 
@@ -66,11 +66,11 @@ public class HUDObject {
         this.hue = hue;
     }
 
-    public double getCurrent() {
+    public int getCurrent() {
         return current;
     }
 
-    public void setCurrent(double current) {
+    public void setCurrent(int current) {
         this.current = current;
     }
 

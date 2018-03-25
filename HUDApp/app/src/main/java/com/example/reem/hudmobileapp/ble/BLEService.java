@@ -25,6 +25,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.activities.MainActivity;
+import com.example.reem.hudmobileapp.constants.CharacteristicUUIDs;
 import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
@@ -32,6 +33,7 @@ import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.RunnableFuture;
@@ -43,11 +45,7 @@ import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
  */
 
 public class BLEService extends Service {
-    public static String TEXT_VALUE_CHARACTERISTIC = "0000a002-0000-1000-8000-00805f9b34fb";
-    public static String LED_CHARACTERISTIC = "0000a001-0000-1000-8000-00805f9b34fb";
-    public static String SERVICE = "0000a000-0000-1000-8000-00805f9b34fb";
-    public static String DISCONNECT_CHARACTERISTIC_UUID = "0000a004-0000-1000-8000-00805f9b34fb";
-    public static String VOICE_COMMAND_CHARACTERISTIC = "0000a001-0000-1000-8000-00805f9b34fb";
+
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothManager bluetoothManager;
     private BluetoothDevice bluetoothDevice;
@@ -76,7 +74,6 @@ public class BLEService extends Service {
     private boolean inFlight=false;
     private boolean enabled=true;
     private Set<BluetoothDevice> devices = new HashSet<>();
-
     private final String DEBUG_TAG = this.getClass().getSimpleName();
 
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
@@ -171,12 +168,18 @@ public class BLEService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == GATT_SUCCESS) {
                 Log.d(DEBUG_TAG, "GATT Status success");
-                BluetoothGattService service = bluetoothGatt.getService(UUID.fromString(SERVICE));
+                BluetoothGattService service = bluetoothGatt.getService(UUID.fromString(CharacteristicUUIDs.WNH_SERVICE_UUID));
                 if (service != null) {
                     bluetoothGattService = service;
                     Log.d(DEBUG_TAG, "Discovered service!");
                     setCharacteristicNotification(gatt);
-                    initialWriteCharacteristics();
+                    List<BluetoothGattCharacteristic> characteristics=bluetoothGattService.getCharacteristics();
+//                    try {
+////                        writeColor();
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    initialWriteCharacteristics();
                 }
             } else {
                 Log.w(DEBUG_TAG, "onServicesDiscovered received: " + status);
@@ -222,7 +225,7 @@ public class BLEService extends Service {
             Log.i(DEBUG_TAG, "Characteristic Changed");
             Log.i(DEBUG_TAG,characteristic.getUuid().toString() );
             //TODO launch voice command when appropriate characteristic received
-            if (characteristic.getUuid().toString().equalsIgnoreCase(VOICE_COMMAND_CHARACTERISTIC)) {
+            if (characteristic.getUuid().toString().equalsIgnoreCase(CharacteristicUUIDs.VOICE_CONTROL_CHARACTERTISTIC_UUID)) {
                 //startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -247,7 +250,7 @@ public class BLEService extends Service {
                 Log.w(DEBUG_TAG, "BluetoothAdapter not initialized");
                 return;
             }
-            BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(UUID.fromString(SERVICE)).getCharacteristic(UUID.fromString(LED_CHARACTERISTIC));
+            BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(UUID.fromString(CharacteristicUUIDs.WNH_SERVICE_UUID)).getCharacteristic(UUID.fromString(CharacteristicUUIDs.VOICE_CONTROL_CHARACTERTISTIC_UUID));
 
             Log.d(DEBUG_TAG,characteristic.getUuid().toString());
             for (BluetoothGattDescriptor descriptor:characteristic.getDescriptors())
@@ -264,6 +267,7 @@ public class BLEService extends Service {
         }
 
     };
+
 
 
 
@@ -299,6 +303,13 @@ public class BLEService extends Service {
         System.out.println("About to scan for devices");
         mHandler = new Handler();
         scanForDevices();
+        boolean failedConnect=false;
+//        while (isScanActive) {}
+//        if (isConnected && bluetoothGattService != null)
+//        {
+//            initialWriteCharacteristics();
+//        }
+
     }
 
 
@@ -322,10 +333,10 @@ public class BLEService extends Service {
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
-        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
-        if (!macAddresses.contains(bluetoothDeviceMACAdress))
-            macAddresses.add(bluetoothDeviceMACAdress);
-        FileManager.saveMACAddress(this,macAddresses);
+//        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
+//        if (!macAddresses.contains(bluetoothDeviceMACAdress))
+//            macAddresses.add(bluetoothDeviceMACAdress);
+//        FileManager.saveMACAddress(this,macAddresses);
         return true;
 
     }
@@ -379,12 +390,13 @@ public class BLEService extends Service {
             if (bluetoothGattService != null)
             {
                 Log.e(DEBUG_TAG,bluetoothGattService.toString());
-                BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(DISCONNECT_CHARACTERISTIC_UUID));
+                BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.DISCONNECT_CHARACTERISTIC_UUID));
                 writeCr.setValue(value.getBytes());
 //                writeCr.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                 Log.d(DEBUG_TAG, writeCr.getValue().toString());
                 Log.d(DEBUG_TAG,writeCr.toString());
                 bluetoothGatt.writeCharacteristic(writeCr);
+
             }
 //           bluetoothGatt.disconnect();
         }

@@ -19,10 +19,15 @@ package com.example.reem.hudmobileapp.activities;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.example.reem.hudmobileapp.constants.DefaultPriorityList;
+import com.example.reem.hudmobileapp.constants.HUDObject;
+import com.example.reem.hudmobileapp.constants.PriorityQueueEnum;
+import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.views.DynamicListView;
 import com.example.reem.hudmobileapp.R;
 import com.example.reem.hudmobileapp.views.StableArrayAdapter;
@@ -39,6 +44,7 @@ import java.util.ArrayList;
  */
 public class PriorityQueueActivity extends Activity {
 
+    private Button priorityQueueBtnOkay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,11 +56,23 @@ public class PriorityQueueActivity extends Activity {
         }
 
         StableArrayAdapter adapter = new StableArrayAdapter(this, R.layout.text_view, priorityList);
-        DynamicListView listView = (DynamicListView) findViewById(R.id.listview);
+        final DynamicListView listView = (DynamicListView) findViewById(R.id.listview);
 
         listView.setPriorityQueryArray(priorityList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        ArrayList<String> priorityQueue=listView.getPriorityQueueArray();
+        priorityQueueBtnOkay = (Button) findViewById(R.id.priorityQueueBtn);
+        priorityQueueBtnOkay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HUDObject hudObject=FileManager.loadFromFile(PriorityQueueActivity.this);
+                hudObject.setPriorityQueue(listView.getPriorityQueueArray());
+                FileManager.saveToFile(PriorityQueueActivity.this,hudObject);
+                finish();
+            }
+        });
     }
 
 

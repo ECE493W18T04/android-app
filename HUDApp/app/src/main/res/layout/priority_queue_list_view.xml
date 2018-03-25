@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
     tools:context=".activities.PriorityQueueActivity" >
 
     <!--<ListView xmlns:android="http://schemas.android.com/apk/res/android"-->
@@ -12,8 +13,22 @@
 
     <com.example.reem.hudmobileapp.views.DynamicListView
         android:id="@+id/listview"
-        android:background="#0000"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="400dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/black"
+        android:dividerHeight="1px"
+        android:divider="@android:color/white"/>
+
+    <Button
+        android:id="@+id/priorityQueueBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="12dp"
+        android:layout_marginEnd="28dp"
+        android:text="Apply" />
 
 </RelativeLayout>
