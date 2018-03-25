@@ -3,8 +3,9 @@
 
 #define MAX_SAT 100.0
 #define MAX_BRIGHTNESS 100.0
+#define AUTO_BRIGHTNESS_MASK 0x80
 
-DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK) {
+DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK), luxDevice(I2C_SDA0, I2C_SCL0) {
     port.format(8,3);
     port.frequency(clockSpeed);
     _eventQueue.call_every(62, this, &DisplayDriver::handleTick); // 16Hz
@@ -124,5 +125,6 @@ void DisplayDriver::drawPixel(uint16_t x, uint16_t y) {
 }
 
 void DisplayDriver::handleTick() {
-    // alg.addSample(luxDevice.getLux());
+    alg.addSample(luxDevice.getLux());
+    brightness |= AUTO_BRIGHTNESS_MASK;
 }

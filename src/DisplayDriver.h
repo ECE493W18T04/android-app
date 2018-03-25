@@ -4,6 +4,7 @@
 #include "mbed.h"
 #include "mbed_events.h"
 #include "AutoBrightnessAlgorithm.h"
+#include "TSL2561_I2C.h"
 
 class DisplayDriver {
 public:
@@ -19,6 +20,8 @@ private:
     void handleTick();
     // AutoBrightnessAlgorithm alg;
     SPI port;
+    TSL2561_I2C luxDevice;
+    AutoBrightnessAlg alg;
     uint8_t brightness;
     uint16_t width;
     uint16_t height;
