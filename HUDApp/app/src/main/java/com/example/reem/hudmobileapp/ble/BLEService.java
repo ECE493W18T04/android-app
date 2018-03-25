@@ -11,13 +11,10 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 
@@ -29,13 +26,9 @@ import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
 /**
@@ -53,10 +46,9 @@ public class BLEService extends Service {
     private BluetoothDevice bluetoothDevice;
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattService bluetoothGattService;
-    private final IBinder mBinder = new BLEBinder();
     private Handler mHandler;
-    private Handler voiceCommaneHandler;
-
+    private Handler voiceCommandHandler;
+    private  IBinder mBinder;
     private String bluetoothDeviceMACAdress=null;
     private int lastTransmittedCode = 0;
     private Thread blueToothScanThread = null;
@@ -73,8 +65,8 @@ public class BLEService extends Service {
         }
     }
 
-    public void GetStuff(){
-
+    public boolean isConnected() {
+        return isConnected;
     }
     private boolean isScanActive=false;
     private boolean isConnected= false;
@@ -83,6 +75,16 @@ public class BLEService extends Service {
     private Set<BluetoothDevice> devices = new HashSet<>();
 
     private final String DEBUG_TAG = this.getClass().getSimpleName();
+
+    public boolean IsConnected () {
+        return isConnected;
+    }
+    public BluetoothGattService getBluetoothGattService() {
+        return bluetoothGattService;
+    }
+    public BluetoothGatt getBluetoothGatt() {
+        return bluetoothGatt;
+    }
 
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
@@ -181,7 +183,7 @@ public class BLEService extends Service {
                     bluetoothGattService = service;
                     Log.d(DEBUG_TAG, "Discovered service!");
                     setCharacteristicNotification(gatt);
-                    initialWriteCharacteristics();
+                    //initialWriteCharacteristics();
                 }
             } else {
                 Log.w(DEBUG_TAG, "onServicesDiscovered received: " + status);
@@ -232,7 +234,7 @@ public class BLEService extends Service {
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
-                voiceCommaneHandler.post(new Runnable() {
+                voiceCommandHandler.post(new Runnable() {
                     @Override
                     public void run() {
 
@@ -281,6 +283,8 @@ public class BLEService extends Service {
     public void onCreate()
     {
         super.onCreate();
+        mBinder = new BLEBinder();
+
         Toast.makeText(getApplicationContext(), "Check if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
         Log.i("","About to find bluetooth settings");
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -300,10 +304,10 @@ public class BLEService extends Service {
 
 
         }
-        voiceCommaneHandler = new Handler();
-        System.out.println("About to scan for devices");
+        voiceCommandHandler = new Handler();
+        System.out.println("About to scan for devices: onCreate");
         mHandler = new Handler();
-        scanForDevices();
+        //scanForDevices();
     }
 
 
@@ -327,10 +331,10 @@ public class BLEService extends Service {
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
-        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
-        if (!macAddresses.contains(bluetoothDeviceMACAdress))
-            macAddresses.add(bluetoothDeviceMACAdress);
-        FileManager.saveMACAddress(this,macAddresses);
+//        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
+  //      if (!macAddresses.contains(bluetoothDeviceMACAdress))
+    //        macAddresses.add(bluetoothDeviceMACAdress);
+      //  FileManager.saveMACAddress(this,macAddresses);
         return true;
 
     }
@@ -402,7 +406,7 @@ public class BLEService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Toast.makeText(getApplicationContext(), "Figuring out where the problem is", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "Figuring out where the problem is", Toast.LENGTH_SHORT).show();
         return mBinder;
     }
 }
