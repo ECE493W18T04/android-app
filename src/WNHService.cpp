@@ -85,7 +85,6 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
         &maxCurrentCharacteristic,
         &mapsDirAndUnitsCharacteristic,
         &speedUnitsAndSignalCharacteristic,
-        &maxCurrentCharacteristic,
         &autoBrightCharacteristic
     };
     uint16_t sizeOfGattCharTable = sizeof(charTable) / sizeof(GattCharacteristic *);
@@ -116,18 +115,20 @@ void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t 
 
 void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == sizeof(uint32_t))) {
-        currentTime = *((uint32_t*)(params->data));
+        currentTime = *((uint32_t*)params->data);
         printf("Current time %lu\n", currentTime);
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
         ble.gap().disconnect(params->connHandle, Gap::REMOTE_USER_TERMINATED_CONNECTION);
     } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() && params->len == sizeof(uint16_t)) {
-        maxCurrent = *(params->data);
+        maxCurrent = *((uint16_t*)params->data);
         printf("Max Current: %d\n", maxCurrent);
     } else if (params->handle == this->colorCharacteristic.getValueHandle() && params->len == sizeof(uint16_t)) {
-        colorNumber = *((uint16_t *)(params->data));
+        colorNumber = *((uint16_t *)params->data);
         uint8_t satVal = colorNumber & SAT_MASK;
         uint16_t hueVal = colorNumber >> HUE_SHIFT;
         printf("Hue: %d, Sat: %d\n", hueVal, satVal);
+    } else {
+        printf("Got Handle: %d\n", params->handle);
     }
     printf("Got write, len: %d\n", params->len);
 }
