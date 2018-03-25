@@ -58,16 +58,21 @@ public class BLEService extends Service {
     private int lastTransmittedCode = 0;
     private Thread blueToothScanThread = null;
 
+    public IBinder getBinder() {
+        return mBinder;
+    }
 
     // when the ble service is initialized.
     public class BLEBinder extends Binder {
-        BLEService getService() {
+        public BLEService getService() {
             // Return this instance of LocalService so clients can call public methods
             return BLEService.this;
         }
     }
 
+    public void GetStuff(){
 
+    }
     private boolean isScanActive=false;
     private boolean isConnected= false;
     private boolean inFlight=false;

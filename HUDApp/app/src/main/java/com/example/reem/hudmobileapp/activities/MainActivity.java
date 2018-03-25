@@ -57,10 +57,6 @@ public class MainActivity extends AppCompatActivity {
 //        setSupportActionBar(toolbar);
         navButton = (Button) findViewById(R.id.navButton);
         System.out.println(navButton);
-        Button voiceButton = (Button) findViewById(R.id.btnSpeak);
-
-        voiceString = (TextView) findViewById(R.id.txtSpeechInput);
-        voiceString.setText("Voice Recognized text");
 
 
         File file = new File(this.getFilesDir(), "mac.sav");
@@ -104,13 +100,6 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},RECORD_AUDIO_PERMISSION);
         }
 
-        voiceButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
 
         if(!isNotificationServiceEnabled()){
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
