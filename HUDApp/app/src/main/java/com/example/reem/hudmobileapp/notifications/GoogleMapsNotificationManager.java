@@ -40,8 +40,8 @@ public class GoogleMapsNotificationManager extends NotificationManager {
         ImageView turnArrow = (ImageView) layout.getChildAt(0);
         LinearLayout ll = (LinearLayout) ((LinearLayout) layout.getChildAt(1)).getChildAt(0);
         TextView distance = (TextView) ll.getChildAt(0);
-        //TextView eta = (TextView) ll.getChildAt(1);
-        //TextView StreetName = (TextView) ll.getChildAt(2);
+        TextView StreetName = (TextView) ll.getChildAt(1);
+        //TextView eta = (TextView) ll.getChildAt(2);
 
         Bitmap scrappedImage = drawableToBitmap(turnArrow.getDrawable());
 
@@ -59,11 +59,10 @@ public class GoogleMapsNotificationManager extends NotificationManager {
 
         Log.d(DEBUG_TAG,"DirectionDrawable: "+context.getResources().getResourceEntryName(correspondingDrawable));
         Log.d(DEBUG_TAG, "Distance: "+distance.getText().toString());
-        //Log.d(DEBUG_TAG, "ETA: "+eta.getText().toString());
-        //Log.d(DEBUG_TAG, "StreetNumber: "+StreetName.getText().toString());
+        Log.d(DEBUG_TAG, "StreetNumber: "+StreetName.getText().toString());
 
         //TODO: Combine direction and Distance and pack into byte[]
-
+        //Maps_street, Maps_distance, maps_direction, Maps_unit
         return new byte[0];
     }
 

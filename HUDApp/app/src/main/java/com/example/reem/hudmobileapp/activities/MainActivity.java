@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         getHudItem();
         checkPreviousConnection();
 
+
         String[] options = new String[]{"Priority Queue","Brightness Control","HUD Color"};
         ArrayAdapter<String> itemsAdapter =
                 new ArrayAdapter<String>(this, R.layout.list_item, options);
@@ -129,8 +130,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSIONS);
 
         }
-
-
+        
 
         if(!isNotificationServiceEnabled()){
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
