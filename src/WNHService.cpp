@@ -114,19 +114,68 @@ void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t 
 }
 
 void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
-    if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == sizeof(uint32_t))) {
+    if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) &&
+            (params->len == sizeof(uint32_t))) {
         currentTime = *((uint32_t*)params->data);
-        printf("Current time %lu\n", currentTime);
+        ClockNotification * clk = (ClockNotification*)stateMgr.getState(CLOCK_INDEX);
+        clk->update(currentTime);
+    } else if (params->handle == this->stateOverrideCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+        // TODO
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
+        // Disconnect Handler, does not handle data
         ble.gap().disconnect(params->connHandle, Gap::REMOTE_USER_TERMINATED_CONNECTION);
-    } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() && params->len == sizeof(uint16_t)) {
-        maxCurrent = *((uint16_t*)params->data);
-        printf("Max Current: %d\n", maxCurrent);
-    } else if (params->handle == this->colorCharacteristic.getValueHandle() && params->len == sizeof(uint16_t)) {
+    } else if (params->handle == this->clockMapsPriorityCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+        // TODO
+    } else if (params->handle == this->callMusicPriorityCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+        // TODO
+    } else if (params->handle == this->speedFuelPriorityCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+        // TODO
+    } else if (params->handle == this->mapsStreetNameCharacteristic.getValueHandle() &&
+            params->len <= MAX_CHAR_LENGTH) {
+        // TODO
+    } else if (params->handle == this->musicSongNameCharacteristic.getValueHandle() &&
+            params->len <= MAX_CHAR_LENGTH) {
+        // TODO
+        char * str = (char*)params->data;
+        printf("Got %s\n", str);
+    } else if (params->handle == this->callNameCharacteristic.getValueHandle() &&
+            params->len <= MAX_CHAR_LENGTH) {
+        // TODO
+    } else if (params->handle == this->mapsStreetNameCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint32_t)) {
+        // TODO
+    } else if (params->handle == this->speedNumberCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint16_t)) {
+        // TODO
+    } else if (params->handle == this->fuelNumberCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+    } else if (params->handle == this->brightnessCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+    } else if (params->handle == this->colorCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint16_t)) {
+        // TODO
         colorNumber = *((uint16_t *)params->data);
         uint8_t satVal = colorNumber & SAT_MASK;
         uint16_t hueVal = colorNumber >> HUE_SHIFT;
         printf("Hue: %d, Sat: %d\n", hueVal, satVal);
+    } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint16_t)) {
+        // TODO
+        maxCurrent = *((uint16_t*)params->data);
+        printf("Max Current: %d\n", maxCurrent);
+    } else if (params->handle == this->mapsDirAndUnitsCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+        // TODO
+    } else if (params->handle == this->speedUnitsAndSignalCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint8_t)) {
+        // TODO
+    } else if (params->handle == this->autoBrightCharacteristic.getValueHandle() &&
+            params->len == sizeof(uint16_t)) {
+        // TODO
     } else {
         printf("Got Handle: %d\n", params->handle);
     }
