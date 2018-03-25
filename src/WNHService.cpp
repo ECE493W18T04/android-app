@@ -2,6 +2,8 @@
 #include <Gap.h>
 
 #define PAIRING_TIMEOUT_MS 20000 // 20s
+#define SAT_MASK 0x7F
+#define HUE_SHIFT 7
 
 const char*    WNHService::DEVICE_NAME = "WNH";
 const uint16_t WNHService::uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
@@ -113,10 +115,19 @@ void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t 
 }
 
 void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
-    if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == 4)) {
-        currentTime = *(params->data);
+    if ((params->handle == this->currentTimeCharacteristic.getValueHandle()) && (params->len == sizeof(uint32_t))) {
+        currentTime = *((uint32_t*)(params->data));
+        printf("Current time %lu\n", currentTime);
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
         ble.gap().disconnect(params->connHandle, Gap::REMOTE_USER_TERMINATED_CONNECTION);
+    } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() && params->len == sizeof(uint16_t)) {
+        maxCurrent = *(params->data);
+        printf("Max Current: %d\n", maxCurrent);
+    } else if (params->handle == this->colorCharacteristic.getValueHandle() && params->len == sizeof(uint16_t)) {
+        colorNumber = *((uint16_t *)(params->data));
+        uint8_t satVal = colorNumber & SAT_MASK;
+        uint16_t hueVal = colorNumber >> HUE_SHIFT;
+        printf("Hue: %d, Sat: %d\n", hueVal, satVal);
     }
     printf("Got write, len: %d\n", params->len);
 }
