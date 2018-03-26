@@ -175,10 +175,13 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     } else if (params->handle == this->speedNumberCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
         speedNumber = *((uint16_t*)params->data);
-
+        VehicleSpeed * speed = (VehicleSpeed *)stateMgr.getState(VEHICLE_SPEED_INDEX);
+        speed->update(speedNumber);
     } else if (params->handle == this->fuelNumberCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
-        // TODO
+        fuelNumber = *(params->data);
+        FuelLevel * fuel = (FuelLevel *)stateMgr.getState(FUEL_LEVEL_INDEX);
+        fuel->update(fuelNumber);
     } else if (params->handle == this->colorCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
         // TODO
@@ -193,9 +196,14 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         printf("Max Current: %d\n", maxCurrent);
     } else if (params->handle == this->mapsDirAndUnitsCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
-        // TODO
+        mapsDirectionAndUnits = *(params->data);
+        NavigationNotification * maps = (NavigationNotification*)stateMgr.getState(NAVIGATION_INDEX);
+        uint8_t direction = UPPER_NIBBLE(mapsDirectionAndUnits);
+        uint8_t units = LOWER_NIBBLE(mapsDirectionAndUnits);
+        maps->update(direction, units);
     } else if (params->handle == this->speedUnitsAndSignalCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
+        speedUnitsAndSignalStatus = *(params->data);
         // TODO
     } else if (params->handle == this->autoBrightCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {

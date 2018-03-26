@@ -7,5 +7,8 @@ bool VehicleSpeed::tick() {
     return DefaultState::tick();
 }
 
-void VehicleSpeed::update(uint8_t speed, uint8_t units) {
+void VehicleSpeed::update(uint16_t speed) {
+}
+
+void VehicleSpeed::update(uint8_t units) {
 }

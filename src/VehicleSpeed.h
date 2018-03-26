@@ -7,7 +7,8 @@ class VehicleSpeed : public DefaultState {
 public:
     VehicleSpeed(StateManager& _stateMgr);
     bool tick();
-    void update(uint8_t speed, uint8_t units);
+    void update(uint16_t speed);
+    void update(uint8_t units);
 private:
     uint8_t speed, units;
 };
