@@ -7,6 +7,7 @@ class SignalOverlay : public TempState {
 public:
     SignalOverlay(StateManager& _stateMgr);
     bool tick();
+    bool kick();
     void update(uint8_t direction);
 private:
     uint8_t direction;

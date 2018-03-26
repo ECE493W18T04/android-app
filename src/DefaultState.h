@@ -7,6 +7,7 @@ class DefaultState : public State {
 public:
     DefaultState(StateManager& _stateMgr);
     virtual bool tick();
+    virtual bool kick();
 };
 
 #endif // DEFAULTSTATE_h

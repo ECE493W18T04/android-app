@@ -7,6 +7,10 @@ bool NavigationNotification::tick() {
     return TempState::tick();
 }
 
+bool NavigationNotification::kick() {
+    return true;
+}
+
 void NavigationNotification::update(char street[], int len) {
     printf("Navigation Street: %s\n", street);
 }

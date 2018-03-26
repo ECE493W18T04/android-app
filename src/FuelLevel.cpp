@@ -11,3 +11,7 @@ void FuelLevel::update(uint8_t fuelLevel) {
 bool FuelLevel::tick() {
     return TimedState::tick();
 }
+
+bool FuelLevel::kick() {
+    return true;
+}

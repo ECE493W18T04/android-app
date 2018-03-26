@@ -33,11 +33,13 @@ public:
     void pushOverlay(State* state);
     void forceState(int id);
     State* getState(int id);
+    GraphicsManager& getGfxManager();
 private:
     State* States[STATE_COUNT];
     State* currentState;
     State* overlay;
     GraphicsManager graphicsMgr;
+    bool forced;
 };
 
 #endif // STATEMANAGER_h

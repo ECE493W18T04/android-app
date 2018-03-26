@@ -15,6 +15,7 @@ public:
     bool getActive();
     int getPriority();
     virtual bool tick() = 0;
+    virtual bool kick() = 0;
     StateManager& getManager();
 private:
     int priority;

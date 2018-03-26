@@ -9,6 +9,7 @@ public:
     FuelLevel(StateManager& _stateMgr);
     void update(uint8_t fuelLevel);
     bool tick();
+    bool kick();
 private:
     uint8_t fuelLevel;
 };

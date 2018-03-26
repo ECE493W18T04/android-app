@@ -9,5 +9,9 @@ bool MusicNotification::tick() {
     return TimedState::tick();
 }
 
+bool MusicNotification::kick() {
+    return true;
+}
+
 void MusicNotification::update(char data[], int len) {
 }

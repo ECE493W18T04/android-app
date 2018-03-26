@@ -8,6 +8,7 @@ public:
     PairingState(StateManager& _stateMgr);
     void update(uint32_t key);
     bool tick();
+    bool kick();
 private:
     uint32_t key;
 };

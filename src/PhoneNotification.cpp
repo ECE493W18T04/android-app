@@ -7,5 +7,9 @@ bool PhoneNotification::tick() {
     return TempState::tick();
 }
 
+bool PhoneNotification::kick() {
+    return true;
+}
+
 void PhoneNotification::update(char data[], int len) {
 }
