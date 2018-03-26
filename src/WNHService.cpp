@@ -204,7 +204,12 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     } else if (params->handle == this->speedUnitsAndSignalCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
         speedUnitsAndSignalStatus = *(params->data);
-        // TODO
+        uint8_t speedUnits = UPPER_NIBBLE(speedUnitsAndSignalStatus);
+        uint8_t signalStatus = LOWER_NIBBLE(speedUnitsAndSignalStatus);
+        VehicleSpeed * speed = (VehicleSpeed *)stateMgr.getState(VEHICLE_SPEED_INDEX);
+        SignalOverlay * sigOverlay = (SignalOverlay *)stateMgr.getState(SIGNAL_INDEX);
+        speed->update(speedUnits);
+        sigOverlay->update(signalStatus);
     } else if (params->handle == this->autoBrightCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
         // TODO
