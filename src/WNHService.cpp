@@ -27,7 +27,6 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     mapsDistanceNumber(MAPS_DISTANCE_VALUE_DEFAULT),
     speedNumber(SPEED_VALUE_DEFAULT),
     fuelNumber(FUEL_VALUE_DEFAULT),
-    brightnessNumber(BRIGHTNESS_VALUE_DEFAULT),
     colorNumber(SAT_COLOR_VALUE_DEFAULT),
     maxCurrent(MAX_CURRENT_VALUE_DEFAULT),
 
@@ -55,7 +54,6 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     mapsDistanceNumberCharacteristic(MAPS_DISTANCE_CHARACTERISTIC_UUID, &mapsDistanceNumber),
     speedNumberCharacteristic(SPEED_VALUE_CHARACTERISTIC_UUID, &speedNumber),
     fuelNumberCharacteristic(FUEL_VALUE_CHARACTERISTIC_UUID, &fuelNumber),
-    brightnessCharacteristic(BRIGHTNESS_CHARACTERISTIC_UUID, &brightnessNumber),
     colorCharacteristic(COLOR_CHARACTERISTIC_UUID, &colorNumber),
     maxCurrentCharacteristic(MAX_CURRENT_CHARACTERISTIC_UUID, &maxCurrent),
 
@@ -82,7 +80,6 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
         &mapsDistanceNumberCharacteristic,
         &speedNumberCharacteristic,
         &fuelNumberCharacteristic,
-        &brightnessCharacteristic,
         &colorCharacteristic,
         &maxCurrentCharacteristic,
         &mapsDirAndUnitsCharacteristic,
@@ -170,16 +167,18 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         char * str = (char*)params->data;
         PhoneNotification * phone = (PhoneNotification *)stateMgr.getState(PHONE_INDEX);
         phone->update(str, params->len);
-    } else if (params->handle == this->mapsStreetNameCharacteristic.getValueHandle() &&
+    } else if (params->handle == this->mapsDistanceNumberCharacteristic.getValueHandle() &&
             params->len == sizeof(uint32_t)) {
-        // TODO
+        mapsDistanceNumber = *((uint32_t*)params->data);
+        NavigationNotification * maps = (NavigationNotification*)stateMgr.getState(NAVIGATION_INDEX);
+        maps->update(mapsDistanceNumber);
     } else if (params->handle == this->speedNumberCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
-        // TODO
+        speedNumber = *((uint16_t*)params->data);
+
     } else if (params->handle == this->fuelNumberCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
-    } else if (params->handle == this->brightnessCharacteristic.getValueHandle() &&
-            params->len == sizeof(uint8_t)) {
+        // TODO
     } else if (params->handle == this->colorCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
         // TODO

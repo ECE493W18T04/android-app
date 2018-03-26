@@ -108,7 +108,6 @@ private:
     uint32_t mapsDistanceNumber;
     uint16_t speedNumber;
     uint8_t fuelNumber;
-    uint8_t brightnessNumber;
     uint16_t colorNumber;
     uint16_t maxCurrent;
 
@@ -179,10 +178,6 @@ private:
      * fuel value (in a percent)
      */
     WriteOnlyGattCharacteristic<uint8_t>   fuelNumberCharacteristic;
-    /**
-     * brightness value (in a percent)
-     */
-    WriteOnlyGattCharacteristic<uint8_t>   brightnessCharacteristic;
     /**
      * color colorCharacteristic
      * MSB 7..15 Hue

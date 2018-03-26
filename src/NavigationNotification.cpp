@@ -10,8 +10,9 @@ bool NavigationNotification::tick() {
 void NavigationNotification::update(char street[], int len) {
 }
 
-void NavigationNotification::update(uint8_t direction) {
+void NavigationNotification::update(uint8_t direction, uint8_t distanceUnits) {
 }
 
-void NavigationNotification::update(uint16_t distance, uint8_t distanceUnits) {
+void NavigationNotification::update(uint32_t distance) {
+    printf("Navigation: Distance %lu\n", distance);
 }

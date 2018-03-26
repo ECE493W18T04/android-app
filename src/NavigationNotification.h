@@ -8,8 +8,8 @@ public:
     NavigationNotification(StateManager& _stateMgr);
     bool tick();
     void update(char street[], int len);
-    void update(uint8_t direction);
-    void update(uint16_t distance, uint8_t distanceUnits);
+    void update(uint8_t direction, uint8_t distanceUnits);
+    void update(uint32_t distance);
 private:
     char street[MAX_CHAR_LENGTH];
     uint8_t direction;
