@@ -16,5 +16,5 @@ void NavigationNotification::update(uint8_t direction, uint8_t distanceUnits) {
 }
 
 void NavigationNotification::update(uint32_t distance) {
-    printf("Navigation: Distance %lu\n", distance);
+    printf("Navigation: Distance %lu, %d, %d, %d, %d\n", distance, distance >> 24, (distance >> 16) & 0xFF, (distance >> 8) & 0xFF, distance & 0xFF);
 }
