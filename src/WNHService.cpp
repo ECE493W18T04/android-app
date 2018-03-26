@@ -184,15 +184,15 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         fuel->update(fuelNumber);
     } else if (params->handle == this->colorCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
-        // TODO
         colorNumber = *((uint16_t *)params->data);
         uint8_t satVal = colorNumber & SAT_MASK;
         uint16_t hueVal = colorNumber >> HUE_SHIFT;
         printf("Hue: %d, Sat: %d\n", hueVal, satVal);
+        // TODO
     } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
-        // TODO
         maxCurrent = *((uint16_t*)params->data);
+        // TODO
         printf("Max Current: %d\n", maxCurrent);
     } else if (params->handle == this->mapsDirAndUnitsCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
@@ -222,11 +222,12 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
 void WNHService::beginPairingMode() {
     setupGapAdvertising(true);
     eventQueue.call_in(PAIRING_TIMEOUT_MS, this, &WNHService::pairingModeTimeout);
-    // TODO trigger display to show key
+    stateMgr.forceState(PAIRING_INDEX);
 }
 
 void WNHService::pairingModeTimeout() {
     setupGapAdvertising(false);
+    stateMgr.forceState(STATE_OVERRIDE_INVALID);
 }
 
 void WNHService::sendVoiceCommandTrigger() {
