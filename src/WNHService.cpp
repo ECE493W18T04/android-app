@@ -149,8 +149,8 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     } else if (params->handle == this->speedFuelPriorityCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
         speedFuelPriority = *(params->data);
-        uint8_t speedPriority = UPPER_NIBBLE(callMusicPriority);
-        uint8_t fuelPriority = LOWER_NIBBLE(callMusicPriority);
+        uint8_t speedPriority = UPPER_NIBBLE(speedFuelPriority);
+        uint8_t fuelPriority = LOWER_NIBBLE(speedFuelPriority);
         printf("Priority: Speed: %d, Fuel: %d\n", speedPriority, fuelPriority);
         VehicleSpeed * speed = (VehicleSpeed *)stateMgr.getState(VEHICLE_SPEED_INDEX);
         FuelLevel * fuel = (FuelLevel *)stateMgr.getState(FUEL_LEVEL_INDEX);
