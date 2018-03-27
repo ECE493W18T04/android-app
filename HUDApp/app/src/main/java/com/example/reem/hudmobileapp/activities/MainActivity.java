@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSIONS);
 
         }
-        
+
 
         if(!isNotificationServiceEnabled()){
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             FileManager.saveMACAddress(this,null);
         }
         ArrayList<String> value = FileManager.readMACAddress(this);
-        Log.e("MACADDRESSFAILURE",value.toString());
+        //Log.e("MACADDRESSFAILURE",value.toString());
     }
 
     public void restore()
