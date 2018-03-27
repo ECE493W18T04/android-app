@@ -4,6 +4,7 @@
 #define PAIRING_TIMEOUT_MS 20000 // 20s
 #define SAT_MASK 0x7F
 #define HUE_SHIFT 7
+#define AUTO_BRIGHTNESS_MASK 0x80
 #define UPPER_NIBBLE(X) (X >> 4)
 #define LOWER_NIBBLE(X) (X & 0x0F)
 
@@ -130,6 +131,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         clockMapsPriority = *(params->data);
         uint8_t clockPriority = UPPER_NIBBLE(clockMapsPriority);
         uint8_t mapsPriority =  LOWER_NIBBLE(clockMapsPriority);
+        printf("Priority: Clock: %d, Maps: %d\n", clockPriority, mapsPriority);
         ClockNotification * clk = (ClockNotification*)stateMgr.getState(CLOCK_INDEX);
         NavigationNotification * maps = (NavigationNotification*)stateMgr.getState(NAVIGATION_INDEX);
         clk->setPriority(clockPriority);
@@ -139,6 +141,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         callMusicPriority = *(params->data);
         uint8_t callPriority = UPPER_NIBBLE(callMusicPriority);
         uint8_t musicPriority = LOWER_NIBBLE(callMusicPriority);
+        printf("Priority: Phone: %d, Music: %d\n", callPriority, musicPriority);
         PhoneNotification * phone = (PhoneNotification *)stateMgr.getState(PHONE_INDEX);
         MusicNotification * music = (MusicNotification *)stateMgr.getState(MUSIC_INDEX);
         phone->setPriority(callPriority);
@@ -148,6 +151,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         speedFuelPriority = *(params->data);
         uint8_t speedPriority = UPPER_NIBBLE(callMusicPriority);
         uint8_t fuelPriority = LOWER_NIBBLE(callMusicPriority);
+        printf("Priority: Speed: %d, Fuel: %d\n", speedPriority, fuelPriority);
         VehicleSpeed * speed = (VehicleSpeed *)stateMgr.getState(VEHICLE_SPEED_INDEX);
         FuelLevel * fuel = (FuelLevel *)stateMgr.getState(FUEL_LEVEL_INDEX);
         speed->setPriority(speedPriority);
@@ -211,8 +215,13 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         speed->update(speedUnits);
         sigOverlay->update(signalStatus);
     } else if (params->handle == this->autoBrightCharacteristic.getValueHandle() &&
-            params->len == sizeof(uint16_t)) {
-        // TODO
+            params->len == sizeof(uint8_t)) {
+        autoBrightness = *(params->data);
+        if (AUTO_BRIGHTNESS_MASK & autoBrightness) {
+            printf("Autobrightness enabled\n");
+        } else {
+            printf("Brightness: %d\n", autoBrightness);
+        }
     } else {
         printf("Got Handle: %d\n", params->handle);
     }
