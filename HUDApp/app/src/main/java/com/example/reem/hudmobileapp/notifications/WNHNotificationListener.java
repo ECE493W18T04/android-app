@@ -93,7 +93,7 @@ public class WNHNotificationListener extends NotificationListenerService
             case GOOGLE_MAPS:
                 if(!sbn.isClearable()) {
                     // initialize ble stuff here if not already initialized
-                    if (!isMyServiceRunning()){
+                    if (!isMyServiceRunning(BLEService.class)){
 
                     }
                     //no useful information in extras
@@ -120,7 +120,6 @@ public class WNHNotificationListener extends NotificationListenerService
                 if (isMyServiceRunning(BLEService.class)) {
                     Intent BLEIntent = new Intent(this, BLEService.class);
                     bindService(BLEIntent, mConnection, BIND_AUTO_CREATE);
-                    mService.
                     notificationManager = new SMSNotificationManager(sbn);
                     content=notificationManager.getContent();
                 }

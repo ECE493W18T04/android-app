@@ -13,11 +13,12 @@ import java.util.List;
 public class HUDObject {
 
     private List<String> priorityQueue;
-    private int saturation;
-    private int hue;
+    private float saturation;
+    private float hue;
     private int current;
     private int brightness;
     private boolean auto_brightness;
+    private float hsvBrightness;
 
     public HUDObject()
     {
@@ -26,18 +27,20 @@ public class HUDObject {
         this.saturation = 0;
         this.hue = 0;
         this.brightness = 20;
-        this.current = 3;
+        this.current = 1000;
         this.auto_brightness = true;
+        this.hsvBrightness= 1f;
     }
 
     private void addItemsToPriorityQueue()
     {
-        priorityQueue.add("Fuel Level");
-        priorityQueue.add("Speed Level");
-        priorityQueue.add("Music Display");
-        priorityQueue.add("Call Display");
-        priorityQueue.add("Navigational Display");
-        priorityQueue.add("Clock Display");
+        priorityQueue.add(PriorityQueueEnum.FUEL_LEVEL.getValue());
+        priorityQueue.add(PriorityQueueEnum.SPEED_LEVEL.getValue());
+        priorityQueue.add(PriorityQueueEnum.MUSIC_DISPLAY.getValue());
+        priorityQueue.add(PriorityQueueEnum.CALL_DISPLAY.getValue());
+        priorityQueue.add(PriorityQueueEnum.NAVIGATION_DISPLAY.getValue());
+        priorityQueue.add(PriorityQueueEnum.CLOCK_DISPLAY.getValue());
+
     }
 
     public List<String> getPriorityQueue()
@@ -50,19 +53,19 @@ public class HUDObject {
         this.priorityQueue=priorityQueue;
     }
 
-    public int getSaturation() {
+    public float getSaturation() {
         return saturation;
     }
 
-    public void setSaturation(int saturation) {
+    public void setSaturation(float saturation) {
         this.saturation = saturation;
     }
 
-    public int getHue() {
+    public float getHue() {
         return hue;
     }
 
-    public void setHue(int hue) {
+    public void setHue(float hue) {
         this.hue = hue;
     }
 
@@ -88,5 +91,13 @@ public class HUDObject {
 
     public void setAuto_brightness(boolean auto_brightness) {
         this.auto_brightness = auto_brightness;
+    }
+
+    public float getHsvBrightness() {
+        return hsvBrightness;
+    }
+
+    public void setHsvBrightness(float hsvBrightness) {
+        this.hsvBrightness = hsvBrightness;
     }
 }

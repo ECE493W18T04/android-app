@@ -32,6 +32,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import android.widget.SeekBar;
@@ -45,15 +46,17 @@ import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.constants.PreferencesEnum;
 import com.example.reem.hudmobileapp.dialogs.BrightnessDialog;
 import com.example.reem.hudmobileapp.dialogs.ColorPickerDialog;
+import com.example.reem.hudmobileapp.dialogs.MaxCurrentDialog;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 
 
-public class MainActivity extends AppCompatActivity  implements BrightnessDialog.BrightnessDialogListener{
+public class MainActivity extends AppCompatActivity  implements BrightnessDialog.BrightnessDialogListener, MaxCurrentDialog.MaxCurrentDialogListener{
 
     private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
@@ -75,7 +78,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         checkPreviousConnection();
 
 
-        String[] options = new String[]{"Priority Queue","Brightness Control","HUD Color"};
+        String[] options = new String[]{"Priority Queue","Brightness Control","HUD Color", "Maximum Current"};
         ArrayAdapter<String> itemsAdapter =
                 new ArrayAdapter<String>(this, R.layout.list_item, options);
         String[] restore = new String[]{"Restore Default HUD Settings"};
@@ -182,7 +185,19 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 startActivity(intent);
            }else if (position == PreferencesEnum.COLOR_CONTROL.getValue())
            {
-               int initialColor = Color.WHITE;
+               HUDObject hudObject = FileManager.loadFromFile(this);
+               float hue=hudObject.getHue();
+               DecimalFormat df = new DecimalFormat(".00");
+               float saturation = hudObject.getSaturation();
+               saturation = Float.parseFloat(df.format(saturation/100));
+
+               float brightness = hudObject.getHsvBrightness();
+
+               float[] hsv = {hue,saturation,brightness};
+               int  color = Color.HSVToColor(hsv);
+               String rgbString = "Color Saved: "+"R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color)+"Hue: "+hue+" Saturation: "+saturation+" Brightness: "+brightness;
+               Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
+               int initialColor = color;
 
                 ColorPickerDialog colorPickerDialog = new ColorPickerDialog(MainActivity.this, initialColor, new ColorPickerDialog.OnColorSelectedListener() {
 
@@ -196,8 +211,29 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 colorPickerDialog.getWindow().setBackgroundDrawableResource(R.color.darkGray);
            }else if (position == PreferencesEnum.BRIGHTNESS_CONTROL.getValue())
            {
+
+
+               HUDObject hudObject = FileManager.loadFromFile(this);
+               int brightness = hudObject.getBrightness();
+               boolean autoBrightness = hudObject.isAuto_brightness();
+               Bundle bundle = new Bundle();
+               bundle.putBoolean("autobrighness",autoBrightness);
+               bundle.putInt("brightnessLevel",brightness);
+
                DialogFragment dialogFragment = new BrightnessDialog();
+               dialogFragment.setArguments(bundle);
                dialogFragment.show(getFragmentManager(),"BrightnessDialog");
+
+           }else if (position == PreferencesEnum.MAX_CURRENT.getValue())
+           {
+               HUDObject hudObject = FileManager.loadFromFile(this);
+               int maxCurrent = hudObject.getCurrent();
+               Bundle bundle = new Bundle();
+               bundle.putInt("maxLevel",maxCurrent);
+               DialogFragment dialogFragment = new MaxCurrentDialog();
+               dialogFragment.setArguments(bundle);
+               dialogFragment.show(getFragmentManager(),"MaxCurrentDialog");
+
            }
     }
 
@@ -268,16 +304,19 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         HUDObject hudObject = FileManager.loadFromFile(this);
         float[] hsv = new float[3];
         Color.colorToHSV(color,hsv);
-        int hue = Math.round(hsv[0]);
-        int saturation = Math.round(hsv[1]);
-        if (saturation >= 360 )
-            saturation = 360;
-        if (hue >= 100)
-            hue = 100;
+        float hue = hsv[0];
+        float saturation = hsv[1]*100;
+        float value = hsv[2];
+        if (saturation >= 100 )
+            saturation = 100;
+//        hue = 360-hue;
+        if (hue >= 360)
+            hue = 360;
         hudObject.setHue(hue);
         hudObject.setSaturation(saturation);
+        hudObject.setHsvBrightness(value);
         FileManager.saveToFile(this,hudObject);
-        String rgbString = "R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color);
+        String rgbString = "R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color)+ "Hue: "+hue+" Saturation: "+saturation+" Brightness: "+value;
         Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
     }
 
@@ -367,6 +406,21 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
+
+    }
+
+    @Override
+    public void onMaxCurrentDialogPositiveClick(DialogFragment dialog) {
+        HUDObject hudObject = FileManager.loadFromFile(this);
+        Dialog view = dialog.getDialog();
+        EditText maxCurrentText = (EditText) view.findViewById(R.id.editMax);
+        Integer maxCurrent =  Integer.parseInt(maxCurrentText.getText().toString());
+        hudObject.setCurrent(maxCurrent);
+        FileManager.saveToFile(this,hudObject);
+    }
+
+    @Override
+    public void onMaxCurrentDialogNegativeClick(DialogFragment dialog) {
 
     }
 }

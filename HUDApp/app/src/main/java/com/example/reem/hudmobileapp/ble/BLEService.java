@@ -143,8 +143,7 @@ public class BLEService extends Service {
         }
     };
 
-    private void initialWriteCharacteristics()
-    {
+    private void initialWriteCharacteristics() throws InterruptedException {
         HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
         CharacteristicWriter writer = new CharacteristicWriter(bluetoothGattService,hudObject,bluetoothGatt);
         writer.initialConnectWrite();
@@ -394,6 +393,16 @@ public class BLEService extends Service {
             String value = "0";
             if (bluetoothGattService != null)
             {
+                try {
+                    initialWriteCharacteristics();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 Log.e(DEBUG_TAG,bluetoothGattService.toString());
                 BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.DISCONNECT_CHARACTERISTIC_UUID));
                 writeCr.setValue(value.getBytes());
