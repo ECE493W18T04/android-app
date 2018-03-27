@@ -8,8 +8,10 @@ ClockNotification::ClockNotification(StateManager& _stateMgr) : DefaultState(_st
 bool ClockNotification::tick() {
     char buffer[32];
     time_t seconds = time(NULL);
-    // strftime(buffer, 32, "%I:%M %p\n", localtime(&seconds));
-    // printf("%s", buffer);
+    strftime(buffer, 32, "%I:%M", localtime(&seconds));
+    GraphicsManager& gfx = this->getManager().getGfxManager();
+    gfx.placeText(buffer, 1);
+    gfx.drawBuffer();
     return DefaultState::tick();
 }
 
