@@ -197,6 +197,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         colorNumber = *((uint16_t *)params->data);
         uint8_t satVal = colorNumber & SAT_MASK;
         uint16_t hueVal = colorNumber >> HUE_SHIFT;
+        stateMgr.getGfxManager().setColor(hueVal, satVal);
         printf("Hue: %d, Sat: %d\n", hueVal, satVal);
         // TODO
     } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() &&
