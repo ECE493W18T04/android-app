@@ -88,6 +88,8 @@ private:
     void setupGapAdvertising(bool discoverable);
     void beginPairingMode();
     void sendVoiceCommandTrigger();
+    void passkeyDisplayCallback(Gap::Handle_t handle, const SecurityManager::Passkey_t passkey);
+    void securitySetupCompletedCallback(Gap::Handle_t handle, SecurityManager::SecurityCompletionStatus_t status);
     void onBleInitError(BLE &ble, ble_error_t error);
     void scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackContext* context);
     void pairingModeTimeout();

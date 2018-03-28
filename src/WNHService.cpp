@@ -1,7 +1,7 @@
 #include "WNHService.h"
 #include <Gap.h>
 
-#define PAIRING_TIMEOUT_MS 20000 // 20s
+#define PAIRING_TIMEOUT_MS 60000 // 60s
 #define SAT_MASK 0x7F
 #define HUE_SHIFT 7
 #define AUTO_BRIGHTNESS_MASK 0x80
@@ -10,6 +10,9 @@
 
 const char*    WNHService::DEVICE_NAME = "WNH";
 const uint16_t WNHService::uuid16_list[] = {WNHService::WNH_SERVICE_UUID};
+
+Callback<void(Gap::Handle_t, const SecurityManager::Passkey_t)> pairingCb;
+Callback<void(Gap::Handle_t handle, SecurityManager::SecurityCompletionStatus_t status)> securityCb;
 
 WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     voiceControl(VOICE_CONTROL_DEFAULT),
@@ -96,6 +99,9 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     if (BLE_ERROR_NONE != err) {
         printf("there was an error adding the service: %d\n", err);
     }
+
+    pairingCb.attach(this, &WNHService::passkeyDisplayCallback);
+    securityCb.attach(this, &WNHService::securitySetupCompletedCallback);
 
     // setup handlers
     btnMgr.setPairingHandler(Callback<void()>(this, &WNHService::beginPairingMode));
@@ -235,8 +241,10 @@ void WNHService::beginPairingMode() {
 }
 
 void WNHService::pairingModeTimeout() {
-    setupGapAdvertising(false);
+    PairingState* pairState = (PairingState*) stateMgr.getState(PAIRING_INDEX);
+    pairState->setActive(false);
     stateMgr.forceState(STATE_OVERRIDE_INVALID);
+    setupGapAdvertising(false);
 }
 
 void WNHService::sendVoiceCommandTrigger() {
@@ -248,17 +256,38 @@ void WNHService::onBleInitError(BLE &ble, ble_error_t error) {
     // TODO set a blink pattern to LED 2
 }
 
-void passkeyDisplayCallback(Gap::Handle_t handle, const SecurityManager::Passkey_t passkey)
+void callPasskeyDisplayCallback(Gap::Handle_t handle, const SecurityManager::Passkey_t passkey) {
+    // for some silly reason the security manager
+    // does not use the MBED callback class so class
+    // methods cannot be passed back, this is a workaround
+    pairingCb.call(handle, passkey);
+}
+
+void WNHService::passkeyDisplayCallback(Gap::Handle_t handle, const SecurityManager::Passkey_t passkey)
 {
     printf("Input passKey: ");
     for (unsigned i = 0; i < Gap::ADDR_LEN; i++) {
         printf("%c ", passkey[i]);
     }
+    PairingState* pairState = (PairingState*) stateMgr.getState(PAIRING_INDEX);
+    pairState->update(passkey);
     printf("\r\n");
 }
 
-void securitySetupCompletedCallback(Gap::Handle_t handle, SecurityManager::SecurityCompletionStatus_t status)
+void callSecuritySetupCompletedCallback(Gap::Handle_t handle, SecurityManager::SecurityCompletionStatus_t status) {
+    // for some silly reason the security manager
+    // does not use the MBED callback class so class
+    // methods cannot be passed back, this is a workaround
+    securityCb.call(handle, status);
+}
+
+void WNHService::securitySetupCompletedCallback(Gap::Handle_t handle, SecurityManager::SecurityCompletionStatus_t status)
 {
+    PairingState* pairState = (PairingState*) stateMgr.getState(PAIRING_INDEX);
+    pairState->setActive(false);
+    stateMgr.forceState(STATE_OVERRIDE_INVALID);
+    setupGapAdvertising(false);
+
     if (status == SecurityManager::SEC_STATUS_SUCCESS) {
         printf("Security success\r\n");
     } else {
@@ -283,8 +312,8 @@ void WNHService::setupGapAdvertising(bool discoverable) {
     ble.gap().setAdvertisingType(GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED);
     ble.gap().setAdvertisingInterval(1000); /* 1000ms. */
     ble.gap().startAdvertising();
-    ble.securityManager().onPasskeyDisplay(passkeyDisplayCallback);
-    ble.securityManager().onSecuritySetupCompleted(securitySetupCompletedCallback);
+    ble.securityManager().onPasskeyDisplay(callPasskeyDisplayCallback);
+    ble.securityManager().onSecuritySetupCompleted(callSecuritySetupCompletedCallback);
 }
 
 void WNHService::connectionCallback(const Gap::ConnectionCallbackParams_t *params) {

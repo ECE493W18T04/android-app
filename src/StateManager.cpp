@@ -59,6 +59,9 @@ void StateManager::pushOverlay(State* state) {
 void StateManager::forceState(int id) {
     if (STATE_OVERRIDE_INVALID == id) {
         forced = false;
+        currentState = NULL;
+        graphicsMgr.erase();
+        graphicsMgr.drawBuffer();
         updateStates();
         return;
     } else if (States[id] && States[id]->kick()) {
