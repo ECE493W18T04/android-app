@@ -1,7 +1,7 @@
 #include "State.h"
 #include "StateManager.h"
 
-State::State(StateManager& _stateMgr) : stateMgr(_stateMgr) {
+State::State(StateManager& _stateMgr) : state(false), stateMgr(_stateMgr) {
 }
 
 void State::setPriority(int _priority) {
