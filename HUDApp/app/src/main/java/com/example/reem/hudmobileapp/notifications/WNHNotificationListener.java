@@ -1,33 +1,30 @@
 package com.example.reem.hudmobileapp.notifications;
 
-import android.Manifest;
 import android.app.ActivityManager;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Binder;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
-import com.example.reem.hudmobileapp.activities.MainActivity;
 import com.example.reem.hudmobileapp.ble.BLEService;
+import com.example.reem.hudmobileapp.constants.CharacteristicUUIDs;
 import com.example.reem.hudmobileapp.helper.ImagePHash;
 import com.example.reem.hudmobileapp.R;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by Reem on 2018-03-09.
@@ -39,12 +36,14 @@ public class WNHNotificationListener extends NotificationListenerService
 
     private static final String GOOGLE_MAPS = "com.google.android.apps.maps";
     private static final String GOOGLE_CALLER = "com.android.dialer";
+    private static final String SAMSUNG_CALLER = "com.samsung.android.incallui";
+    private static final String SAMSUNG_SMS = "com.samsung.android.messaging";
     private static final String GOOGLE_SMS = "com.google.android.apps.messaging";
     private static final String SPOTIFY = "com.spotify.music";
-    private boolean connected = false;
+    private boolean bluetoothServiceConnected = false;
     private boolean Fuck =false;
     private ArrayList<Pair<Long, Integer>> resArray;
-    BLEService mService;
+    BLEService bleService;
     Intent bluetoothServiceIntent;
 
 
@@ -84,84 +83,75 @@ public class WNHNotificationListener extends NotificationListenerService
             Log.d(DEBUG_TAG, "On Service Connected");
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
-            mService = mBinder.getService();
-            connected = true;
+            bleService = mBinder.getService();
+            bluetoothServiceConnected = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             Log.d(DEBUG_TAG, "ON Service Disconnected");
-            connected = false;
+            bluetoothServiceConnected = false;
         }
     };
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        //Log.d(DEBUG_TAG, "Notification Posted: " + sbn.getPackageName());
+        Log.d(DEBUG_TAG, "Notification Posted: " + sbn.getPackageName());
 
         NotificationManager notificationManager;
         byte[] content;
-        switch (sbn.getPackageName()) {
-            case GOOGLE_MAPS:
-                if(!sbn.isClearable()) {
-                    // initialize ble stuff here if not already initialized
 
-                    if (!Fuck) {
-                        //TODO Start BLE Service
-                        Log.d(DEBUG_TAG, "Binding Bluetooth Service");
-                        bluetoothServiceIntent = new Intent(this, BLEService.class);
-                        bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
-                        Fuck = true;
-                    }
-
-                    //Log.d(DEBUG_TAG, "mservice initialized");
-                    //no useful information in extras
-                    //Bundle extras = sbn.getNotification().extras;
-                    //Log.d(DEBUG_TAG, extras.toString());
-                    if(connected) {
-                        RemoteViews rv = sbn.getNotification().bigContentView;
-                        RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
-                        notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
-                        content = notificationManager.getContent();
-
-                    }
-
-                }
-                break;
-            case GOOGLE_CALLER:
-                /*
-                if (isMyServiceRunning(BLEService.class)) {
-                    Intent BLEIntent = new Intent(this, BLEService.class);
-                    bindService(BLEIntent, mConnection, BIND_AUTO_CREATE);
-
-                    notificationManager = new CallNotificationManager(sbn);
-                    content=notificationManager.getContent();
-                }
-
-*/
-                break;
-            case GOOGLE_SMS:
-                /*
-                if (isMyServiceRunning(BLEService.class)) {
-                    bluetoothServiceIntent = new Intent(this, BLEService.class);
-                    bindService(BLEIntent, mConnection, BIND_AUTO_CREATE);
-                    notificationManager = new SMSNotificationManager(sbn);
-                    content=notificationManager.getContent();
-                }
-*/
-                break;
-            case SPOTIFY:
-                /*
-                if(isMyServiceRunning(BLEService.class)) {
-                    notificationManager = new SpotifyMusicNotificationManager(sbn);
-                    content = notificationManager.getContent();
-                }
-                */
-                break;
-
-            default:
-                break;
+        if (isMyServiceRunning(BLEService.class)){
+            bluetoothServiceIntent = new Intent(this, BLEService.class);
+            bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
         }
-        //TODO: package content with proper BLE Characteristic  and send with BLEService
+
+        if(sbn.getPackageName().equalsIgnoreCase(GOOGLE_MAPS) && !sbn.isClearable()) {
+
+            // initialize ble stuff here if not already initialized
+
+            if (!bluetoothServiceConnected) {
+                Log.d(DEBUG_TAG, "Binding Bluetooth Service");
+                bluetoothServiceIntent = new Intent(this, BLEService.class);
+                bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+            }else if (bleService.isConnectedToDevice()) {
+                RemoteViews rv = sbn.getNotification().bigContentView;
+                RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
+                notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
+                content = notificationManager.getContent();
+                bleService.getWriter().writeNavigationInfo(content);
+            }
+
+        }
+        if (sbn.getPackageName().equals(GOOGLE_CALLER)||sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)) {
+
+            if (!bluetoothServiceConnected) { //Listener is not connecte to BLEService
+                //do nothing
+            }else if(bleService.isConnectedToDevice()) { //BLEService is connected to a device.
+                notificationManager = new CallNotificationManager(sbn);
+                content=notificationManager.getContent();
+                bleService.getWriter().writeCallInfo(content);
+            }
+
+
+        }
+        if (sbn.getPackageName().equalsIgnoreCase(GOOGLE_SMS)||sbn.getPackageName().equalsIgnoreCase(SAMSUNG_SMS)) {
+            /* Not in scope of project*/
+//                notificationManager = new SMSNotificationManager(sbn);
+//                content=notificationManager.getContent();
+        }
+        if (sbn.getPackageName().equalsIgnoreCase(SPOTIFY)) {
+            Log.d(DEBUG_TAG, "Spotify");
+
+            if (!bluetoothServiceConnected) {
+                //do nothing
+            }else if (bleService.isConnectedToDevice()) {
+                notificationManager = new SpotifyMusicNotificationManager(sbn);
+                content = notificationManager.getContent();
+                Log.d(DEBUG_TAG,"Writing Music");
+                bleService.getWriter().writeMusicInfo(content);
+            }
+
+        }
 
         super.onNotificationPosted(sbn);
     }
@@ -185,6 +175,7 @@ public class WNHNotificationListener extends NotificationListenerService
             Log.d(DEBUG_TAG, "Google Maps notification disabled");
         }
     }
+
 
     @Override
     public IBinder onBind(Intent intent) {

@@ -29,7 +29,14 @@ public class CharacteristicWriter {
         this.hudObject=hudObject;
         this.gatt=gatt;
     }
+    public CharacteristicWriter(BluetoothGattService gattService, BluetoothGatt gatt){
+        this.gattService = gattService;
+        this.gatt = gatt;
+    }
 
+    public void setHUDObject(HUDObject hud){
+        this.hudObject = hud;
+    }
     public void initialConnectWrite()
     {
 
@@ -126,5 +133,54 @@ public class CharacteristicWriter {
 //        }
 //
 //    }
+
+    public void writeCallInfo(byte[] content){
+        BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.CALL_NAME_CHARACTERISTIC_UUID));
+        BGC.setValue(content);
+        gatt.writeCharacteristic(BGC);
+    }
+    public void writeMusicInfo(byte[] content){
+        BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MUSIC_SONG_CHARACTERISTIC_UUID));
+        BGC.setValue(content);
+        gatt.writeCharacteristic(BGC);
+    }
+
+    public void writeNavigationInfo( byte[] content) {
+        if (content.length > 5) {
+            byte[] directionAndDistanceUnit = new byte[1];
+            directionAndDistanceUnit[0] = content[0];
+            byte[] distance = new byte[4];
+            distance[0] = content[1];
+            distance[1] = content[2];
+            distance[2] = content[3];
+            distance[3] = content[4];
+            byte[] streetName = new byte[content.length - 5];
+            for (int i=5; i<content.length; i++){
+                streetName[i-5] = content[i];
+            }
+
+            BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_DISTANCE_CHARACTERISTIC_UUID));
+            BGC.setValue(distance);
+            gatt.writeCharacteristic(BGC);
+            try {
+                Thread.sleep(100);
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_DIRECTION_AND_UNITS_CHARACTERISTIC_UUID));
+            BGC.setValue(directionAndDistanceUnit);
+            gatt.writeCharacteristic(BGC);
+            try {
+                Thread.sleep(100);
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_STREET_CHARACTERISTIC_UUID));
+            BGC.setValue(streetName);
+            gatt.writeCharacteristic(BGC);
+        }
+    }
 
 }

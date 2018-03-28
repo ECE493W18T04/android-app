@@ -15,6 +15,9 @@ import android.widget.TextView;
 
 import com.example.reem.hudmobileapp.helper.ImagePHash;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 
 
@@ -56,18 +59,21 @@ public class GoogleMapsNotificationManager extends NotificationManager {
                 correspondingDrawable = (int) direction.second;
             }
         }
-
-        Log.d(DEBUG_TAG,"DirectionDrawable: "+context.getResources().getResourceEntryName(correspondingDrawable));
-        Log.d(DEBUG_TAG, "Distance: "+distance.getText().toString());
-        Log.d(DEBUG_TAG, "StreetNumber: "+StreetName.getText().toString());
+//
+//        Log.d(DEBUG_TAG,"DirectionDrawable: "+context.getResources().getResourceEntryName(correspondingDrawable));
+//        Log.d(DEBUG_TAG, "Distance: "+distance.getText().toString());
+//        Log.d(DEBUG_TAG, "StreetNumber: "+StreetName.getText().toString());
 
         //TODO: Combine direction and Distance and pack into byte[]
         //Maps_street, Maps_distance, maps_direction, Maps_unit
-        return new byte[0];
+
+
+
+        return PackGoogleMapsData(distance.getText().toString(), StreetName.getText().toString(),context.getResources().getResourceEntryName(correspondingDrawable));
     }
 
     // Function taken from https://stackoverflow.com/questions/3035692/how-to-convert-a-drawable-to-a-bitmap
-    public static Bitmap drawableToBitmap (Drawable drawable) {
+    private  Bitmap drawableToBitmap (Drawable drawable) {
         Bitmap bitmap;
 
         if (drawable instanceof BitmapDrawable) {
@@ -88,5 +94,142 @@ public class GoogleMapsNotificationManager extends NotificationManager {
         drawable.draw(canvas);
         return bitmap;
     }
+
+    private byte[] PackGoogleMapsData(String distance, String streetName, String direction) {
+        Log.d(DEBUG_TAG,"DirectionDrawable: "+direction);
+        Log.d(DEBUG_TAG, "Distance: "+distance);
+        Log.d(DEBUG_TAG, "StreetNumber: "+streetName);
+
+        byte[] rawStreetName = streetName.getBytes();
+        ByteBuffer.wrap(rawStreetName).order(ByteOrder.LITTLE_ENDIAN);
+        byte[] rawDistance = new byte[4];
+        int unit = 0;
+        int dir = 0;
+        if (distance.length() > 1) {
+            /* DISTANCE VALUE */
+            String distanceValue = distance.split("\\s")[0];
+            int dist = (int) Math.round(Double.parseDouble(distanceValue));
+            ByteBuffer.wrap(rawDistance).order(ByteOrder.LITTLE_ENDIAN).putInt(dist*10);
+
+            /* DISTANCE UNIT */
+            String distanceUnit = distance.split("\\s")[1];
+            switch (distanceUnit.toLowerCase()) {
+                case "km":
+                    unit = 0;
+                    break;
+                case "m":
+                    unit = 1;
+                    break;
+                case "mi":
+                    unit = 2;
+                    break;
+                case "fd":
+                    unit = 3;
+                    break;
+                default:
+                    unit = 5;
+                    break;
+            }
+            dir = ParseDirection(direction);
+        }
+        byte dirDistU = CombineDirectionAndDistanceUnits(dir, unit);
+        byte[] fullContent = new byte[5+rawStreetName.length];
+
+        fullContent[0] = dirDistU;
+        fullContent[1] = rawDistance[0];
+        fullContent[2] = rawDistance[1];
+        fullContent[3] = rawDistance[2];
+        fullContent[4] = rawDistance[3];
+        for(int i=5;i<5+rawStreetName.length;i++){
+            fullContent[i] = rawStreetName[i-5];
+        }
+        return fullContent;
+    }
+
+    private byte CombineDirectionAndDistanceUnits(int direction, int distanceUnit){
+        byte[] unit = new byte[4];
+        Log.d(DEBUG_TAG, "direction: "+Integer.toBinaryString(direction));
+        Log.d(DEBUG_TAG, "distanceUnit: "+Integer.toBinaryString(distanceUnit));
+        direction = direction << 4;
+        int combined = direction | distanceUnit;
+        Log.d(DEBUG_TAG, "Combined: "+Integer.toBinaryString(combined));
+        //ByteBuffer.wrap(unit).order(ByteOrder.LITTLE_ENDIAN).putInt(distanceUnit);
+        ByteBuffer.wrap(unit).order(ByteOrder.LITTLE_ENDIAN).putInt(combined);
+        Log.d(DEBUG_TAG,"Byte Value: "+unit[0]);
+        return unit[0];
+    }
+
+
+    private int ParseDirection(String direction){
+        /* DIRECTION ARROW */
+        int dir = 0;
+        if (direction.matches(
+                "da_turn_uturn_right_white" +
+                        "||da_turn_roundabout_8_right_white")){
+            Log.d(DEBUG_TAG,"Direction Uturn for rightside road");
+            dir = 1;
+        }else  if (direction.matches(
+                "da_turn_roundabout_1_left_white" +
+                        "||da_turn_roundabout_7_right_white" +
+                        "||da_turn_sharp_left_white")) {
+            Log.d(DEBUG_TAG,"Direction Sharp Left");
+            dir = 2;
+        }else if (direction.matches(
+                "da_turn_left_white" +
+                        "||da_turn_roundabout_2_left_white" +
+                        "||da_turn_roundabout_6_right_white")){
+            Log.d(DEBUG_TAG,"Direction Left");
+            dir  = 3;
+        }else if (direction.matches(
+                "da_turn_fork_left_white" +
+                        "||da_turn_ramp_left_white" +
+                        "||da_turn_roundabout_3_left_white" +
+                        "||da_turn_roundabout_5_right_white" +
+                        "||da_turn_slight_left_white")){
+            Log.d(DEBUG_TAG,"Direction Slight Left");
+            dir = 4;
+        }else if (direction.matches(
+                "da_turn_depart_white" +
+                        "||da_turn_roundabout_4_right_white" +
+                        "||da_turn_roundabout_4_left_white" +
+                        "||da_turn_straight_white" +
+                        "||da_turn_roundabout_exit_right_white" +
+                        "||da_turn_roundabout_exit_left_white" +
+                        "||da_turn_generic_merge_right") ){
+            Log.d(DEBUG_TAG, "Direction Straight");
+            dir = 5;
+
+        }else if (direction.matches(
+                "da_turn_fork_right_white" +
+                        "||da_turn_ramp_right_white" +
+                        "||da_turn_roundabout_3_right_white" +
+                        "||da_turn_roundabout_5_left_white" +
+                        "||da_turn_slight_right_white")){
+            Log.d(DEBUG_TAG,"Direction Slight Rught");
+            dir = 6;
+        }else if(direction.matches(
+                "da_turn_right_white" +
+                        "||da_turn_roundabout_2_right_white" +
+                        "||da_turn_roundabout_6_left_white" +
+                        "||")) {
+            Log.d(DEBUG_TAG, "Direction Right");
+            dir = 7;
+
+        }else if (direction.matches(
+                "da_turn_roundabout_1_right_white" +
+                        "||da_turn_roundabout_7_left_white" +
+                        "||da_turn_sharp_right_white")){
+            Log.d(DEBUG_TAG,"Direction Sharp Right");
+            dir = 8;
+        }else if (direction.matches(
+                "da_turn_uturn_right_white" +
+                        "||da_turn_roundabout_8_right_white")) {
+            Log.d(DEBUG_TAG,"Direction Uturn");
+            dir = 9;
+
+        }
+        return dir;
+    }
+
 
 }

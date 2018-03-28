@@ -19,7 +19,7 @@ public class SMSNotificationManager extends NotificationManager {
 
     @Override
     public byte[] getContent() {
-        //String pack = n.getPackageName();
+        String pack = n.getPackageName();
 
         String ticker ="";
         if(n.getNotification().tickerText !=null) {
@@ -36,7 +36,7 @@ public class SMSNotificationManager extends NotificationManager {
 
         //ticker contains all needed information;
         // FORMAT -> 'Contact Name: the message.'
-        Log.d("Ticker",ticker);
+        //Log.d("Ticker",ticker);
 
         //Log.d("Title",title);
         //Log.d("Text",text);

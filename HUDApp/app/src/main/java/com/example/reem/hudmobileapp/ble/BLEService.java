@@ -50,6 +50,7 @@ public class BLEService extends Service {
     private String bluetoothDeviceMACAdress=null;
     private int lastTransmittedCode = 0;
     private Thread blueToothScanThread = null;
+    private CharacteristicWriter writer;
 
     public IBinder getBinder() {
         return mBinder;
@@ -63,9 +64,7 @@ public class BLEService extends Service {
         }
     }
 
-    public boolean isConnected() {
-        return isConnected;
-    }
+
     private boolean isScanActive=false;
     private boolean isConnected= false;
     private boolean inFlight=false;
@@ -73,15 +72,17 @@ public class BLEService extends Service {
     private Set<BluetoothDevice> devices = new HashSet<>();
     private final String DEBUG_TAG = this.getClass().getSimpleName();
 
-    public boolean IsConnected () {
+    public boolean isConnectedToDevice() {
         return isConnected;
     }
+
     public BluetoothGattService getBluetoothGattService() {
         return bluetoothGattService;
     }
     public BluetoothGatt getBluetoothGatt() {
         return bluetoothGatt;
     }
+    public CharacteristicWriter getWriter(){ return writer; }
 
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
@@ -148,7 +149,7 @@ public class BLEService extends Service {
     private void initialWriteCharacteristics()
     {
         HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
-        CharacteristicWriter writer = new CharacteristicWriter(bluetoothGattService,hudObject,bluetoothGatt);
+        writer.setHUDObject(hudObject);
         writer.initialConnectWrite();
     }
 
@@ -182,7 +183,7 @@ public class BLEService extends Service {
                     setCharacteristicNotification(gatt);
 
                     //initialWriteCharacteristics();
-
+                    writer = new CharacteristicWriter(bluetoothGattService,bluetoothGatt);
                 }
             } else {
                 Log.w(DEBUG_TAG, "onServicesDiscovered received: " + status);
