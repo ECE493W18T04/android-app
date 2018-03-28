@@ -33,6 +33,7 @@ import com.example.reem.hudmobileapp.R;
 import com.example.reem.hudmobileapp.views.StableArrayAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This application creates a listview where the ordering of the data set
@@ -50,10 +51,8 @@ public class PriorityQueueActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.priority_queue_list_view);
 
-        ArrayList<String>priorityList = new ArrayList<String>();
-        for (int i = 0; i < DefaultPriorityList.priorityList.length; ++i) {
-            priorityList.add(DefaultPriorityList.priorityList[i]);
-        }
+        HUDObject hudObject = FileManager.loadFromFile(this);
+        ArrayList<String> priorityList= (ArrayList<String>) hudObject.getPriorityQueue();
 
         StableArrayAdapter adapter = new StableArrayAdapter(this, R.layout.text_view, priorityList);
         final DynamicListView listView = (DynamicListView) findViewById(R.id.listview);
