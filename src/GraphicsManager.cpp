@@ -312,7 +312,7 @@ void GraphicsManager::drawChar(char c, int start) {
             int dx = x + start;
             int dy;
             if (flipped) {
-                dy = y;
+                dy = y + 1;
             } else {
                 dy = CHARACTER_HEIGHT - y - 1;
             }
@@ -343,7 +343,12 @@ void GraphicsManager::drawBitmap(const uint8_t bitmap[], uint8_t x, uint8_t y, u
     for (int j = 0; j < length; j++) {
         for (int i = 0; i < width; i++) {
             int dx = i + x;
-            int dy = CHARACTER_HEIGHT - (j + y);
+            int dy;
+            if (flipped) {
+                dy = j + y;
+            } else {
+                dy = CHARACTER_HEIGHT - (j + y);
+            }
             if ((bitmap[index] >> bitIndex) & 1) {
                 setPixel(dx, dy);
             } else {
