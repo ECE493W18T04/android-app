@@ -7,7 +7,6 @@
 const uint8_t note[] = {0x18, 0x68, 0x48, 0x58, 0xD8, 0xC0};
 
 MusicNotification::MusicNotification(StateManager& _stateMgr) : TimedState(_stateMgr, MUSICNOTIFICATION_TICKS) {
-    setActive(true);
 }
 
 bool MusicNotification::tick() {
