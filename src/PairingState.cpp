@@ -1,4 +1,8 @@
 #include "PairingState.h"
+#include "GraphicsManager.h"
+#include "StateManager.h"
+
+const uint8_t keyMap[] = {0xE0, 0xA0, 0xE0, 0x40, 0x40, 0x60, 0x40, 0x60};
 
 PairingState::PairingState(StateManager& _stateMgr) : TempState(_stateMgr) {
 }
@@ -12,5 +16,9 @@ bool PairingState::kick() {
 }
 
 bool PairingState::tick() {
+    GraphicsManager& gfx = getManager().getGfxManager();
+    gfx.erase();
+    gfx.drawBitmap(keyMap, 0, 0, 3, 8);
+    gfx.drawBuffer();
     return TempState::tick();
 }
