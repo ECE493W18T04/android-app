@@ -4,8 +4,9 @@
 #define MAX_SAT 100.0
 #define MAX_BRIGHTNESS 100.0
 #define AUTO_BRIGHTNESS_MASK 0x80
+#define DEFAULT_BRIGHTNESS 5
 
-DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK), luxDevice(I2C_SDA0, I2C_SCL0) {
+DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK), luxDevice(I2C_SDA0, I2C_SCL0), brightness(DEFAULT_BRIGHTNESS) {
     port.format(8,3);
     port.frequency(clockSpeed);
     _eventQueue.call_every(62, this, &DisplayDriver::handleTick); // 16Hz
@@ -58,7 +59,7 @@ uint32_t DisplayDriver::getColor(uint16_t hue, uint8_t sat) {
     double      hh, p, q, t, ff, r, g, b;
     long        i;
     double      s = sat / MAX_SAT;
-    double      v = brightness / MAX_BRIGHTNESS;
+    double      v = (~AUTO_BRIGHTNESS_MASK & brightness) / MAX_BRIGHTNESS;
 
     if(s <= 0.0) {       // < is bogus, just shuts up warnings
         r = v;
@@ -126,5 +127,12 @@ void DisplayDriver::drawPixel(uint16_t x, uint16_t y) {
 
 void DisplayDriver::handleTick() {
     alg.addSample(luxDevice.getLux());
-    brightness |= AUTO_BRIGHTNESS_MASK;
+    if (brightness & AUTO_BRIGHTNESS_MASK) {
+        brightness = AUTO_BRIGHTNESS_MASK | alg.getState();
+    }
+}
+
+
+void DisplayDriver::setBrightnessConfig(uint8_t brightness) {
+    this->brightness = brightness;
 }

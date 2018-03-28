@@ -376,3 +376,7 @@ void GraphicsManager::drawBuffer() {
     }
     driver.draw();
 }
+
+void GraphicsManager::setBrightnessConfig(uint8_t brightness) {
+    driver.setBrightnessConfig(brightness);
+}

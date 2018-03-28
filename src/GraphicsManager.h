@@ -17,6 +17,7 @@ public:
     void drawBitmap(const uint8_t bitmap[], uint8_t x, uint8_t y, uint8_t width, uint8_t length);
     void drawBuffer();
     void setColor(uint16_t _hue, uint8_t _saturation);
+    void setBrightnessConfig(uint8_t brightness);
 private:
     uint8_t getCharByte(char c, uint8_t offset);
     void drawChar(char c, int x);

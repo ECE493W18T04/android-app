@@ -198,8 +198,6 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         uint8_t satVal = colorNumber & SAT_MASK;
         uint16_t hueVal = colorNumber >> HUE_SHIFT;
         stateMgr.getGfxManager().setColor(hueVal, satVal);
-        printf("Hue: %d, Sat: %d\n", hueVal, satVal);
-        // TODO
     } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
         maxCurrent = *((uint16_t*)params->data);
@@ -226,9 +224,8 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         autoBrightness = *(params->data);
         if (AUTO_BRIGHTNESS_MASK & autoBrightness) {
             printf("Autobrightness enabled\n");
-        } else {
-            printf("Brightness: %d\n", autoBrightness);
         }
+        stateMgr.getGfxManager().setBrightnessConfig(autoBrightness);
     } else {
         printf("Got Handle: %d\n", params->handle);
     }

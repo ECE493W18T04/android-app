@@ -12,13 +12,14 @@ public:
     void setBuffer(uint16_t _width, uint16_t _height, uint32_t _buffer[]);
     void draw();
     uint32_t getColor(uint16_t hue, uint8_t sat);
+    void setBrightnessConfig(uint8_t brightness);
 private:
     double Hue_2_RGB( double v1, double v2, double vH );
     uint32_t getColorRGB(uint8_t red, uint8_t green, uint8_t blue);
     void drawPixel(uint16_t x, uint16_t y);
     void innerDraw();
     void handleTick();
-    // AutoBrightnessAlgorithm alg;
+
     SPI port;
     TSL2561_I2C luxDevice;
     AutoBrightnessAlg alg;
