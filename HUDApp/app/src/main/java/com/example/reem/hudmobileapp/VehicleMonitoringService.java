@@ -40,6 +40,8 @@ public class VehicleMonitoringService extends Service {
     private FuelLevel.Listener fuelListener;
     private double fuelLevel = 0.0;
 
+    private int counter = 0;
+
     public ServiceConnection connection;
 
     // required but does nothing
@@ -75,13 +77,18 @@ public class VehicleMonitoringService extends Service {
             @Override
             public void receive(Measurement measurement) {
                 final VehicleSpeed speed = (VehicleSpeed) measurement;
-                vSpeed = speed.getValue().doubleValue();
-                byte[] rawSpeed = new byte[2];
+                if (counter > 100) {
+                    vSpeed = speed.getValue().doubleValue();
+                    byte[] rawSpeed = new byte[2];
 
-                rawSpeed[0] = (byte) ((int)Math.round(vSpeed) & 0xFF);
-                rawSpeed[1] = (byte) (((int)Math.round(vSpeed) >> 8) & 0xFF);
-                ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
-                writer.writeVehicleSpeed(rawSpeed);
+                    rawSpeed[0] = (byte) ((int) Math.round(vSpeed) & 0xFF);
+                    rawSpeed[1] = (byte) (((int) Math.round(vSpeed) >> 8) & 0xFF);
+                    ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
+                    writer.writeVehicleSpeed(rawSpeed);
+                    counter = 0;
+                }else {
+                    counter++;
+                }
             }
         };
         rpmListener = new EngineSpeed.Listener() {
@@ -104,7 +111,8 @@ public class VehicleMonitoringService extends Service {
             public void receive(Measurement measurement) {
                 fuelLevel = ((FuelLevel) measurement).getValue().doubleValue();
                 byte[] rawFuel = new byte[1];
-                rawFuel[0] = (byte) ((int)Math.round(fuelLevel*100) & 0xFF);
+                int currentfuel = (int)Math.round(fuelLevel*100);
+                rawFuel[0] = (byte) (currentfuel & 0xFF);
                 ByteBuffer.wrap(rawFuel).order(ByteOrder.LITTLE_ENDIAN);
 
                 writer.writeFuelLevel(rawFuel);

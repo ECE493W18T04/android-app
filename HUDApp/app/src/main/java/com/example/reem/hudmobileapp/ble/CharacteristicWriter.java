@@ -14,7 +14,11 @@ import com.google.common.escape.ArrayBasedUnicodeEscaper;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 
 /**
@@ -80,7 +84,15 @@ public class CharacteristicWriter {
 
     public void writeCurrentTime()
     {
-        long unixTime = System.currentTimeMillis() / 1000L;
+        //long unixTime = System.currentTimeMillis() / 1000L;
+        TimeZone zone = TimeZone.getTimeZone("America/Edmonton");
+        System.out.println("IS IT A STRNIG:"+ Calendar.getInstance().getTimeZone());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(zone);
+        long unixTime=(calendar.getTimeInMillis() + TimeZone.getDefault().getOffset(calendar.getTimeInMillis())) / 1000L;
+
+
+
         Log.i("UNIXTIME",Long.toString(unixTime));
         BluetoothGattCharacteristic characteristic = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.CURRENT_TIME_CHARACTERISTIC_UUID));
         byte[] bytes = new byte[4];
