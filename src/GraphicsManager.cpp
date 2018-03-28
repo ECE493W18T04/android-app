@@ -269,7 +269,7 @@ static const unsigned char font[] = {
 GraphicsManager::GraphicsManager(EventQueue& _eventQueue) : driver(SPI_PSELMOSI0, SPI_PSELMISO0, SPI_PSELSCK0, SPI_SPEED, _eventQueue) {
     driver.setBuffer(DISPLAY_WIDTH, DISPLAY_HEIGHT, buffer);
     erase();
-    driver.draw();
+    drawBuffer();
     // testing
     setColor(0, 0);
     flipped = 0;
