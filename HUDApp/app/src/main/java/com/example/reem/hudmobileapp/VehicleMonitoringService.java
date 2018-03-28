@@ -9,12 +9,16 @@ import android.os.IBinder;
 import android.util.Log;
 
 
+import com.example.reem.hudmobileapp.ble.CharacteristicWriter;
 import com.openxc.VehicleManager;
 import com.openxc.measurements.EngineSpeed;
 import com.openxc.measurements.FuelLevel;
 import com.openxc.measurements.Measurement;
 import com.openxc.measurements.TurnSignalStatus;
 import com.openxc.measurements.VehicleSpeed;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by navjeetdhaliwal on 2018-03-05.
@@ -32,7 +36,7 @@ public class VehicleMonitoringService extends Service {
 
     private TurnSignalStatus.Listener turnSignalListener;
     private String signalPosition = "OFF";
-
+    private final CharacteristicWriter writer;
     private FuelLevel.Listener fuelListener;
     private double fuelLevel = 0.0;
 
@@ -62,8 +66,8 @@ public class VehicleMonitoringService extends Service {
     }
 
     //maybe add requested listeners as arguments
-    public VehicleMonitoringService () {
-
+    public VehicleMonitoringService (final CharacteristicWriter writer) {
+        this.writer = writer;
         /*
          * Define Listeners
          */
@@ -72,13 +76,18 @@ public class VehicleMonitoringService extends Service {
             public void receive(Measurement measurement) {
                 final VehicleSpeed speed = (VehicleSpeed) measurement;
                 vSpeed = speed.getValue().doubleValue();
+                byte[] rawSpeed = new byte[2];
+
+                rawSpeed[0] = (byte) ((int)Math.round(vSpeed) & 0xFF);
+                rawSpeed[1] = (byte) (((int)Math.round(vSpeed) >> 8) & 0xFF);
+                ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
+                writer.writeVehicleSpeed(rawSpeed);
             }
         };
         rpmListener = new EngineSpeed.Listener() {
             @Override
             public void receive(Measurement measurement) {
                 final EngineSpeed eSpeed = (EngineSpeed) measurement;
-
                 rpm = eSpeed.getValue().doubleValue();
             }
         };
@@ -87,12 +96,18 @@ public class VehicleMonitoringService extends Service {
             public void receive(Measurement measurement) {
                 final TurnSignalStatus turnSignalStatus = (TurnSignalStatus) measurement;
                 signalPosition = turnSignalStatus.toString();
+                Log.d("Vehicle Mobitor",signalPosition);
             }
         };
         fuelListener = new FuelLevel.Listener() {
             @Override
             public void receive(Measurement measurement) {
                 fuelLevel = ((FuelLevel) measurement).getValue().doubleValue();
+                byte[] rawFuel = new byte[1];
+                rawFuel[0] = (byte) ((int)Math.round(fuelLevel*100) & 0xFF);
+                ByteBuffer.wrap(rawFuel).order(ByteOrder.LITTLE_ENDIAN);
+
+                writer.writeFuelLevel(rawFuel);
             }
         };
 
@@ -123,6 +138,7 @@ public class VehicleMonitoringService extends Service {
             }
         };
     }
+
     public void Disconnect() {
         if(VehicleManager != null) {
             Log.i(TAG, "Unbinding from Vehicle Manager");
@@ -131,7 +147,8 @@ public class VehicleMonitoringService extends Service {
             VehicleManager.removeListener(VehicleSpeed.class, speedListener);
             VehicleManager.removeListener(TurnSignalStatus.class, turnSignalListener);
             VehicleManager.removeListener(FuelLevel.class, fuelListener);
-            unbindService(connection);
+            if(connection != null)
+                unbindService(connection);
             VehicleManager = null;
         }
     }

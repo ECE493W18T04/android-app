@@ -195,7 +195,20 @@ public class CharacteristicWriter {
         BGC.setValue(content);
         gatt.writeCharacteristic(BGC);
     }
+    public void writeFuelLevel(byte[] content){
+        Log.d("Writing","Fuel Level");
+        BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.FUEL_VALUE_CHARACTERISTIC_UUID));
+        BGC.setValue(content);
+        gatt.writeCharacteristic(BGC);
+    }
 
+    public void writeVehicleSpeed(byte[] content){
+        Log.d("Writing","Vehicle Speed");
+        BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_VALUE_CHARACTERISTIC_UUID));
+        BGC.setValue(content);
+        gatt.writeCharacteristic(BGC);
+
+    }
     public void writeNavigationInfo( byte[] content) {
         if (content.length > 5) {
             byte[] directionAndDistanceUnit = new byte[1];
