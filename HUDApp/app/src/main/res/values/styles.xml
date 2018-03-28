@@ -16,4 +16,19 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="ProgressDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:background">@color/darkGray</item>
+    </style>
+
+    <style name="Theme.AlertDialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+
+        <item name="android:title">@android:color/white</item>
+        <item name="android:dialogMessage">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:button">@color/colorAccent</item>
+        <item name="android:background">@color/darkGray</item>
+    </style>
+
 </resources>

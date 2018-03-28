@@ -42,16 +42,21 @@ public class CharacteristicWriter {
         this.hudObject = hud;
     }
 
+
     public void initialConnectWrite() throws InterruptedException {
 
-//        writeMaxCurrent();
-//        Thread.sleep(100);
-////        writeHUDBrightness();
-//        writeCurrentTime();
-//        Thread.sleep(100);
-//        writeColor();
-//        writePriorityQueue();
+        Thread.sleep(1000);
+        writeMaxCurrent();
+        Thread.sleep(100);
         writeHUDBrightness();
+        Thread.sleep(100);
+        writeCurrentTime();
+        Thread.sleep(100);
+        writeColor();
+        Thread.sleep(100);
+        writePriorityQueue();
+        Thread.sleep(100);
+//        writeHUDBrightness();
     }
 
     public void writeMaxCurrent()
@@ -167,7 +172,7 @@ public class CharacteristicWriter {
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).put((byte) clockPriority);
         clocks_map.setValue(bytes);
         gatt.writeCharacteristic(clocks_map);
-        Thread.sleep(100);
+        Thread.sleep(200);
         BluetoothGattCharacteristic call_music = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.CALL_MUSIC_PRIORITY_CHARACTERISTIC_UUID));
         callPriority = callPriority << 4;
         callPriority|=musicPriority & 0x0F;
@@ -178,8 +183,10 @@ public class CharacteristicWriter {
 
         BluetoothGattCharacteristic speed_fuel = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_FUEL_PRIORITY_CHARACTERISTIC_UUID));
         speedPriority =speedPriority << 4;
-        speedPriority|=fuelPriority&0x0F;
+        speedPriority|=fuelPriority & 0x0F;
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).put((byte)speedPriority);
+        speed_fuel.setValue(bytes);
+        Log.e("WRITEPRIORITIES","ABOUT TO WRITE PRIORITIES");
         gatt.writeCharacteristic(speed_fuel);
     }
 
