@@ -129,6 +129,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
             params->len == sizeof(uint8_t)) {
         stateOverride = *(params->data);
         stateMgr.forceState(stateOverride);
+        printf("State Override: %d\n", stateOverride);
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
         // Disconnect Handler, does not handle data
         ble.gap().disconnect(params->connHandle, Gap::REMOTE_USER_TERMINATED_CONNECTION);
