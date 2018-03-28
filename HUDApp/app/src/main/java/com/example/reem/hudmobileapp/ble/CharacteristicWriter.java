@@ -47,7 +47,7 @@ public class CharacteristicWriter {
 
         Thread.sleep(1000);
         writeMaxCurrent();
-        Thread.sleep(100);
+        Thread.sleep(200);
         writeHUDBrightness();
         Thread.sleep(100);
         writeCurrentTime();

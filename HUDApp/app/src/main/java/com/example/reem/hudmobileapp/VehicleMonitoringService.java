@@ -148,7 +148,9 @@ public class VehicleMonitoringService extends Service {
             VehicleManager.removeListener(TurnSignalStatus.class, turnSignalListener);
             VehicleManager.removeListener(FuelLevel.class, fuelListener);
             if(connection != null)
+            {
                 unbindService(connection);
+            }
             VehicleManager = null;
         }
     }

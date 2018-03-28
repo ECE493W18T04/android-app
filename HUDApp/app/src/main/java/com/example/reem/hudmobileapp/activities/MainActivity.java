@@ -254,8 +254,8 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     public void stopBluetoothService()
     {
-
-        unbindService(mConnection);
+        if (mConnection!=null)
+            unbindService(mConnection);
         stopService(bluetoothServiceIntent);
 
         activeMode=false;
@@ -404,18 +404,24 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                     {
                         if (bleService.isConnectedToDevice())
                         {
-                            isSuccessful=true;
                             break;
                         }
                     }
                 }
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         dialog.hide();
                     }
                 });
-
+                if (bleService!=null)
+                {
+                    if (bleService.isConnectedToDevice())
+                    {
+                        isSuccessful=true;
+                    }
+                }
                 if (isSuccessful)
                 {
                     activeMode=true;

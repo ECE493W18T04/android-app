@@ -112,7 +112,7 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
 //        HUDObject hudObject = FileManager.loadFromFile(VoiceCommandManager.this);
         if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_RED.getValue()))
         {
-//            hudObject.set
+//            hudObject.setSaturation();
         }
         else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_BLUE.getValue()))
         {
