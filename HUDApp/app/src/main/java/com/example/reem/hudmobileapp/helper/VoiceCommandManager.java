@@ -2,6 +2,8 @@ package com.example.reem.hudmobileapp.helper;
 
 import android.Manifest;
 import android.app.Activity;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattService;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +17,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.reem.hudmobileapp.ble.CharacteristicWriter;
+import com.example.reem.hudmobileapp.constants.HUDObject;
+import com.example.reem.hudmobileapp.constants.VoiceCommandsEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +40,11 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
     private boolean ready;
     private Intent intent;
     private Context context;
+    private CharacteristicWriter writer;
 
-    public VoiceCommandManager(Context context) {
+    public VoiceCommandManager(Context context, CharacteristicWriter writer) {
         this.context = context;
-
+        this.writer = writer;
         speech = SpeechRecognizer.createSpeechRecognizer(context);
         speech.setRecognitionListener(this);
 
@@ -95,7 +102,31 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
             Log.d("TextToSpeech", "tts speak");
 
             tts.speak(results.get(0),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+            processText(results.get(0));
         //}
+    }
+
+
+    public void processText(String message)
+    {
+//        HUDObject hudObject = FileManager.loadFromFile(VoiceCommandManager.this);
+        if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_RED.getValue()))
+        {
+//            hudObject.set
+        }
+        else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_BLUE.getValue()))
+        {
+
+        }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_GREEN.getValue()))
+        {
+
+        }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_WHITE.getValue()))
+        {
+
+        }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHNAGE_COLOR_PURPLE.getValue()))
+        {
+
+        }
     }
 
     @Override

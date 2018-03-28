@@ -156,17 +156,6 @@ public class WNHNotificationListener extends NotificationListenerService
         super.onNotificationPosted(sbn);
     }
 
-    public void startBluetoothService()
-    {
-        System.out.println("About to call BLE service ");
-        bluetoothServiceIntent = new Intent(this, BLEService.class);
-        startService(bluetoothServiceIntent);
-    }
-
-    public void stopBluetoothService()
-    {
-        stopService(bluetoothServiceIntent);
-    }
 
 
     @Override

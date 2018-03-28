@@ -47,6 +47,7 @@ public class BLEService extends Service {
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattService bluetoothGattService;
     private Handler mHandler;
+    private boolean successfullyConnected;
     private Handler voiceCommandHandler;
     private  IBinder mBinder;
     private String bluetoothDeviceMACAdress=null;
@@ -184,14 +185,25 @@ public class BLEService extends Service {
                     Log.d(DEBUG_TAG, "Discovered service!");
                     setCharacteristicNotification(gatt);
 
-                    //initialWriteCharacteristics();
-                    writer = new CharacteristicWriter(bluetoothGattService,bluetoothGatt);
-                    Log.d(DEBUG_TAG,"Creating VehicleMonitor");
                     mVehicleManager = new VehicleMonitoringService(writer);
                     if(mVehicleManager.VehicleManager == null) {
                         Intent intent = new Intent(getApplicationContext(), VehicleManager.class);
                         bindService(intent, mVehicleManager.connection, Context.BIND_AUTO_CREATE);
                     }
+
+                    HUDObject hud = FileManager.loadFromFile(BLEService.this);
+                    writer = new CharacteristicWriter(bluetoothGattService,hud,bluetoothGatt);
+                    Thread t1 = new Thread(new Runnable() {
+                        public void run()
+                        {
+                            try {
+                                initialWriteCharacteristics();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }});
+                    t1.start();
+
                 }
             } else {
                 Log.w(DEBUG_TAG, "onServicesDiscovered received: " + status);
@@ -232,7 +244,7 @@ public class BLEService extends Service {
 
         @Override
         // Characteristic notification
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicChanged(final BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 //            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             Log.i(DEBUG_TAG, "Characteristic Changed");
             Log.i(DEBUG_TAG,characteristic.getUuid().toString() );
@@ -246,7 +258,7 @@ public class BLEService extends Service {
                     @Override
                     public void run() {
 
-                        VoiceCommandManager vCommand = new VoiceCommandManager(getApplicationContext());
+                        VoiceCommandManager vCommand = new VoiceCommandManager(getApplicationContext(),writer);
                         Log.d(DEBUG_TAG, "Voice CommandManager started");
                         vCommand.startListener();
                     }
@@ -318,7 +330,11 @@ public class BLEService extends Service {
         mHandler = new Handler();
 
         scanForDevices();
+//        while (writer==null) {}
+
+
     }
+
 
 
 
@@ -341,6 +357,12 @@ public class BLEService extends Service {
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
+//        while (writer == null){}
+//        try {
+//            writer.initialConnectWrite();
+//        } catch (InterruptedException e) {
+//            Log.e(DEBUG_TAG, "Initial writer cannot be created");
+//        }
 //        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
 
 //        if (!macAddresses.contains(bluetoothDeviceMACAdress))
@@ -363,6 +385,7 @@ public class BLEService extends Service {
         if (enable)
         {
             isScanActive = true;
+
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -384,8 +407,8 @@ public class BLEService extends Service {
     private void stopScan()
     {
         isScanActive = false;
+        bluetoothAdapter.stopLeScan(mLeScanCallback);
         mHandler=null;
-//        blueToothScanThread = null;
     }
     @Override
     public void onDestroy() {
@@ -398,16 +421,6 @@ public class BLEService extends Service {
             String value = "0";
             if (bluetoothGattService != null)
             {
-                try {
-                    initialWriteCharacteristics();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 Log.e(DEBUG_TAG,bluetoothGattService.toString());
                 BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.DISCONNECT_CHARACTERISTIC_UUID));
                 writeCr.setValue(value.getBytes());
