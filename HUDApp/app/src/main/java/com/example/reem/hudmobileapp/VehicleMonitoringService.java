@@ -139,20 +139,18 @@ public class VehicleMonitoringService extends Service {
         };
     }
 
-    public void Disconnect() {
+    @Override
+    public void onDestroy() {
         if(VehicleManager != null) {
-            Log.i(TAG, "Unbinding from Vehicle Manager");
 
             VehicleManager.removeListener(EngineSpeed.class, rpmListener);
             VehicleManager.removeListener(VehicleSpeed.class, speedListener);
             VehicleManager.removeListener(TurnSignalStatus.class, turnSignalListener);
             VehicleManager.removeListener(FuelLevel.class, fuelListener);
-            if(connection != null)
-            {
-                unbindService(connection);
-            }
+
             VehicleManager = null;
         }
+        super.onDestroy();
     }
 
 

@@ -46,6 +46,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.R;
+import com.example.reem.hudmobileapp.VehicleMonitoringService;
 import com.example.reem.hudmobileapp.ble.BLEService;
 
 import com.example.reem.hudmobileapp.constants.HUDObject;
@@ -55,6 +56,7 @@ import com.example.reem.hudmobileapp.dialogs.ColorPickerDialog;
 import com.example.reem.hudmobileapp.dialogs.MaxCurrentDialog;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
+import com.openxc.VehicleManager;
 
 import java.io.File;
 import java.text.DecimalFormat;
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
     private static final int RECORD_AUDIO_PERMISSION = 1;
     private Drawable mDrawable=null;
+    private VehicleMonitoringService vMonitor;
 
     BLEService bleService;
     Intent bluetoothServiceIntent;
@@ -254,7 +257,8 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     public void stopBluetoothService()
     {
-        if (mConnection!=null)
+
+        if (mConnection != null)
             unbindService(mConnection);
         stopService(bluetoothServiceIntent);
 
@@ -388,22 +392,23 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         new Thread( new Runnable() {
             @Override
             public void run() {
+            try {
 
-
-                boolean isSuccessful=false;
+                boolean isSuccessful = false;
                 long startTime = System.currentTimeMillis();
-                while ((System.currentTimeMillis()-startTime)<10000)
-                {
-                    Log.e("SCANNING","SCANINNGING INSIDE THREAD");
+                while ((System.currentTimeMillis() - startTime) < 10000) {
+                    Log.e("SCANNING", "SCANINNGING INSIDE THREAD");
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+
                     if (bleService!=null)
                     {
                         if (bleService.isConnectedToDevice())
                         {
+
                             break;
                         }
                     }
@@ -412,7 +417,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        dialog.hide();
+                        dialog.dismiss();
                     }
                 });
                 if (bleService!=null)
@@ -422,11 +427,17 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                         isSuccessful=true;
                     }
                 }
-                if (isSuccessful)
-                {
-                    activeMode=true;
-                }else{
-                    activeMode=false;
+
+                if (isSuccessful) {
+                    activeMode = true;
+                    vMonitor = new VehicleMonitoringService(bleService.getWriter());
+                    if(vMonitor.VehicleManager == null) {
+                        Intent intent = new Intent(getApplicationContext(), VehicleManager.class);
+                        bindService(intent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+                    }
+
+                } else {
+                    activeMode = false;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -437,9 +448,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                             navButton.setBackground(mDrawable);
                         }
                     });
-                    activeMode=false;
+                    activeMode = false;
 
                 }
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
 
             }
         }).start();
@@ -533,4 +547,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     public void onMaxCurrentDialogNegativeClick(DialogFragment dialog) {
 
     }
+
+
+
 }

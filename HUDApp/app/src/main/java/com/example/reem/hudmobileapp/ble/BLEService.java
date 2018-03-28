@@ -21,13 +21,11 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.reem.hudmobileapp.VehicleMonitoringService;
 import com.example.reem.hudmobileapp.activities.MainActivity;
 import com.example.reem.hudmobileapp.constants.CharacteristicUUIDs;
 import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
-import com.openxc.VehicleManager;
 
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +52,7 @@ public class BLEService extends Service {
     private int lastTransmittedCode = 0;
     private Thread blueToothScanThread = null;
     private CharacteristicWriter writer;
-//    private VehicleMonitoringService mVehicleManager;
+
 
     public IBinder getBinder() {
         return mBinder;
@@ -160,7 +158,6 @@ public class BLEService extends Service {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                isConnected = true;
                 bluetoothGatt.discoverServices();
                 Log.d(DEBUG_TAG, "Connected to bluetooth");
 
@@ -194,6 +191,8 @@ public class BLEService extends Service {
                         {
                             try {
                                 initialWriteCharacteristics();
+                                isConnected = true;
+
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -206,6 +205,7 @@ public class BLEService extends Service {
 //                        bindService(intent, mVehicleManager.connection, Context.BIND_AUTO_CREATE);
 //                        startService(intent);
 //                  }
+
 
                 }
             } else {
@@ -417,13 +417,7 @@ public class BLEService extends Service {
     public void onDestroy() {
 
         stopScan();
-//        if (mVehicleManager!= null)
-//        {
-//            if (mVehicleManager.VehicleManager!=null)
-//            {
-//                mVehicleManager.onDestroy();
-//            }
-//        }
+
         if (bluetoothGatt != null)
         {
             Log.e(DEBUG_TAG,bluetoothGatt.toString());
@@ -442,11 +436,7 @@ public class BLEService extends Service {
 //           bluetoothGatt.disconnect();
         }
         Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
-//        if(mVehicleManager != null) {
-//            if (mVehicleManager.VehicleManager != null) {
-//                mVehicleManager.Disconnect();
-//            }
-//        }
+
         super.onDestroy();
     }
 

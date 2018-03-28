@@ -14,7 +14,12 @@ import com.google.common.escape.ArrayBasedUnicodeEscaper;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 import java.util.UUID;
 
 /**
@@ -66,10 +71,6 @@ public class CharacteristicWriter {
 //        binaryString = binaryString.substring(binaryString.length() - 8);
 
         List<BluetoothGattCharacteristic> characteristics=gattService.getCharacteristics();
-        for (BluetoothGattCharacteristic c: characteristics)
-        {
-            Log.e("CHARACTERISTIC",c.getUuid().toString());
-        }
         BluetoothGattCharacteristic maxCurrentCharacteristic = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAX_CURRENT_CHARACTERISTIC_UUID));
         byte[] bytes = new byte[2];
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putShort((short) maxCurrent);
@@ -78,10 +79,28 @@ public class CharacteristicWriter {
 
     }
 
+    public void stateOverride(int value)
+    {
+        BluetoothGattCharacteristic stateOverride = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.STATE_OVERRIDE_CHARACTERISTIC_UUID));
+        byte[] bytes = new byte[1];
+        ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).put((byte) value);
+        stateOverride.setValue(bytes);
+        gatt.writeCharacteristic(stateOverride);
+    }
+
     public void writeCurrentTime()
     {
-        long unixTime = System.currentTimeMillis() / 1000L;
-        Log.i("UNIXTIME",Long.toString(unixTime));
+
+
+        TimeZone zone = TimeZone.getTimeZone("America/Edmonton");
+
+        System.out.println("IS IT A STRNIG:"+ Calendar.getInstance().getTimeZone());
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTimeZone(zone);
+        long unixTime=calendar.getTimeInMillis() / 1000L;
+//        System.out.println(System.currentTimeMillis()/1000L);
+//        java.util.Date time=new java.util.Date(unixTime);
+//        Log.i("UNIXTIME",time.toString());
         BluetoothGattCharacteristic characteristic = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.CURRENT_TIME_CHARACTERISTIC_UUID));
         byte[] bytes = new byte[4];
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putInt((int) unixTime);
@@ -209,7 +228,13 @@ public class CharacteristicWriter {
         gatt.writeCharacteristic(BGC);
     }
 
-    public void writeVehicleSpeed(byte[] content){
+    public void writeVehicleSpeed(byte[] content) throws InterruptedException {
+        BluetoothGattCharacteristic speedUnits = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_UNITS_AND_SIGNAL_CHARACTERISTIC_UUID));
+        byte[] bytes = new byte[1];
+        ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).put((byte) 0);
+        speedUnits.setValue(bytes);
+        gatt.writeCharacteristic(speedUnits);
+        Thread.sleep(50);
         Log.d("Writing","Vehicle Speed");
         BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_VALUE_CHARACTERISTIC_UUID));
         BGC.setValue(content);
