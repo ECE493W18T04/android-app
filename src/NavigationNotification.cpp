@@ -23,10 +23,7 @@ const uint8_t right[]       = {0x30, 0x18, 0xfc, 0x98, 0xb0, 0x80, 0x80, 0x80};
 const uint8_t right_back[]  = {0x80, 0xC0, 0xA4, 0x94, 0x8C, 0xBC};
 const uint8_t right_uturn[] = {0x00, 0xF8, 0x88, 0xAA, 0xBE, 0x9C, 0x88, 0x80};
 
-NavigationNotification::NavigationNotification(StateManager& _stateMgr) : TempState(_stateMgr) {
-    // TODO temp
-    setActive(true);
-    direction = 9;
+NavigationNotification::NavigationNotification(StateManager& _stateMgr) : TempState(_stateMgr),direction(NAV_IMAGE_NONE) {
 }
 
 bool NavigationNotification::tick() {
