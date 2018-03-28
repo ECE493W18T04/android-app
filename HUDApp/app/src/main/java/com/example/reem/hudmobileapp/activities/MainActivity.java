@@ -258,9 +258,11 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     public void stopBluetoothService()
     {
 
-        if (mConnection != null)
+        if (mConnection != null) {
             unbindService(mConnection);
+        }
         stopService(bluetoothServiceIntent);
+        bluetoothServiceIntent = null;
 
         activeMode=false;
     }
@@ -373,6 +375,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     public void startBluetoothService()
     {
+        /*
         final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
         alertDialog.setTitle("Unable to Connect");
         alertDialog.setMessage("Connection has not been established with WNH BLE device. Please try again and ensure device is on.");
@@ -385,9 +388,10 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
         final ProgressDialog dialog=new ProgressDialog(this,R.style.ProgressDialog);
         dialog.setMessage("Scanning for WNH Device");
-        dialog.setCancelable(false);
+        dialog.setCancelable(true);
         dialog.setInverseBackgroundForced(false);
         dialog.show();
+
 
         new Thread( new Runnable() {
             @Override
@@ -396,7 +400,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
                 boolean isSuccessful = false;
                 long startTime = System.currentTimeMillis();
-                while ((System.currentTimeMillis() - startTime) < 10000) {
+                while (true) {
                     Log.e("SCANNING", "SCANINNGING INSIDE THREAD");
                     try {
                         Thread.sleep(100);
@@ -457,7 +461,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
             }
         }).start();
-
+*/
         Log.d("BINDINGSERVICE", "Binding Bluetooth Service");
         bluetoothServiceIntent = new Intent(this, BLEService.class);
         bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
