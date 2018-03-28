@@ -11,7 +11,11 @@ FuelLevel::FuelLevel(StateManager& _stateMgr) : TimedState(_stateMgr, FUEL_LEVEL
 }
 
 void FuelLevel::update(uint8_t fuelLevel) {
-    // TODO handle only waking on multiples of 10
+    if (FUEL_LEVEL_INVALID != fuelLevel) {
+        resetTicks();
+        setActive(true);
+        getManager().updateStates();
+    }
     this->fuelLevel = fuelLevel;
 }
 
