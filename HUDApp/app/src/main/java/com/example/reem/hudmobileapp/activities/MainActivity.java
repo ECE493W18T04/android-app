@@ -153,10 +153,10 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         }
 
 
-//        if(!isNotificationServiceEnabled()){
-//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-//            enableNotificationListenerAlertDialog.show();
-//        }
+        if(!isNotificationServiceEnabled()){
+            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            enableNotificationListenerAlertDialog.show();
+        }
 
         //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
         //startService(notificationIntent);
@@ -417,7 +417,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        dialog.dismiss();
+                        dialog.hide();
                     }
                 });
                 if (bleService!=null)

@@ -18,7 +18,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.SimpleTimeZone;
+
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -91,16 +91,14 @@ public class CharacteristicWriter {
     public void writeCurrentTime()
     {
 
-
+        //long unixTime = System.currentTimeMillis() / 1000L;
         TimeZone zone = TimeZone.getTimeZone("America/Edmonton");
-
         System.out.println("IS IT A STRNIG:"+ Calendar.getInstance().getTimeZone());
-        Calendar calendar = new GregorianCalendar();
+        Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(zone);
-        long unixTime=calendar.getTimeInMillis() / 1000L;
-//        System.out.println(System.currentTimeMillis()/1000L);
-//        java.util.Date time=new java.util.Date(unixTime);
-//        Log.i("UNIXTIME",time.toString());
+        long unixTime=(calendar.getTimeInMillis() + TimeZone.getDefault().getOffset(calendar.getTimeInMillis())) / 1000L;
+
+        Log.i("UNIXTIME",Long.toString(unixTime));
         BluetoothGattCharacteristic characteristic = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.CURRENT_TIME_CHARACTERISTIC_UUID));
         byte[] bytes = new byte[4];
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).putInt((int) unixTime);
