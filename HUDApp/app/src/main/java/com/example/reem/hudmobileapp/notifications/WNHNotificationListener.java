@@ -176,4 +176,11 @@ public class WNHNotificationListener extends NotificationListenerService
     public IBinder onBind(Intent intent) {
         return super.onBind(intent);
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(DEBUG_TAG, "Destroyed");
+    }
+
 }

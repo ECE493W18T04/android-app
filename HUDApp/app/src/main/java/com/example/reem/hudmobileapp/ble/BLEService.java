@@ -436,6 +436,15 @@ public class BLEService extends Service {
 //           bluetoothGatt.disconnect();
         }
         Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
+        if (blueToothScanThread != null) {
+            if (blueToothScanThread.isAlive()) {
+                blueToothScanThread.destroy();
+            }
+        }
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
+        }
 
         super.onDestroy();
     }
@@ -447,4 +456,5 @@ public class BLEService extends Service {
         //Toast.makeText(getApplicationContext(), "Figuring out where the problem is", Toast.LENGTH_SHORT).show();
         return mBinder;
     }
+
 }

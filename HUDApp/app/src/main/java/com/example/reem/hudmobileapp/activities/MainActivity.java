@@ -513,6 +513,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         }
     }
 
+
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
             // this is for brightness control
@@ -550,6 +551,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     @Override
     public void onMaxCurrentDialogNegativeClick(DialogFragment dialog) {
 
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        stopService(new Intent(this, WNHNotificationListener.class));
     }
 
 
