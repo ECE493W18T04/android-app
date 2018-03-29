@@ -100,7 +100,7 @@ public class GoogleMapsNotificationManager extends NotificationManager {
         Log.d(DEBUG_TAG, "Distance: "+distance);
         Log.d(DEBUG_TAG, "StreetNumber: "+streetName);
 
-        byte[] rawStreetName = streetName.getBytes();
+        byte[] rawStreetName = (streetName+"\0").getBytes();
         ByteBuffer.wrap(rawStreetName).order(ByteOrder.LITTLE_ENDIAN);
         byte[] rawDistance = new byte[4];
         int unit = 0;

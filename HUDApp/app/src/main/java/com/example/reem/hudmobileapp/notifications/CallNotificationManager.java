@@ -44,7 +44,7 @@ public class CallNotificationManager extends NotificationManager {
 
         // Text: Incoming call
         //Log.d("Text",text);
-        byte[] content = title.getBytes();
+        byte[] content = (title+"\0").getBytes();
         ByteBuffer.wrap(content).order(ByteOrder.LITTLE_ENDIAN);
 
         return content;

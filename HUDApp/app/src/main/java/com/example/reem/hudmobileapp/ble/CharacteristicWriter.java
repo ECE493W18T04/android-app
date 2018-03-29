@@ -54,13 +54,13 @@ public class CharacteristicWriter {
         writeMaxCurrent();
         Thread.sleep(200);
         writeHUDBrightness();
-        Thread.sleep(100);
+        Thread.sleep(200);
         writeCurrentTime();
-        Thread.sleep(100);
+        Thread.sleep(200);
         writeColor();
-        Thread.sleep(100);
+        Thread.sleep(200);
         writePriorityQueue();
-        Thread.sleep(100);
+        Thread.sleep(200);
 //        writeHUDBrightness();
     }
 
@@ -196,7 +196,7 @@ public class CharacteristicWriter {
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).put((byte)callPriority);
         call_music.setValue(bytes);
         gatt.writeCharacteristic(call_music);
-        Thread.sleep(100);
+        Thread.sleep(200);
 
         BluetoothGattCharacteristic speed_fuel = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_FUEL_PRIORITY_CHARACTERISTIC_UUID));
         speedPriority =speedPriority << 4;
@@ -237,6 +237,12 @@ public class CharacteristicWriter {
         BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_VALUE_CHARACTERISTIC_UUID));
         BGC.setValue(content);
         gatt.writeCharacteristic(BGC);
+
+    }
+    public void writeTurnSignal(byte[] content){
+        BluetoothGattCharacteristic turnSignal = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_UNITS_AND_SIGNAL_CHARACTERISTIC_UUID));
+        turnSignal.setValue(content);
+        gatt.writeCharacteristic(turnSignal);
 
     }
     public void writeNavigationInfo( byte[] content) {

@@ -41,6 +41,6 @@ public class SpotifyMusicNotificationManager extends NotificationManager {
         //Log.d("Title",title);
         //Log.d("Text",text);
 
-        return ticker.getBytes();
+        return (ticker+"\0").getBytes();
     }
 }
