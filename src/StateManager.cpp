@@ -39,16 +39,9 @@ void StateManager::updateStates() {
     printf("Powered: %d\n", powered);
     if (forced || !powered) return;
     for (i = 0; i < STATE_COUNT; i++) {
-        if (States[i]) {
-            if (!States[i]->getActive()) {
-                // state isn't active, ignore it
-                continue;
-            }
-            int priority = States[i]->getPriority();
-            if (priority < maxPriority) {
-                currentState = States[i];
-                maxPriority = priority;
-            }
+        if (States[i] && States[i]->getActive() && States[i]->getPriority() < maxPriority) {
+            currentState = States[i];
+            maxPriority = States[i]->getPriority();
         }
     }
 }
