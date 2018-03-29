@@ -6,6 +6,8 @@
 
 #define DISPLAY_WIDTH 32
 #define DISPLAY_HEIGHT 8
+#define CHARACTER_WIDTH 5
+#define CHARACTER_HEIGHT 7
 
 class GraphicsManager {
 public:

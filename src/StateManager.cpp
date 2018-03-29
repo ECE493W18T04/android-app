@@ -2,7 +2,7 @@
 
 #define STATE_OVERRIDE_INVALID 0xFF
 
-StateManager::StateManager(EventQueue& _eventQueue) : currentState(NULL), overlay(NULL), graphicsMgr(_eventQueue), forced(false) {
+StateManager::StateManager(EventQueue& _eventQueue) : currentState(NULL), overlay(NULL), graphicsMgr(_eventQueue), forced(false), powered(false) {
     for (int i = 0; i < STATE_COUNT; i++) {
         States[i] = NULL;
     }
@@ -19,6 +19,7 @@ StateManager::StateManager(EventQueue& _eventQueue) : currentState(NULL), overla
 
 void StateManager::tick() {
     bool result = false;
+    if (!powered) return;
     if (currentState) {
         result = currentState->tick();
     }
@@ -34,7 +35,9 @@ void StateManager::tick() {
 void StateManager::updateStates() {
     int i;
     int maxPriority = 255;
-    if (forced) return;
+    printf("Forced: %d\n", forced);
+    printf("Powered: %d\n", powered);
+    if (forced || !powered) return;
     for (i = 0; i < STATE_COUNT; i++) {
         if (States[i]) {
             if (!States[i]->getActive()) {
@@ -80,4 +83,22 @@ State* StateManager::getState(int id) {
 
 GraphicsManager& StateManager::getGfxManager() {
     return graphicsMgr;
+}
+
+void StateManager::powerOn() {
+    powered = true;
+    // TODO turn on lux device
+    for (int i = 0; i < STATE_COUNT; i++) {
+        if (States[i]) {
+            States[i]->setActive(false);
+        }
+    }
+}
+
+void StateManager::powerOff() {
+    powered = false;
+    currentState = NULL;
+    graphicsMgr.erase();
+    graphicsMgr.drawBuffer();
+    // TODO turn off lux
 }

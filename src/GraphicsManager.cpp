@@ -3,8 +3,6 @@
 #define SPI_SPEED 2000000 // 2MHz
 #define RGB_MASK 0x00FFFFFF
 #define PIXEL_OFF 0xFF000000
-#define CHARACTER_WIDTH 5
-#define CHARACTER_HEIGHT 7
 
 // font from https://github.com/adafruit/Adafruit-GFX-Library/blob/master/glcdfont.c
 static const unsigned char font[] = {

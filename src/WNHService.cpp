@@ -116,7 +116,7 @@ void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t 
 {
     setupGapAdvertising(false);
     printf("Device Disconnected\n");
-    // TODO shutdown external hardware
+    stateMgr.powerOff();
 }
 
 void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
@@ -317,6 +317,7 @@ void WNHService::setupGapAdvertising(bool discoverable) {
 
 void WNHService::connectionCallback(const Gap::ConnectionCallbackParams_t *params) {
     printf("Connected\n");
+    stateMgr.powerOn();
 }
 
 void printMacAddress()

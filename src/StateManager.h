@@ -33,6 +33,8 @@ public:
     void pushOverlay(State* state);
     void forceState(int id);
     State* getState(int id);
+    void powerOn();
+    void powerOff();
     GraphicsManager& getGfxManager();
 private:
     State* States[STATE_COUNT];
@@ -40,6 +42,7 @@ private:
     State* overlay;
     GraphicsManager graphicsMgr;
     bool forced;
+    bool powered;
 };
 
 #endif // STATEMANAGER_h
