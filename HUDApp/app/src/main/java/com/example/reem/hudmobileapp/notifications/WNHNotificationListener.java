@@ -160,8 +160,14 @@ public class WNHNotificationListener extends NotificationListenerService
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn){
-        if(sbn.getPackageName().equalsIgnoreCase(GOOGLE_MAPS)){
-            Log.d(DEBUG_TAG, "Google Maps notification disabled");
+        if(sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)||sbn.getPackageName().equalsIgnoreCase(GOOGLE_CALLER)){
+            if (!bluetoothServiceConnected) { //Listener is not connecte to BLEService
+                //do nothing
+            }else if(bleService.isConnectedToDevice()) { //BLEService is connected to a device.
+                bleService.getWriter().writeCallInfo(("\0").getBytes());
+            }
+
+
         }
     }
 

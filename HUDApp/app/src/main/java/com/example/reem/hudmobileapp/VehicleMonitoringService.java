@@ -95,6 +95,7 @@ public class VehicleMonitoringService extends Service {
                 }
             }
         };
+        /*
         rpmListener = new EngineSpeed.Listener() {
             @Override
             public void receive(Measurement measurement) {
@@ -102,11 +103,34 @@ public class VehicleMonitoringService extends Service {
                 rpm = eSpeed.getValue().doubleValue();
             }
         };
+        */
         turnSignalListener = new TurnSignalStatus.Listener() {
             @Override
             public void receive(Measurement measurement) {
                 final TurnSignalStatus turnSignalStatus = (TurnSignalStatus) measurement;
                 signalPosition = turnSignalStatus.toString();
+                byte[] signal = new byte[4];
+                switch (signalPosition){
+                    case "off":
+                        ByteBuffer.wrap(signal).order(ByteOrder.LITTLE_ENDIAN).putInt(0);
+                        break;
+                    case "left":
+                        ByteBuffer.wrap(signal).order(ByteOrder.LITTLE_ENDIAN).putInt(1);
+                        break;
+
+                    case "right":
+                        ByteBuffer.wrap(signal).order(ByteOrder.LITTLE_ENDIAN).putInt(2);
+                        break;
+                    default:
+                        ByteBuffer.wrap(signal).order(ByteOrder.LITTLE_ENDIAN).putInt(0);
+                        break;
+                }
+
+                byte[] content = new byte[1];
+                content[0] = signal[0];
+                writer.writeTurnSignal((content));
+
+
                 Log.d("Vehicle Mobitor",signalPosition);
             }
         };
