@@ -10,6 +10,7 @@ bool ClockNotification::tick() {
     time_t seconds = time(NULL);
     strftime(buffer, 32, "%I:%M", localtime(&seconds));
     GraphicsManager& gfx = this->getManager().getGfxManager();
+    gfx.erase();
     gfx.placeText(buffer, 1);
     gfx.drawBuffer();
     return DefaultState::tick();
