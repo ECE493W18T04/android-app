@@ -375,93 +375,93 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     public void startBluetoothService()
     {
-        /*
-        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
-        alertDialog.setTitle("Unable to Connect");
-        alertDialog.setMessage("Connection has not been established with WNH BLE device. Please try again and ensure device is on.");
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
 
-        final ProgressDialog dialog=new ProgressDialog(this,R.style.ProgressDialog);
-        dialog.setMessage("Scanning for WNH Device");
-        dialog.setCancelable(true);
-        dialog.setInverseBackgroundForced(false);
-        dialog.show();
+//        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
+//        alertDialog.setTitle("Unable to Connect");
+//        alertDialog.setMessage("Connection has not been established with WNH BLE device. Please try again and ensure device is on.");
+//        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+//                new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+//
+//        final ProgressDialog dialog=new ProgressDialog(this,R.style.ProgressDialog);
+//        dialog.setMessage("Scanning for WNH Device");
+//        dialog.setCancelable(false);
+//        dialog.setInverseBackgroundForced(false);
+//        dialog.show();
+//
+//        new Thread( new Runnable() {
+//            @Override
+//            public void run() {
+//            try {
+//
+//                boolean isSuccessful = false;
+//                long startTime = System.currentTimeMillis();
+//                while ((System.currentTimeMillis() - startTime) < 10000) {
+//                    Log.e("SCANNING", "SCANINNGING INSIDE THREAD");
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    if (bleService!=null)
+//                    {
+//                        if (bleService.isConnectedToDevice())
+//                        {
+//
+//                            break;
+//                        }
+//                    }
+//                }
+//
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        dialog.hide();
+//                    }
+//                });
+//                if (bleService!=null)
+//                {
+//                    if (bleService.isConnectedToDevice())
+//                    {
+//                        isSuccessful=true;
+//                    }
+//                }
+//
+//                if (isSuccessful) {
+//                    activeMode = true;
+//                    vMonitor = new VehicleMonitoringService(bleService.getWriter());
+//                    if(vMonitor.VehicleManager == null) {
+//                        Intent intent = new Intent(getApplicationContext(), VehicleManager.class);
+//                        bindService(intent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+//                    }
+//
+//                } else {
+//                    activeMode = false;
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            alertDialog.show();
+//                            stopBluetoothService();
+//                            mDrawable.setColorFilter(new
+//                                    PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
+//                            navButton.setBackground(mDrawable);
+//                        }
+//                    });
+//                    activeMode = false;
+//
+//                }
+//            }catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            }
+//        }).start();
 
 
-        new Thread( new Runnable() {
-            @Override
-            public void run() {
-            try {
-
-                boolean isSuccessful = false;
-                long startTime = System.currentTimeMillis();
-                while (true) {
-                    Log.e("SCANNING", "SCANINNGING INSIDE THREAD");
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (bleService!=null)
-                    {
-                        if (bleService.isConnectedToDevice())
-                        {
-
-                            break;
-                        }
-                    }
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.hide();
-                    }
-                });
-                if (bleService!=null)
-                {
-                    if (bleService.isConnectedToDevice())
-                    {
-                        isSuccessful=true;
-                    }
-                }
-
-                if (isSuccessful) {
-                    activeMode = true;
-                    vMonitor = new VehicleMonitoringService(bleService.getWriter());
-                    if(vMonitor.VehicleManager == null) {
-                        Intent intent = new Intent(getApplicationContext(), VehicleManager.class);
-                        bindService(intent, vMonitor.connection, Context.BIND_AUTO_CREATE);
-                    }
-
-                } else {
-                    activeMode = false;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            alertDialog.show();
-                            stopBluetoothService();
-                            mDrawable.setColorFilter(new
-                                    PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
-                            navButton.setBackground(mDrawable);
-                        }
-                    });
-                    activeMode = false;
-
-                }
-            }catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            }
-        }).start();
-*/
         Log.d("BINDINGSERVICE", "Binding Bluetooth Service");
         bluetoothServiceIntent = new Intent(this, BLEService.class);
         bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
