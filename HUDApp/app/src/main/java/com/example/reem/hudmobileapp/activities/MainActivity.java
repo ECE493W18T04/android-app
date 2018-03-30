@@ -118,8 +118,8 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             public void onClick(View v) {
                 if (connectedToDevice == false)
                 {
-                    if (initialized)
-                    {
+                        if (bleService!=null)
+                            bleService.initialize();
                         mDrawable.setColorFilter(new
                                 PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
                         navButton.setBackground(mDrawable);
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                         bleService.connectToDevice();
 
                         // start the progress bar
-                    }
+
 
 
 
@@ -354,11 +354,11 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             bleService = mBinder.getService();
             bluetoothServiceConnected = true;
             initialized = true;
-            if (!bleService.initialize()){
-                Log.e("UNABLETOINITIALIZEBLE", "Unable to initialize Bluetooth");
-                initialized=false;
+//            if (!bleService.initialize()){
+//                Log.e("UNABLETOINITIALIZEBLE", "Unable to initialize Bluetooth");
+//                initialized=false;
 //                finish();
-            }
+//            }
         }
 
         @Override
@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             Log.d("SERVICECONNECTION", "ON Service Disconnected");
             bluetoothServiceConnected = false;
             bleService = null;
-            initialized = false;
+//            initialized = false;
         }
     };
 
@@ -451,8 +451,13 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action))
             {
                 if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
-                    Log.e("BONDER", "properly bonded");
-                    bleService.connect();
+                    {   Log.e("BONDER", "properly bonded");
+                        try {
+                            bleService.initialWriteCharacteristics();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
                     updateConnectionState();
                 }

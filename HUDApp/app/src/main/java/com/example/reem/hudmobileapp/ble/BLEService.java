@@ -115,11 +115,20 @@ public class BLEService extends Service {
 
                         if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE)
                         {
-                            bluetoothDevice.createBond();
+                            Log.e("NOTBONDING","Will create a bond soon");
+                            if (!connect())
+                            {
+                                Log.e("TRIED TO CONNECT", "failed");
+                                broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                            };
 
                         }else
                         {
-                            connect();
+                            if (!connect())
+                            {
+                                Log.e("TRIED TO CONNECT", "failed");
+                                broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                            };
                         }
                         stopScan();
                         Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
@@ -132,7 +141,7 @@ public class BLEService extends Service {
 
     };
 
-    private void initialWriteCharacteristics() throws InterruptedException {
+    public void initialWriteCharacteristics() throws InterruptedException {
         HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
         writer.setHUDObject(hudObject);
         writer.initialConnectWrite();
@@ -181,7 +190,10 @@ public class BLEService extends Service {
                         public void run()
                         {
                             try {
-                                initialWriteCharacteristics();
+                                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE)
+                                    bluetoothDevice.createBond();
+                                else
+                                    initialWriteCharacteristics();
                                 servicesDiscovered = true;
                                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
 
@@ -341,6 +353,7 @@ public class BLEService extends Service {
     {
         if (bluetoothGatt != null)
         {
+            stopScan();
             Log.e(DEBUG_TAG,bluetoothGatt.toString());
             String value = "0";
             if (bluetoothGattService != null)
@@ -351,13 +364,14 @@ public class BLEService extends Service {
                 Log.d(DEBUG_TAG, writeCr.getValue().toString());
                 Log.d(DEBUG_TAG,writeCr.toString());
                 bluetoothGatt.writeCharacteristic(writeCr);
+                if (bluetoothGatt!=null){
+                    bluetoothGatt.disconnect();
+                }
                 isConnected = false;
                 servicesDiscovered=false;
 
                 bluetoothGattService = null;
-                if (bluetoothGatt!=null){
-                    bluetoothGatt.disconnect();
-                }
+
                 bluetoothGatt = null;
 
                 broadcastUpdate(ACTION_GATT_DISCONNECTED);
