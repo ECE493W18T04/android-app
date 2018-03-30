@@ -37,6 +37,9 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     mapsDirectionAndUnits(MAPS_DIRECTION_ENUM_DEFAULT),
     speedUnitsAndSignalStatus(SPEED_UNITS_ENUM_DEFAULT),
     autoBrightness(AUTO_BRIGHT_ENUM_DEFAULT),
+
+    connected(false),
+
     ble(_ble),
     eventQueue(_eventQueue),
     btnMgr(_eventQueue),
@@ -116,6 +119,7 @@ void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t 
 {
     setupGapAdvertising(false);
     printf("Device Disconnected\n");
+    connected = false;
     stateMgr.powerOff();
 }
 
@@ -236,6 +240,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
 void WNHService::beginPairingMode() {
     setupGapAdvertising(true);
     eventQueue.call_in(PAIRING_TIMEOUT_MS, this, &WNHService::pairingModeTimeout);
+    stateMgr.powerOn();
     stateMgr.forceState(PAIRING_INDEX);
 }
 
@@ -244,6 +249,7 @@ void WNHService::pairingModeTimeout() {
     pairState->setActive(false);
     stateMgr.forceState(STATE_OVERRIDE_INVALID);
     setupGapAdvertising(false);
+    if (!connected) stateMgr.powerOff();
 }
 
 void WNHService::sendVoiceCommandTrigger() {
@@ -318,6 +324,7 @@ void WNHService::setupGapAdvertising(bool discoverable) {
 void WNHService::connectionCallback(const Gap::ConnectionCallbackParams_t *params) {
     printf("Connected\n");
     stateMgr.powerOn();
+    connected = true;
 }
 
 void printMacAddress()

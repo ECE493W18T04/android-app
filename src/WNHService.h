@@ -117,6 +117,8 @@ private:
     uint8_t speedUnitsAndSignalStatus;
     uint8_t autoBrightness;
 
+    bool connected;
+
     BLEDevice                         &ble;
     EventQueue                        &eventQueue;
     ButtonManager                     btnMgr;
