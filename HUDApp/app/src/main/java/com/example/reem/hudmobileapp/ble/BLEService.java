@@ -64,7 +64,8 @@ public class BLEService extends Service {
             "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
-
+    public final static String ACTION_GATT_NO_DEVICE_FOUND = "com.example.bluetooth.le.ACTION_GATT_NO_DEVICE_FOUND";
+    public final static String ACTION_BOND_STATE_CHANGED = "com.example,bluetooth.le.ACTION_BOND_STATE_CHANGE";
     public IBinder getBinder() {
         return mBinder;
     }
@@ -82,6 +83,7 @@ public class BLEService extends Service {
     private boolean isConnected= false;
     private boolean inFlight=false;
     private boolean enabled=true;
+    private boolean servicesDiscovered= false;
     private Set<BluetoothDevice> devices = new HashSet<>();
     private final String DEBUG_TAG = this.getClass().getSimpleName();
 
@@ -94,69 +96,40 @@ public class BLEService extends Service {
     }
     public BluetoothGatt getBluetoothGatt() {
         return bluetoothGatt;
+
     }
     public CharacteristicWriter getWriter(){ return writer; }
 
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
-//            ArrayList<String> macAddresses=FileManager.readMACAddress(BLEService.this);
-            String macAddresses=null;
-                if (!devices.contains(device)) {
-                    Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
-                    // store the address in a file or something
-                    if (macAddresses==null)
-                    {
-                        if ("WNH".equals(device.getName())) {
 
-                            Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
-                            bluetoothDevice = device;
+            if (!devices.contains(device)) {
+                Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
+                // store the address in a file or something
+
+                    if ("WNH".equals(device.getName())) {
+
+                        Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
+                        bluetoothDevice = device;
+
+                        if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE)
+                        {
                             bluetoothDevice.createBond();
-                            connect(device.getAddress());
-                            Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
 
-                            stopScan();
-                        } else {
-                            devices.add(device);
+                        }else
+                        {
+                            connect();
                         }
-//
+                        stopScan();
+                        Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
+                    } else {
+                        devices.add(device);
                     }
-                    else {
-//                        boolean found=false;
-//                        for (String macAddress : macAddresses) {
-//                            Log.i("MAC ADDRESS", "The mac adress looking for is" + macAddress);
-//                            if (macAddress.equals(device.getAddress())) {
-//                                Log.i("BLUETOOTH DEVICE FOUND ", "wnh found via mac address");
-//                                bluetoothDevice = device;
-//                                bluetoothDevice.createBond();
-//                                connect(device.getAddress());
-//                                Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-//                                stopScan();
-//                                found = true;
-//                                break;
-//                            } else {
-//                                devices.add(device);
-//                            }
-//                        }
-//                        if (!found)
-//                        {
-//                            if ("WNH".equals(device.getName())) {
-//
-//                                Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
-//                                bluetoothDevice = device;
-//                                bluetoothDevice.createBond();
-//                                connect(device.getAddress());
-//                                Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-//
-//                                stopScan();
-//                            } else {
-//                                devices.add(device);
-//                            }
-//                        }
+            }
 
-                    }
-                }
         }
+
     };
 
     private void initialWriteCharacteristics() throws InterruptedException {
@@ -169,13 +142,20 @@ public class BLEService extends Service {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
+                String intentAction = ACTION_GATT_CONNECTED;
+                isConnected = true;
+                broadcastUpdate(intentAction);
                 bluetoothGatt.discoverServices();
                 Log.d(DEBUG_TAG, "Connected to bluetooth");
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
+                String intentAction = ACTION_GATT_DISCONNECTED;
                 isConnected = false;
-                bluetoothGatt.close();
+                if (bluetoothGatt!=null)
+                    bluetoothGatt.close();
+                broadcastUpdate(intentAction);
+                Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
+
 
                 Log.e(DEBUG_TAG,bluetoothManager.getConnectedDevices(BluetoothProfile.GATT).toString());
             }
@@ -202,20 +182,15 @@ public class BLEService extends Service {
                         {
                             try {
                                 initialWriteCharacteristics();
-                                isConnected = true;
+                                servicesDiscovered = true;
+                                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
 
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }});
                     t1.start();
-//
-//                    mVehicleManager = new VehicleMonitoringService(writer);
-//                    if(mVehicleManager.VehicleManager == null) {
-//                        Intent intent = new Intent(getApplicationContext(), VehicleManager.class);
-//                        bindService(intent, mVehicleManager.connection, Context.BIND_AUTO_CREATE);
-//                        startService(intent);
-//                  }
+
 
 
                 }
@@ -309,53 +284,99 @@ public class BLEService extends Service {
 
 
 
-
+    @Override
+    public void onCreate()
+    {
+        mBinder = new BLEBinder();
+        super.onCreate();
+    }
 
     private static final UUID CONFIG_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
 
-    @Override
-    public void onCreate()
+    public boolean initialize()
     {
-        super.onCreate();
-        mBinder = new BLEBinder();
 
-        Toast.makeText(getApplicationContext(), "Check if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
-        Log.i("","About to find bluetooth settings");
-        bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        Toast.makeText(getApplicationContext(), "Checking if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
+        if (bluetoothManager == null) {
+            bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            if (bluetoothManager == null) {
+                Log.e(DEBUG_TAG, "Unable to initialize BluetoothManager.");
+                return false;
+            }
+        }
+
         bluetoothAdapter = bluetoothManager.getAdapter();
-        Toast.makeText(getApplicationContext(), "Check if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
         if (bluetoothAdapter == null) {
-            Log.e(DEBUG_TAG, "Bluetooth adapter is null, failure.");
+            Log.e(DEBUG_TAG, "Unable to obtain a BluetoothAdapter.");
             Toast.makeText(getApplicationContext(), "Bluetooth isn't avaialable", Toast.LENGTH_SHORT).show();
-            return;
-        } else if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            return false;
+        }else if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(getApplicationContext(), "BLE not supported", Toast.LENGTH_SHORT).show();
-            return;
-        } else if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            Toast.makeText(getApplicationContext(), "BLE is supported, about to start Activity", Toast.LENGTH_SHORT).show();
-            getApplicationContext().startActivity(enableBtIntent);
+            return false;
+        }else if (!bluetoothAdapter.isEnabled()) {
 
-
+            Toast.makeText(getApplicationContext(), "Please turn on Bluetooth before starting", Toast.LENGTH_SHORT).show();
+            return false;
         }
         voiceCommandHandler = new Handler();
         System.out.println("About to scan for devices: onCreate");
-        mHandler = new Handler();
 
-        scanForDevices();
-//        while (writer==null) {}
-
+        return true;
 
     }
 
+    private void broadcastUpdate(final String action)
+    {
+        final Intent intent = new Intent(action);
+        sendBroadcast(intent);
+    }
+
+    public void connectToDevice()
+    {
+        scanForDevices();
+    }
+
+    public void disconnectFromDevice()
+    {
+        if (bluetoothGatt != null)
+        {
+            Log.e(DEBUG_TAG,bluetoothGatt.toString());
+            String value = "0";
+            if (bluetoothGattService != null)
+            {
+                Log.e(DEBUG_TAG,bluetoothGattService.toString());
+                BluetoothGattCharacteristic writeCr = bluetoothGattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.DISCONNECT_CHARACTERISTIC_UUID));
+                writeCr.setValue(value.getBytes());
+                Log.d(DEBUG_TAG, writeCr.getValue().toString());
+                Log.d(DEBUG_TAG,writeCr.toString());
+                bluetoothGatt.writeCharacteristic(writeCr);
+                isConnected = false;
+                servicesDiscovered=false;
+
+                bluetoothGattService = null;
+                if (bluetoothGatt!=null){
+                    bluetoothGatt.disconnect();
+                }
+                bluetoothGatt = null;
+
+                broadcastUpdate(ACTION_GATT_DISCONNECTED);
+            }
+
+        }
+    }
 
 
+    public BluetoothDevice getDevice()
+    {
+        return bluetoothDevice;
+    }
 
 
-    private boolean connect(final String address)
+    public boolean connect()
     {
 
+        String address = bluetoothDevice.getAddress();
         if (bluetoothDeviceMACAdress!= null && address.equals(bluetoothDeviceMACAdress) && bluetoothGatt!=null)
         {
             return bluetoothGatt.connect();
@@ -371,22 +392,12 @@ public class BLEService extends Service {
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
-//        while (writer == null){}
-//        try {
-//            writer.initialConnectWrite();
-//        } catch (InterruptedException e) {
-//            Log.e(DEBUG_TAG, "Initial writer cannot be created");
-//        }
-//        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
 
-//        if (!macAddresses.contains(bluetoothDeviceMACAdress))
-//            macAddresses.add(bluetoothDeviceMACAdress);
-//        FileManager.saveMACAddress(this,macAddresses);
         return true;
 
     }
 
-    private static final long SCAN_PERIOD = 10000;
+    private static final long SCAN_PERIOD = 15000;
     private void scanForDevices()
     {
         Toast.makeText(getApplicationContext(), "About to scan for devices", Toast.LENGTH_SHORT).show();
@@ -399,12 +410,18 @@ public class BLEService extends Service {
         if (enable)
         {
             isScanActive = true;
-
+            mHandler = new Handler();
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    isScanActive = false;
+                    if (bluetoothDevice==null)
+                    {
+                        isScanActive = false;
+
+                        broadcastUpdate(ACTION_GATT_NO_DEVICE_FOUND);
+                    }
                     bluetoothAdapter.stopLeScan(mLeScanCallback);
+
                 }
             }, SCAN_PERIOD);
 
@@ -444,18 +461,10 @@ public class BLEService extends Service {
                 bluetoothGatt.writeCharacteristic(writeCr);
 
             }
-//           bluetoothGatt.disconnect();
+           bluetoothGatt.disconnect();
         }
         Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
-        if (blueToothScanThread != null) {
-            if (blueToothScanThread.isAlive()) {
-                blueToothScanThread.destroy();
-            }
-        }
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-            mHandler = null;
-        }
+
 
         super.onDestroy();
     }
