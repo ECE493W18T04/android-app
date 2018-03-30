@@ -35,8 +35,6 @@ void StateManager::tick() {
 void StateManager::updateStates() {
     int i;
     int maxPriority = 255;
-    printf("Forced: %d\n", forced);
-    printf("Powered: %d\n", powered);
     if (forced || !powered) return;
     for (i = 0; i < STATE_COUNT; i++) {
         if (States[i] && States[i]->getActive() && States[i]->getPriority() < maxPriority) {
