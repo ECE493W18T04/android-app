@@ -9,7 +9,8 @@
 DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK), luxDevice(I2C_SDA0, I2C_SCL0), brightness(DEFAULT_BRIGHTNESS) {
     port.format(8,3);
     port.frequency(clockSpeed);
-    _eventQueue.call_every(62, this, &DisplayDriver::handleTick); // 16Hz
+    _eventQueue.call_every(200, this, &DisplayDriver::handleTick); // 5Hz
+    luxDevice.setIntegrationTime(101);
 }
 
 void DisplayDriver::setBuffer(uint16_t _width, uint16_t _height, uint32_t _buffer[]) {

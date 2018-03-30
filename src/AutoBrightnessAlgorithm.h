@@ -15,14 +15,14 @@ class AutoBrightnessAlg {
 public:
     AutoBrightnessAlg();
     AutoBrightnessAlg(double alpha);
-    void addSample(uint32_t dataSample);
+    void addSample(float dataSample);
     uint8_t getState();
     void setVariability(double alpha);
 private:
-    long map(long x, long in_min, long in_max, long out_min, long out_max);
+    float map(float x, float in_min, float in_max, float out_min, float out_max);
     double _alpha;
-    uint32_t _current_value;
-    int8_t _current_state;
+    float _current_value;
+    float _current_state;
     auto_brightness_state _internal_state;
     uint16_t _ticks_in_current_state;
 };
