@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 //    private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
-    private final int REQ_CODE_SPEECH_INPUT = 100;
     private AlertDialog enableNotificationListenerAlertDialog;
     private boolean activeMode =false;
     private HUDObject hud;
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     BLEService bleService;
     Intent bluetoothServiceIntent;
-    private boolean bluetoothServiceConnected = false;
+
     private boolean connectedToDevice;
     private boolean initialized = false;
     ProgressDialog dialog = null;
@@ -119,15 +118,13 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 if (connectedToDevice == false)
                 {
                         if (bleService!=null)
+                        {
                             bleService.initialize();
+                        }
                         mDrawable.setColorFilter(new
                                 PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
                         navButton.setBackground(mDrawable);
-                        dialog=new ProgressDialog(MainActivity.this,R.style.ProgressDialog);
-                        dialog.setMessage("Scanning for WNH Device");
-                        dialog.setCancelable(false);
-                        dialog.setInverseBackgroundForced(false);
-                        dialog.show();
+                        createLoadingDialog();
                         bleService.connectToDevice();
 
                         // start the progress bar
@@ -154,6 +151,8 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
 
 
+
+
         preferencesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -173,10 +172,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         }
 
         Log.e("servicecheck","about to check if service running");
-        if (!isMyServiceRunning(BLEService.class)){
-            Log.e("service","service is not running");
-            startBluetoothService();
-        }
 
         if(!isNotificationServiceEnabled()){
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
@@ -186,6 +181,17 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
         //startService(notificationIntent);
 
+    }
+
+
+
+    public void createLoadingDialog()
+    {
+        dialog=new ProgressDialog(MainActivity.this,R.style.ProgressDialog);
+        dialog.setMessage("Scanning for WNH Device");
+        dialog.setCancelable(false);
+        dialog.setInverseBackgroundForced(false);
+        dialog.show();
     }
 
     public void getHudItem()
@@ -352,7 +358,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
             bleService = mBinder.getService();
-            bluetoothServiceConnected = true;
             initialized = true;
 //            if (!bleService.initialize()){
 //                Log.e("UNABLETOINITIALIZEBLE", "Unable to initialize Bluetooth");
@@ -364,7 +369,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             Log.d("SERVICECONNECTION", "ON Service Disconnected");
-            bluetoothServiceConnected = false;
             bleService = null;
 //            initialized = false;
         }
@@ -414,8 +418,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
 
         Log.d("BINDINGSERVICE", "Binding Bluetooth Service");
-        bluetoothServiceIntent = new Intent(this, BLEService.class);
-        bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+        if (bleService == null)
+        {
+            bluetoothServiceIntent = new Intent(this, BLEService.class);
+            bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+        }
+
 
 
     }
@@ -426,6 +434,9 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BLEService.ACTION_GATT_CONNECTED.equals(action)) {
+                if (dialog.isShowing())
+                    dialog.hide();//                if (dialog.isShowing())
+//                    dialog.hide();
                 connectedToDevice = true;
 
                 updateConnectionState();
@@ -451,20 +462,28 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action))
             {
                 if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
-                    {   Log.e("BONDER", "properly bonded");
+                    {
+                        connectedToDevice = true;
+                        Log.e("BONDER", "properly bonded");
                         try {
                             bleService.initialWriteCharacteristics();
+                            if (dialog.isShowing())
+                                dialog.hide();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
                 }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
+                    connectedToDevice = false;
+                    if (dialog.isShowing())
+                        dialog.hide();
                     updateConnectionState();
                 }
                 // need to stop the loading page
                 // get not create pairing bond
             }else if (BLEService.ACTION_GATT_NO_DEVICE_FOUND.equals(action))
             {
+                connectedToDevice = false;
                 if (dialog.isShowing())
                     dialog.hide();
                 updateConnectionState();
@@ -576,6 +595,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         super.onDestroy();
         unregisterReceiver(mGattUpdateReceiver);
         unbindService(mConnection);
+        if (bleService!=null)
+        {
+            bleService.disconnectFromDevice();
+
+        }
+        stopService(new Intent(this,BLEService.class));
         stopService(new Intent(this, WNHNotificationListener.class));
     }
 
@@ -583,7 +608,9 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     public void onStart()
     {
         super.onStart();
+        startBluetoothService();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        updateConnectionState();
     }
 
 

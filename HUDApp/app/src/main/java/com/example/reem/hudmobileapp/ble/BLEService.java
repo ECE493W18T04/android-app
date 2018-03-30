@@ -52,7 +52,7 @@ public class BLEService extends Service {
     private int lastTransmittedCode = 0;
     private Thread blueToothScanThread = null;
     private CharacteristicWriter writer;
-
+    private static final UUID CONFIG_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     public final static String ACTION_GATT_CONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
@@ -100,202 +100,6 @@ public class BLEService extends Service {
     }
     public CharacteristicWriter getWriter(){ return writer; }
 
-    private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
-
-            if (!devices.contains(device)) {
-                Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
-                // store the address in a file or something
-
-                    if ("WNH".equals(device.getName())) {
-
-                        Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
-                        bluetoothDevice = device;
-
-                        if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE)
-                        {
-                            Log.e("NOTBONDING","Will create a bond soon");
-                            if (!connect())
-                            {
-                                Log.e("TRIED TO CONNECT", "failed");
-                                broadcastUpdate(ACTION_GATT_DISCONNECTED);
-                            };
-
-                        }else
-                        {
-                            if (!connect())
-                            {
-                                Log.e("TRIED TO CONNECT", "failed");
-                                broadcastUpdate(ACTION_GATT_DISCONNECTED);
-                            };
-                        }
-                        stopScan();
-                        Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-                    } else {
-                        devices.add(device);
-                    }
-            }
-
-        }
-
-    };
-
-    public void initialWriteCharacteristics() throws InterruptedException {
-        HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
-        writer.setHUDObject(hudObject);
-        writer.initialConnectWrite();
-    }
-
-    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                String intentAction = ACTION_GATT_CONNECTED;
-                isConnected = true;
-                broadcastUpdate(intentAction);
-                bluetoothGatt.discoverServices();
-                Log.d(DEBUG_TAG, "Connected to bluetooth");
-
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                String intentAction = ACTION_GATT_DISCONNECTED;
-                isConnected = false;
-                if (bluetoothGatt!=null)
-                    bluetoothGatt.close();
-                broadcastUpdate(intentAction);
-                Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
-
-
-                Log.e(DEBUG_TAG,bluetoothManager.getConnectedDevices(BluetoothProfile.GATT).toString());
-            }
-        }
-
-        private String valueRead="R";
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (status == GATT_SUCCESS) {
-                Log.d(DEBUG_TAG, "GATT Status success");
-                BluetoothGattService service = bluetoothGatt.getService(UUID.fromString(CharacteristicUUIDs.WNH_SERVICE_UUID));
-                if (service != null) {
-                    bluetoothGattService = service;
-                    Log.d(DEBUG_TAG, "Discovered service!");
-                    setCharacteristicNotification(gatt);
-
-
-
-                    HUDObject hud = FileManager.loadFromFile(BLEService.this);
-                    writer = new CharacteristicWriter(bluetoothGattService,hud,bluetoothGatt);
-                    Thread t1 = new Thread(new Runnable() {
-                        public void run()
-                        {
-                            try {
-                                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE)
-                                    bluetoothDevice.createBond();
-                                else
-                                    initialWriteCharacteristics();
-                                servicesDiscovered = true;
-                                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
-
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }});
-                    t1.start();
-
-
-
-                }
-            } else {
-                Log.w(DEBUG_TAG, "onServicesDiscovered received: " + status);
-            }
-        }
-
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.d(DEBUG_TAG,"I should be writing now");
-            inFlight = false;
-            if (status != GATT_SUCCESS) {
-                Log.e(DEBUG_TAG, "Failed to write characteristic ");
-                Log.e(DEBUG_TAG, gatt.toString());
-            } else {
-                Log.d(DEBUG_TAG, "SUCCESS");
-            }
-            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-//            bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
-            super.onCharacteristicWrite(gatt, characteristic, status);
-        }
-
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic charactertistic, int status)
-        {
-            if (status != GATT_SUCCESS){
-                Log.e(DEBUG_TAG, "Failed to read characteristic");
-            }else
-            {
-                Log.e(DEBUG_TAG, "SUCCESSFULLY READ");
-            }
-            charactertistic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-            Log.i("Value of c:",charactertistic.getStringValue(0));
-            valueRead=charactertistic.getStringValue(0);
-            setCharacteristicNotification(gatt);
-            super.onCharacteristicRead(gatt,charactertistic,status);
-        }
-
-        @Override
-        // Characteristic notification
-        public void onCharacteristicChanged(final BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-//            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-            Log.i(DEBUG_TAG, "Characteristic Changed");
-            Log.i(DEBUG_TAG,characteristic.getUuid().toString() );
-            //TODO launch voice command when appropriate characteristic received
-            if (characteristic.getUuid().toString().equalsIgnoreCase(CharacteristicUUIDs.VOICE_CONTROL_CHARACTERTISTIC_UUID)) {
-                //startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                voiceCommandHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        VoiceCommandManager vCommand = new VoiceCommandManager(getApplicationContext(),writer);
-                        Log.d(DEBUG_TAG, "Voice CommandManager started");
-                        vCommand.startListener();
-                    }
-                });
-
-            }
-
-        }
-
-
-        public void setCharacteristicNotification(BluetoothGatt gatt)
-        {   if (bluetoothAdapter == null || bluetoothGatt == null) {
-                Log.w(DEBUG_TAG, "BluetoothAdapter not initialized");
-                return;
-            }
-            BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(UUID.fromString(CharacteristicUUIDs.WNH_SERVICE_UUID)).getCharacteristic(UUID.fromString(CharacteristicUUIDs.VOICE_CONTROL_CHARACTERTISTIC_UUID));
-
-            Log.d(DEBUG_TAG,characteristic.getUuid().toString());
-            for (BluetoothGattDescriptor descriptor:characteristic.getDescriptors())
-            {
-                Log.d(DEBUG_TAG,"BLE Descriptor "+descriptor.getUuid().toString());
-            }
-
-            // Enable local notifications
-            gatt.setCharacteristicNotification(characteristic, true);
-            // Enabled remote notifications
-            BluetoothGattDescriptor desc = characteristic.getDescriptor(CONFIG_DESCRIPTOR);
-            desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            gatt.writeDescriptor(desc);
-        }
-
-    };
-
-
-
-
     @Override
     public void onCreate()
     {
@@ -303,40 +107,6 @@ public class BLEService extends Service {
         super.onCreate();
     }
 
-    private static final UUID CONFIG_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-
-
-    public boolean initialize()
-    {
-
-        Toast.makeText(getApplicationContext(), "Checking if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
-        if (bluetoothManager == null) {
-            bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-            if (bluetoothManager == null) {
-                Log.e(DEBUG_TAG, "Unable to initialize BluetoothManager.");
-                return false;
-            }
-        }
-
-        bluetoothAdapter = bluetoothManager.getAdapter();
-        if (bluetoothAdapter == null) {
-            Log.e(DEBUG_TAG, "Unable to obtain a BluetoothAdapter.");
-            Toast.makeText(getApplicationContext(), "Bluetooth isn't avaialable", Toast.LENGTH_SHORT).show();
-            return false;
-        }else if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(getApplicationContext(), "BLE not supported", Toast.LENGTH_SHORT).show();
-            return false;
-        }else if (!bluetoothAdapter.isEnabled()) {
-
-            Toast.makeText(getApplicationContext(), "Please turn on Bluetooth before starting", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        voiceCommandHandler = new Handler();
-        System.out.println("About to scan for devices: onCreate");
-
-        return true;
-
-    }
 
     private void broadcastUpdate(final String action)
     {
@@ -381,37 +151,46 @@ public class BLEService extends Service {
     }
 
 
+    public boolean initialize()
+    {
+
+        Toast.makeText(getApplicationContext(), "Checking if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
+        if (bluetoothManager == null) {
+            bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            if (bluetoothManager == null) {
+                Log.e(DEBUG_TAG, "Unable to initialize BluetoothManager.");
+                return false;
+            }
+        }
+
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        if (bluetoothAdapter == null) {
+            Log.e(DEBUG_TAG, "Unable to obtain a BluetoothAdapter.");
+            Toast.makeText(getApplicationContext(), "Bluetooth isn't avaialable", Toast.LENGTH_SHORT).show();
+            return false;
+        }else if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(getApplicationContext(), "BLE not supported", Toast.LENGTH_SHORT).show();
+            return false;
+        }else if (!bluetoothAdapter.isEnabled()) {
+
+            Toast.makeText(getApplicationContext(), "Please turn on Bluetooth before starting", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        voiceCommandHandler = new Handler();
+        System.out.println("About to scan for devices: onCreate");
+
+        return true;
+
+    }
+
+
     public BluetoothDevice getDevice()
     {
         return bluetoothDevice;
     }
 
 
-    public boolean connect()
-    {
-
-        String address = bluetoothDevice.getAddress();
-        if (bluetoothDeviceMACAdress!= null && address.equals(bluetoothDeviceMACAdress) && bluetoothGatt!=null)
-        {
-            return bluetoothGatt.connect();
-        }
-
-        final BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-        if (device == null)
-        {
-            Log.d(DEBUG_TAG, "Device " + address + " not found, unable to connect");
-            return false;
-        }
-        bluetoothGatt = device.connectGatt(this, false, mGattCallback);
-        Log.d(DEBUG_TAG, "Trying to create a new connection.");
-        bluetoothDeviceMACAdress = address;
-        bluetoothDevice = device;
-
-        return true;
-
-    }
-
-    private static final long SCAN_PERIOD = 15000;
+    private static final long SCAN_PERIOD = 10000;
     private void scanForDevices()
     {
         Toast.makeText(getApplicationContext(), "About to scan for devices", Toast.LENGTH_SHORT).show();
@@ -424,14 +203,13 @@ public class BLEService extends Service {
         if (enable)
         {
             isScanActive = true;
-            mHandler = new Handler();
+            Handler mHandler = new Handler();
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     if (bluetoothDevice==null)
                     {
                         isScanActive = false;
-
                         broadcastUpdate(ACTION_GATT_NO_DEVICE_FOUND);
                     }
                     bluetoothAdapter.stopLeScan(mLeScanCallback);
@@ -475,7 +253,7 @@ public class BLEService extends Service {
                 bluetoothGatt.writeCharacteristic(writeCr);
 
             }
-           bluetoothGatt.disconnect();
+            bluetoothGatt.disconnect();
         }
         Log.e("DISCONNECT", "Disconnecting from bluetoothGatt and stopping service");
 
@@ -490,5 +268,227 @@ public class BLEService extends Service {
         //Toast.makeText(getApplicationContext(), "Figuring out where the problem is", Toast.LENGTH_SHORT).show();
         return mBinder;
     }
+
+    public void setCharacteristicNotification(BluetoothGatt gatt)
+    {   if (bluetoothAdapter == null || bluetoothGatt == null) {
+        Log.w(DEBUG_TAG, "BluetoothAdapter not initialized");
+        return;
+    }
+        BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(UUID.fromString(CharacteristicUUIDs.WNH_SERVICE_UUID)).getCharacteristic(UUID.fromString(CharacteristicUUIDs.VOICE_CONTROL_CHARACTERTISTIC_UUID));
+
+        Log.d(DEBUG_TAG,characteristic.getUuid().toString());
+        for (BluetoothGattDescriptor descriptor:characteristic.getDescriptors())
+        {
+            Log.d(DEBUG_TAG,"BLE Descriptor "+descriptor.getUuid().toString());
+        }
+
+        // Enable local notifications
+        gatt.setCharacteristicNotification(characteristic, true);
+        // Enabled remote notifications
+        BluetoothGattDescriptor desc = characteristic.getDescriptor(CONFIG_DESCRIPTOR);
+        desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        gatt.writeDescriptor(desc);
+    }
+
+
+    public boolean connect()
+    {
+
+        String address = bluetoothDevice.getAddress();
+        if (bluetoothDeviceMACAdress!= null && address.equals(bluetoothDeviceMACAdress) && bluetoothGatt!=null)
+        {
+            return bluetoothGatt.connect();
+        }
+
+        final BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
+        if (device == null)
+        {
+            Log.d(DEBUG_TAG, "Device " + address + " not found, unable to connect");
+            return false;
+        }
+        bluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        Log.d(DEBUG_TAG, "Trying to create a new connection.");
+        bluetoothDeviceMACAdress = address;
+        bluetoothDevice = device;
+
+        return true;
+
+    }
+
+    public void initialWriteCharacteristics() throws InterruptedException {
+        HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
+        writer.setHUDObject(hudObject);
+        writer.initialConnectWrite();
+    }
+
+    private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
+
+            if (!devices.contains(device)) {
+                Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
+                // store the address in a file or something
+
+                if ("WNH".equals(device.getName())) {
+
+                    Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
+                    bluetoothDevice = device;
+
+                    if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE) {
+                        Log.e("NOTBONDING", "Will create a bond soon");
+                        if (!connect()) {
+                            Log.e("TRIED TO CONNECT", "failed");
+                            broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                        } else {
+                            Log.e("WASABLETOCONNECT", "Not bonded yet");
+                        }
+
+                    } else {
+                        if (!connect()) {
+                            Log.e("TRIED TO CONNECT", "failed");
+                            broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                        }else
+                        {
+                            Log.e("CONNECTSUCCESSFULLY","now connected");
+                        }
+
+                    }
+                    stopScan();
+                    Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
+                } else {
+                    devices.add(device);
+                }
+
+
+            }
+
+        }
+    };
+
+
+        private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                String intentAction = ACTION_GATT_CONNECTED;
+                isConnected = true;
+                broadcastUpdate(intentAction);
+                bluetoothGatt.discoverServices();
+                Log.d(DEBUG_TAG, "Connected to bluetooth");
+
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                String intentAction = ACTION_GATT_DISCONNECTED;
+                isConnected = false;
+                if (bluetoothGatt != null)
+                    bluetoothGatt.close();
+                broadcastUpdate(intentAction);
+                Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
+
+
+                Log.e(DEBUG_TAG, bluetoothManager.getConnectedDevices(BluetoothProfile.GATT).toString());
+            }
+        }
+
+        private String valueRead = "R";
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            if (status == GATT_SUCCESS) {
+                Log.d(DEBUG_TAG, "GATT Status success");
+                BluetoothGattService service = bluetoothGatt.getService(UUID.fromString(CharacteristicUUIDs.WNH_SERVICE_UUID));
+                if (service != null) {
+                    bluetoothGattService = service;
+                    Log.d(DEBUG_TAG, "Discovered service!");
+                    setCharacteristicNotification(gatt);
+
+
+                    HUDObject hud = FileManager.loadFromFile(BLEService.this);
+                    writer = new CharacteristicWriter(bluetoothGattService, hud, bluetoothGatt);
+                    Thread t1 = new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE)
+                                    bluetoothDevice.createBond();
+                                else
+                                    initialWriteCharacteristics();
+                                servicesDiscovered = true;
+                                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    t1.start();
+
+
+                }
+            } else {
+                Log.w(DEBUG_TAG, "onServicesDiscovered received: " + status);
+            }
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            Log.d(DEBUG_TAG, "I should be writing now");
+            inFlight = false;
+            if (status != GATT_SUCCESS) {
+                Log.e(DEBUG_TAG, "Failed to write characteristic ");
+                Log.e(DEBUG_TAG, gatt.toString());
+            } else {
+                Log.d(DEBUG_TAG, "SUCCESS");
+            }
+            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+//            bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
+            super.onCharacteristicWrite(gatt, characteristic, status);
+        }
+
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic charactertistic, int status) {
+            if (status != GATT_SUCCESS) {
+                Log.e(DEBUG_TAG, "Failed to read characteristic");
+            } else {
+                Log.e(DEBUG_TAG, "SUCCESSFULLY READ");
+            }
+            charactertistic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+            Log.i("Value of c:", charactertistic.getStringValue(0));
+            valueRead = charactertistic.getStringValue(0);
+            setCharacteristicNotification(gatt);
+            super.onCharacteristicRead(gatt, charactertistic, status);
+        }
+
+        @Override
+        // Characteristic notification
+        public void onCharacteristicChanged(final BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+//            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+            Log.i(DEBUG_TAG, "Characteristic Changed");
+            Log.i(DEBUG_TAG, characteristic.getUuid().toString());
+            //TODO launch voice command when appropriate characteristic received
+            if (characteristic.getUuid().toString().equalsIgnoreCase(CharacteristicUUIDs.VOICE_CONTROL_CHARACTERTISTIC_UUID)) {
+                //startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                voiceCommandHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        VoiceCommandManager vCommand = new VoiceCommandManager(getApplicationContext(), writer);
+                        Log.d(DEBUG_TAG, "Voice CommandManager started");
+                        vCommand.startListener();
+                    }
+                });
+
+            }
+
+        }
+
+
+        };
+
+
+
+
 
 }
