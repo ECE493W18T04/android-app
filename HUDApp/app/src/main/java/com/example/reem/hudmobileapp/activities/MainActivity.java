@@ -474,10 +474,11 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 }
 
                 Log.e("WORKED","yay it worked");
-//                vMonitor = new VehicleMonitoringService(bleService.getWriter());
-//                if(vMonitor.VehicleManager == null) {
-//                    Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
-//                    bindService(intent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+                vMonitor = new VehicleMonitoringService(bleService.getWriter());
+                if(vMonitor.VehicleManager == null) {
+                    Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
+                    bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+                }
 
             } else if (BLEService.ACTION_DATA_AVAILABLE.equals(action)) {
 //                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
