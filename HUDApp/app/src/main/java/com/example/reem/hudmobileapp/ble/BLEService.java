@@ -174,6 +174,7 @@ public class BLEService extends Service {
             return false;
         }else if (!bluetoothAdapter.isEnabled()) {
 
+            broadcastUpdate(BLEService.ACTION_GATT_DISCONNECTED);
             Toast.makeText(getApplicationContext(), "Please turn on Bluetooth before starting", Toast.LENGTH_SHORT).show();
             return false;
         }

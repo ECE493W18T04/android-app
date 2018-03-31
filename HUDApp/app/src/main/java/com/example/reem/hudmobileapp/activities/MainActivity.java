@@ -119,12 +119,18 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 {
                         if (bleService!=null)
                         {
-                            bleService.initialize();
+                            if (!bleService.initialize()){
+                                return;
+                            }
+
                         }
                         mDrawable.setColorFilter(new
                                 PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
                         navButton.setBackground(mDrawable);
                         createLoadingDialog();
+
+
+
                         bleService.connectToDevice();
 
                         // start the progress bar
@@ -406,20 +412,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     public void startBluetoothService()
     {
 
-//        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
-//        alertDialog.setTitle("Unable to Connect");
-//        alertDialog.setMessage("Connection has not been established with WNH BLE device. Please try again and ensure device is on.");
-//        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.dismiss();
-//                    }
-//                });
-//
-
-
-
-
         Log.d("BINDINGSERVICE", "Binding Bluetooth Service");
         if (bleService == null)
         {
@@ -446,7 +438,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 invalidateOptionsMenu();
             } else if (BLEService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 connectedToDevice = false;
-                if (dialog.isShowing())
+                if (dialog != null && dialog.isShowing())
                     dialog.hide();
                 updateConnectionState();
 
