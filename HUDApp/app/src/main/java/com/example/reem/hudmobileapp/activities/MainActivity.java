@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BLEService.ACTION_GATT_CONNECTED.equals(action)) {
-                if (dialog.isShowing())
+                if (dialog != null && dialog.isShowing())
                     dialog.hide();//                if (dialog.isShowing())
 //                    dialog.hide();
                 connectedToDevice = true;
@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
             } else if (BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // need to stop the loading
-                if (dialog.isShowing())
+                if (dialog!= null && dialog.isShowing())
                     dialog.hide();
                 ArrayList<String> addresses=FileManager.readMACAddress(MainActivity.this);
 
@@ -502,7 +502,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                         Log.e("BONDER", "properly bonded");
                         try {
                             bleService.initialWriteCharacteristics();
-                            if (dialog.isShowing())
+                            if (dialog != null && dialog.isShowing())
                                 dialog.hide();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -510,7 +510,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                     }
                 }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
                     connectedToDevice = false;
-                    if (dialog.isShowing())
+                    if ( dialog!= null && dialog.isShowing())
                         dialog.hide();
                     updateConnectionState();
                 }
@@ -519,7 +519,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             }else if (BLEService.ACTION_GATT_NO_DEVICE_FOUND.equals(action))
             {
                 connectedToDevice = false;
-                if (dialog.isShowing())
+                if (dialog!= null && dialog.isShowing())
                     dialog.hide();
                 updateConnectionState();
                 Log.e("NODEVICE","no device was found");
