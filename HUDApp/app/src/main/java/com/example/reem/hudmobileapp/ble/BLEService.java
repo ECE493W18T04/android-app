@@ -67,6 +67,7 @@ public class BLEService extends Service {
             "com.example.bluetooth.le.EXTRA_DATA";
     public final static String ACTION_GATT_NO_DEVICE_FOUND = "com.example.bluetooth.le.ACTION_GATT_NO_DEVICE_FOUND";
     public final static String ACTION_BOND_STATE_CHANGED = "com.example,bluetooth.le.ACTION_BOND_STATE_CHANGE";
+    public final static String CLOSE_DIALOG = "com.example.bluetooth.le.CLOSE_DIALOG";
     public IBinder getBinder() {
         return mBinder;
     }
@@ -217,6 +218,7 @@ public class BLEService extends Service {
 
 
                     bluetoothAdapter.stopLeScan(mLeScanCallback);
+                    broadcastUpdate(CLOSE_DIALOG);
 
                 }
             }, SCAN_PERIOD);
