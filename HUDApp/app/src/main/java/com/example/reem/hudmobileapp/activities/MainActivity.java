@@ -8,10 +8,13 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -71,7 +74,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 //    private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
-    private final int REQ_CODE_SPEECH_INPUT = 100;
     private AlertDialog enableNotificationListenerAlertDialog;
     private boolean activeMode =false;
     private HUDObject hud;
@@ -83,8 +85,10 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     BLEService bleService;
     Intent bluetoothServiceIntent;
-    private boolean bluetoothServiceConnected = false;
 
+    private boolean connectedToDevice;
+    private boolean initialized = false;
+    ProgressDialog dialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +98,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         getHudItem();
         checkPreviousConnection();
 
-        if (isMyServiceRunning(BLEService.class)){
-            activeMode=true;
-        }
+
 
         String[] options = new String[]{"Priority Queue","Brightness Control","HUD Color", "Maximum Current"};
         ArrayAdapter<String> itemsAdapter =
@@ -111,6 +113,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         restoreView.setAdapter(restoreAdaptor);
         //mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
 
+
         navButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -118,38 +121,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                     startBluetoothService();
                     activeMode = true;
                 } else{
-                    stopBluetoothService();
+                    //stopBluetoothService();
                     activeMode=false;
                 }
             }
         });
 
-/*
-        navButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (activeMode == false)
-                {
-                    startBluetoothService();
-//                    navButton.setText("Stop");
-//                    navButton.setBackgroundColor(getResources().getColor(R.color.gray));
-                    mDrawable.setColorFilter(new
-                            PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
-                    navButton.setBackground(mDrawable);
-                    activeMode = true;
-                }
-                else {
-                    stopBluetoothService();
-//                    navButton.setText("Activate");
-                    mDrawable.setColorFilter(new
-                            PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
-                    navButton.setBackground(mDrawable);
-                    activeMode=false;
-                }
-
-            }
-        });
-*/
         preferencesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -168,6 +145,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
         }
 
+        Log.e("servicecheck","about to check if service running");
 
         if(!isNotificationServiceEnabled()){
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
@@ -177,6 +155,17 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
         //startService(notificationIntent);
 
+    }
+
+
+
+    public void createLoadingDialog()
+    {
+        dialog=new ProgressDialog(MainActivity.this,R.style.ProgressDialog);
+        dialog.setMessage("Scanning for WNH Device");
+        dialog.setCancelable(false);
+        dialog.setInverseBackgroundForced(false);
+        dialog.show();
     }
 
     public void getHudItem()
@@ -201,14 +190,37 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             FileManager.saveMACAddress(this,null);
         }
         ArrayList<String> value = FileManager.readMACAddress(this);
-        //Log.e("MACADDRESSFAILURE",value.toString());
+
+        if (value==null){
+            Log.e("MACADDRESSFAILURE","MAc address contains null");
+        }
     }
 
     public void restore()
     {
-        HUDObject hudObject= new HUDObject();
-        FileManager.saveToFile(this,hudObject);
-        hud = hudObject;
+
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
+        alertDialog.setTitle("Restore");
+        alertDialog.setMessage("Are you sure you want to restore to default settings?");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                HUDObject hudObject= new HUDObject();
+                FileManager.saveToFile(MainActivity.this,hudObject);
+                hud = hudObject;
+                dialog.dismiss();
+            }
+
+        });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+
+                });
+        alertDialog.show();
+
     }
 
     public void getItemClicked(AdapterView<?> parent,View view, int position,long id)
@@ -271,17 +283,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
            }
     }
 
-    public void stopBluetoothService()
-    {
 
-        if (mConnection != null) {
-            unbindService(mConnection);
-        }
-        stopService(bluetoothServiceIntent);
-        bluetoothServiceIntent = null;
-
-        activeMode=false;
-    }
     /**
      * Is Notification Service Enabled.
      * Verifies if the notification listener service is enabled.
@@ -353,13 +355,19 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
             bleService = mBinder.getService();
-            bluetoothServiceConnected = true;
+            initialized = true;
+//            if (!bleService.initialize()){
+//                Log.e("UNABLETOINITIALIZEBLE", "Unable to initialize Bluetooth");
+//                initialized=false;
+//                finish();
+//            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             Log.d("SERVICECONNECTION", "ON Service Disconnected");
-            bluetoothServiceConnected = false;
+            bleService = null;
+//            initialized = false;
         }
     };
 
@@ -392,100 +400,116 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     public void startBluetoothService()
     {
 
-//        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
-//        alertDialog.setTitle("Unable to Connect");
-//        alertDialog.setMessage("Connection has not been established with WNH BLE device. Please try again and ensure device is on.");
-//        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.dismiss();
-//                    }
-//                });
-//
-//        final ProgressDialog dialog=new ProgressDialog(this,R.style.ProgressDialog);
-//        dialog.setMessage("Scanning for WNH Device");
-//        dialog.setCancelable(false);
-//        dialog.setInverseBackgroundForced(false);
-//        dialog.show();
-//
-//        new Thread( new Runnable() {
-//            @Override
-//            public void run() {
-//            try {
-//
-//                boolean isSuccessful = false;
-//                long startTime = System.currentTimeMillis();
-//                while ((System.currentTimeMillis() - startTime) < 10000) {
-//                    Log.e("SCANNING", "SCANINNGING INSIDE THREAD");
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    if (bleService!=null)
-//                    {
-//                        if (bleService.isConnectedToDevice())
-//                        {
-//
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        dialog.hide();
-//                    }
-//                });
-//                if (bleService!=null)
-//                {
-//                    if (bleService.isConnectedToDevice())
-//                    {
-//                        isSuccessful=true;
-//                    }
-//                }
-//
-//                if (isSuccessful) {
-//                    activeMode = true;
-//                    vMonitor = new VehicleMonitoringService(bleService.getWriter());
-//                    if(vMonitor.VehicleManager == null) {
-//                        Intent intent = new Intent(getApplicationContext(), VehicleManager.class);
-//                        bindService(intent, vMonitor.connection, Context.BIND_AUTO_CREATE);
-//                    }
-//
-//                } else {
-//                    activeMode = false;
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            alertDialog.show();
-//                            stopBluetoothService();
-//                            mDrawable.setColorFilter(new
-//                                    PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
-//                            navButton.setBackground(mDrawable);
-//                        }
-//                    });
-//                    activeMode = false;
-//
-//                }
-//            }catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            }
-//        }).start();
-
-
         Log.d("BINDINGSERVICE", "Binding Bluetooth Service");
-        bluetoothServiceIntent = new Intent(this, BLEService.class);
-        bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+        if (bleService == null)
+        {
+            bluetoothServiceIntent = new Intent(this, BLEService.class);
+            bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+        }
+
 
 
     }
 
 
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BLEService.ACTION_GATT_CONNECTED.equals(action)) {
+                if (dialog != null && dialog.isShowing())
+                    dialog.hide();//                if (dialog.isShowing())
+//                    dialog.hide();
+                connectedToDevice = true;
+
+                updateConnectionState();
+                invalidateOptionsMenu();
+            } else if (BLEService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                connectedToDevice = false;
+                if (dialog != null && dialog.isShowing())
+                    dialog.hide();
+                updateConnectionState();
+
+            } else if (BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // need to stop the loading
+                if (dialog!= null && dialog.isShowing())
+                    dialog.hide();
+                ArrayList<String> addresses=FileManager.readMACAddress(MainActivity.this);
+
+                    if (addresses==null){
+                        ArrayList<String> newList = new ArrayList<String>();
+                        newList.add(bleService.getDevice().getAddress());
+                        FileManager.saveMACAddress(MainActivity.this,newList);
+                        Log.e("MAKING A NEW LIST",newList.toString());
+                    }else{
+                        if (!addresses.contains(bleService.getDevice().getAddress()))
+                        {
+                            Log.e("What it lookslikebefore",addresses.toString());
+                            addresses.add(bleService.getDevice().getAddress());
+                            FileManager.saveMACAddress(MainActivity.this,addresses);
+                            Log.e("Continue with old list",addresses.toString());
+                        }
+
+
+                }
+
+                Log.e("WORKED","yay it worked");
+                vMonitor = new VehicleMonitoringService(bleService.getWriter());
+                if(vMonitor.VehicleManager == null) {
+                    Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
+                    bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+                }
+
+            } else if (BLEService.ACTION_DATA_AVAILABLE.equals(action)) {
+//                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action))
+            {
+                if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
+                    {
+                        connectedToDevice = true;
+                        Log.e("BONDER", "properly bonded");
+                        try {
+                            bleService.initialWriteCharacteristics();
+                            if (dialog != null && dialog.isShowing())
+                                dialog.hide();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
+                    connectedToDevice = false;
+                    if ( dialog!= null && dialog.isShowing())
+                        dialog.hide();
+                    updateConnectionState();
+                }
+                // need to stop the loading page
+                // get not create pairing bond
+            }else if (BLEService.ACTION_GATT_NO_DEVICE_FOUND.equals(action))
+            {
+                connectedToDevice = false;
+                if (dialog!= null && dialog.isShowing())
+                    dialog.hide();
+                updateConnectionState();
+                Log.e("NODEVICE","no device was found");
+                // need to stop the loading page
+            }
+        }
+    };
+
+
+
+    private void updateConnectionState() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (connectedToDevice)
+                    mDrawable.setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
+                else
+                    mDrawable.setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
+                navButton.setBackground(mDrawable);
+            }
+        });
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -572,9 +596,36 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     @Override
     public void onDestroy(){
         super.onDestroy();
+        unregisterReceiver(mGattUpdateReceiver);
+        unbindService(mConnection);
+        if (bleService!=null)
+        {
+            bleService.disconnectFromDevice();
+
+        }
+        stopService(new Intent(this,BLEService.class));
         stopService(new Intent(this, WNHNotificationListener.class));
     }
 
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        startBluetoothService();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        updateConnectionState();
+    }
 
 
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BLEService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BLEService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BLEService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BLEService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BLEService.ACTION_BOND_STATE_CHANGED);
+        intentFilter.addAction(BLEService.ACTION_GATT_NO_DEVICE_FOUND);
+        intentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        return intentFilter;
+    }
 }
