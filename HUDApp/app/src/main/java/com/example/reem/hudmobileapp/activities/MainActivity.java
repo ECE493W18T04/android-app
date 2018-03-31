@@ -631,6 +631,9 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     @Override
     public void onDestroy(){
         super.onDestroy();
+        if (dialog!=null){
+            dialog.dismiss();
+        }
         unregisterReceiver(mGattUpdateReceiver);
         unbindService(mConnection);
         if (bleService!=null)

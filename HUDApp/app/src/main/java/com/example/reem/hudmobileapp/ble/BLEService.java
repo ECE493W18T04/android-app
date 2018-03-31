@@ -11,8 +11,10 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Handler;
@@ -118,14 +120,79 @@ public class BLEService extends Service {
 
     public void connectToDevice()
     {
-        scanForDevices();
+        discoverDevices();
+//        scanForDevices();
     }
 
+    public void discoverDevices()
+    {
+
+        ArrayList<String> macAddresses = FileManager.readMACAddress(BLEService.this);
+        if (macAddresses != null){
+            for (String macAddress: macAddresses){
+                BluetoothDevice device =  bluetoothAdapter.getRemoteDevice(macAddress);
+                bluetoothDevice = device;
+                if (!connect()){
+                    bluetoothDevice = null;
+                    bluetoothDeviceMACAdress = null;
+                    isConnected= false;
+                }else{
+                    isConnected=true;
+                    break;
+                }
+
+            }
+        }
+        if (bluetoothAdapter.isDiscovering()){
+            bluetoothAdapter.cancelDiscovery();
+            Log.d(DEBUG_TAG,"Cancelling Discovery");
+
+        }
+        if (!isConnected) {
+            bluetoothAdapter.startDiscovery();
+            IntentFilter discoverDevicesIntent = new IntentFilter();
+            discoverDevicesIntent.addAction(BluetoothDevice.ACTION_FOUND);
+            discoverDevicesIntent.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+
+            registerReceiver(discoverBroadcastReceiver, discoverDevicesIntent);
+        }
+    }
+
+
+    private BroadcastReceiver discoverBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            Log.d(DEBUG_TAG,"onReceive: Action Found");
+            if (action.equals(BluetoothDevice.ACTION_FOUND)){
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (device.getName().equals("WNH"))
+                {
+                    bluetoothDevice = device;
+                    if (!connect()){
+                        Log.e("UNABLETOCONNECT","Unable to connect to device: "+bluetoothDevice.getName());
+                        broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                    }
+                    Log.e(DEBUG_TAG,"found device with name: "+device.getName()+"and address: "+device.getAddress());
+                }
+            }else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)){
+                if (!isConnected){
+                    Log.d("NODEVICEFOUND","Unable to find device");
+                    broadcastUpdate(BLEService.ACTION_GATT_NO_DEVICE_FOUND);
+                }
+            }
+        }
+    };
     public void disconnectFromDevice()
     {
+        try
+        {
+            unregisterReceiver(discoverBroadcastReceiver);
+        }catch(IllegalArgumentException e){
+            // do nothing/ƒ
+        }
         if (bluetoothGatt != null)
         {
-            stopScan();
             Log.e(DEBUG_TAG,bluetoothGatt.toString());
             String value = "0";
             if (bluetoothGattService != null)
@@ -194,55 +261,10 @@ public class BLEService extends Service {
 
 
     private static final long SCAN_PERIOD = 10000;
-    private void scanForDevices()
-    {
-        Toast.makeText(getApplicationContext(), "About to scan for devices", Toast.LENGTH_SHORT).show();
-        if (blueToothScanThread != null)
-        {
-            Log.e(DEBUG_TAG, "Scan is currently running, error");
-            return;
-        }
-        boolean enable = true;
-        if (enable)
-        {
-            isScanActive = true;
-            Handler mHandler = new Handler();
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                        if (bluetoothDevice==null)
-                        {
-                            isScanActive = false;
-                            broadcastUpdate(ACTION_GATT_NO_DEVICE_FOUND);
-                        }
 
-
-                    bluetoothAdapter.stopLeScan(mLeScanCallback);
-                    broadcastUpdate(CLOSE_DIALOG);
-
-                }
-            }, SCAN_PERIOD);
-
-            isScanActive = true;
-            bluetoothAdapter.startLeScan(mLeScanCallback);
-        }
-        else
-        {
-            isScanActive = false;
-            bluetoothAdapter.stopLeScan(mLeScanCallback);
-        }
-    }
-
-    private void stopScan()
-    {
-        isScanActive = false;
-        bluetoothAdapter.stopLeScan(mLeScanCallback);
-        mHandler=null;
-    }
     @Override
     public void onDestroy() {
 
-        stopScan();
 
         if (bluetoothGatt != null)
         {
@@ -327,70 +349,7 @@ public class BLEService extends Service {
         writer.initialConnectWrite();
     }
 
-    private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
 
-            ArrayList<String> macAddresses = FileManager.readMACAddress(BLEService.this);
-            if (macAddresses==null) {
-                Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
-                // store the address in a file or something
-                if ("WNH".equals(device.getName())) {
-                    Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
-                    bluetoothDevice = device;
-                    if (!connect()) {
-                        Log.e("TRIED TO CONNECT", "failed");
-                        broadcastUpdate(ACTION_GATT_DISCONNECTED);
-                    } else {
-
-                        Log.e("WASABLETOCONNECT", "connected");
-                    }
-                    stopScan();
-                    Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-
-
-                }
-            }else{
-                boolean foundAddress=false;
-                for (String macAddress: macAddresses)
-                {
-                    if (device.getAddress().equals(macAddress))
-                    {
-                        bluetoothDevice = device;
-                        if (!connect()) {
-                            Log.e("TRIED TO CONNECT", "failed");
-                            broadcastUpdate(ACTION_GATT_DISCONNECTED);
-                        } else {
-
-                            Log.e("WASABLETOCONNECT", "connnected");
-                        }
-                        stopScan();
-                        Log.d(DEBUG_TAG, "Found device address with address: " + device.getAddress());
-                        foundAddress = true;
-                        break;
-                    }
-                }if (!foundAddress){
-                    if ("WNH".equals(device.getName())) {
-                        Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
-                        bluetoothDevice = device;
-                        if (!connect()) {
-                            Log.e("TRIED TO CONNECT", "failed");
-                            broadcastUpdate(ACTION_GATT_DISCONNECTED);
-                        } else {
-
-                            Log.e("WASABLETOCONNECT", "connected");
-                        }
-                        stopScan();
-                        Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-
-
-                    }
-                }
-
-            }
-
-        }
-    };
 
 
         private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
