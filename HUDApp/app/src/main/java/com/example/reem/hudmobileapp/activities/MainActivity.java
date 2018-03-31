@@ -230,9 +230,29 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
     public void restore()
     {
-        HUDObject hudObject= new HUDObject();
-        FileManager.saveToFile(this,hudObject);
-        hud = hudObject;
+
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
+        alertDialog.setTitle("Restore");
+        alertDialog.setMessage("Are you sure you want to restore to default settings?");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                HUDObject hudObject= new HUDObject();
+                FileManager.saveToFile(MainActivity.this,hudObject);
+                hud = hudObject;
+                dialog.dismiss();
+            }
+
+        });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+
+                });
+        alertDialog.show();
+
     }
 
     public void getItemClicked(AdapterView<?> parent,View view, int position,long id)
