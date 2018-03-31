@@ -91,19 +91,17 @@ public class FileManager {
         {
             FileInputStream fis = context.openFileInput(MACFILE);
             BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-            ArrayList<String> lines= new ArrayList<String>();
-            String line;
-            while ((line=br.readLine()) != null){
-                lines.add(line);
-            }
-            if (lines.size()==0)
-                return null;
-            return lines;
+            Gson gson = new Gson();
+            //Code taken from stackOverFlow http://stackoverflow.com/questions/12384064/gson-convert-from-json-to-a-typed-arraylistt Sept 22,2016
+            Type listType = new TypeToken<ArrayList<String>>(){}.getType();
+            return gson.fromJson(br, listType);
         }catch (IOException e)
         {
             Log.e("NON-READ","Unable to read mac address from file.");
             throw new RuntimeException();
         }
     }
+
+
 
 }

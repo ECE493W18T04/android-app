@@ -27,6 +27,7 @@ import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,7 +85,7 @@ public class BLEService extends Service {
     private boolean inFlight=false;
     private boolean enabled=true;
     private boolean servicesDiscovered= false;
-    private Set<BluetoothDevice> devices = new HashSet<>();
+
     private final String DEBUG_TAG = this.getClass().getSimpleName();
 
     public boolean isConnectedToDevice() {
@@ -207,11 +208,13 @@ public class BLEService extends Service {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (bluetoothDevice==null)
-                    {
-                        isScanActive = false;
-                        broadcastUpdate(ACTION_GATT_NO_DEVICE_FOUND);
-                    }
+                        if (bluetoothDevice==null)
+                        {
+                            isScanActive = false;
+                            broadcastUpdate(ACTION_GATT_NO_DEVICE_FOUND);
+                        }
+
+
                     bluetoothAdapter.stopLeScan(mLeScanCallback);
 
                 }
@@ -325,40 +328,61 @@ public class BLEService extends Service {
         @Override
         public void onLeScan(BluetoothDevice device, int i, byte[] bytes) {
 
-            if (!devices.contains(device)) {
+            ArrayList<String> macAddresses = FileManager.readMACAddress(BLEService.this);
+            if (macAddresses==null) {
                 Log.d(DEBUG_TAG, "Discovered " + device.getName() + " : " + device.getAddress());
                 // store the address in a file or something
-
                 if ("WNH".equals(device.getName())) {
-
                     Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
                     bluetoothDevice = device;
+                    if (!connect()) {
+                        Log.e("TRIED TO CONNECT", "failed");
+                        broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                    } else {
 
-                    if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE) {
-                        Log.e("NOTBONDING", "Will create a bond soon");
+                        Log.e("WASABLETOCONNECT", "connected");
+                    }
+                    stopScan();
+                    Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
+
+
+                }
+            }else{
+                boolean foundAddress=false;
+                for (String macAddress: macAddresses)
+                {
+                    if (device.getAddress().equals(macAddress))
+                    {
+                        bluetoothDevice = device;
                         if (!connect()) {
                             Log.e("TRIED TO CONNECT", "failed");
                             broadcastUpdate(ACTION_GATT_DISCONNECTED);
                         } else {
-                            Log.e("WASABLETOCONNECT", "Not bonded yet");
-                        }
 
-                    } else {
+                            Log.e("WASABLETOCONNECT", "connnected");
+                        }
+                        stopScan();
+                        Log.d(DEBUG_TAG, "Found device address with address: " + device.getAddress());
+                        foundAddress = true;
+                        break;
+                    }
+                }if (!foundAddress){
+                    if ("WNH".equals(device.getName())) {
+                        Log.i("BLUETOOTH DEVICE FOUND", "wnh found via name");
+                        bluetoothDevice = device;
                         if (!connect()) {
                             Log.e("TRIED TO CONNECT", "failed");
                             broadcastUpdate(ACTION_GATT_DISCONNECTED);
-                        }else
-                        {
-                            Log.e("CONNECTSUCCESSFULLY","now connected");
+                        } else {
+
+                            Log.e("WASABLETOCONNECT", "connected");
                         }
+                        stopScan();
+                        Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
+
 
                     }
-                    stopScan();
-                    Log.d(DEBUG_TAG, "Found device name with address: " + device.getAddress());
-                } else {
-                    devices.add(device);
                 }
-
 
             }
 

@@ -216,7 +216,10 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             FileManager.saveMACAddress(this,null);
         }
         ArrayList<String> value = FileManager.readMACAddress(this);
-        //Log.e("MACADDRESSFAILURE",value.toString());
+
+        if (value==null){
+            Log.e("MACADDRESSFAILURE","MAc address contains null");
+        }
     }
 
     public void restore()
@@ -451,6 +454,25 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 // need to stop the loading
                 if (dialog.isShowing())
                     dialog.hide();
+                ArrayList<String> addresses=FileManager.readMACAddress(MainActivity.this);
+
+                    if (addresses==null){
+                        ArrayList<String> newList = new ArrayList<String>();
+                        newList.add(bleService.getDevice().getAddress());
+                        FileManager.saveMACAddress(MainActivity.this,newList);
+                        Log.e("MAKING A NEW LIST",newList.toString());
+                    }else{
+                        if (!addresses.contains(bleService.getDevice().getAddress()))
+                        {
+                            Log.e("What it lookslikebefore",addresses.toString());
+                            addresses.add(bleService.getDevice().getAddress());
+                            FileManager.saveMACAddress(MainActivity.this,addresses);
+                            Log.e("Continue with old list",addresses.toString());
+                        }
+
+
+                }
+
                 Log.e("WORKED","yay it worked");
 //                vMonitor = new VehicleMonitoringService(bleService.getWriter());
 //                if(vMonitor.VehicleManager == null) {
