@@ -38,10 +38,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     private AlertDialog enableNotificationListenerAlertDialog;
     private boolean activeMode =false;
     private HUDObject hud;
-    private Button navButton;
+    private Switch navButton;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
     private static final int RECORD_AUDIO_PERMISSION = 1;
     private Drawable mDrawable=null;
@@ -88,7 +90,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        navButton = (Button) findViewById(R.id.navButton);
+        navButton = (Switch) findViewById(R.id.toggle);
         getHudItem();
         checkPreviousConnection();
 
@@ -107,9 +109,22 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         final ListView restoreView = (ListView) findViewById(R.id.restoreList);
         preferencesView.setAdapter(itemsAdapter);
         restoreView.setAdapter(restoreAdaptor);
-        mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
+        //mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
 
+        navButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    startBluetoothService();
+                    activeMode = true;
+                } else{
+                    stopBluetoothService();
+                    activeMode=false;
+                }
+            }
+        });
 
+/*
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -134,6 +149,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
             }
         });
+*/
         preferencesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

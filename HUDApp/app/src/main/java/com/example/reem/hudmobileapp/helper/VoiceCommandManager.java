@@ -119,7 +119,7 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
             FileManager.saveToFile(context, hudObject);
             writer.setHUDObject(hudObject);
             writer.writeColor();
-            tts.speak("Color has been Set to"+VoiceCommandsEnum.CHANGE_COLOR_RED.toString(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+            tts.speak("Color has been Set to "+VoiceCommandsEnum.CHANGE_COLOR_RED.getValue(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
 
         }
         else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_BLUE.getValue()))
@@ -130,7 +130,7 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
             FileManager.saveToFile(context, hudObject);
             writer.setHUDObject(hudObject);
             writer.writeColor();
-            tts.speak("Color has been Set to"+VoiceCommandsEnum.CHANGE_COLOR_BLUE.toString(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+            tts.speak("Color has been Set to "+VoiceCommandsEnum.CHANGE_COLOR_BLUE.getValue(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
         }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_GREEN.getValue()))
         {
             hudObject.setHue(120);
@@ -139,7 +139,7 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
             writer.setHUDObject(hudObject);
             FileManager.saveToFile(context, hudObject);
             writer.writeColor();
-            tts.speak("Color has been Set to"+VoiceCommandsEnum.CHANGE_COLOR_GREEN.toString(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+            tts.speak("Color has been Set to "+VoiceCommandsEnum.CHANGE_COLOR_GREEN.getValue(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
         }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_COLOR_WHITE.getValue()))
         {
             hudObject.setHue(0);
@@ -148,7 +148,7 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
             FileManager.saveToFile(context, hudObject);
             writer.setHUDObject(hudObject);
             writer.writeColor();
-            tts.speak("Color has been Set to"+VoiceCommandsEnum.CHANGE_COLOR_WHITE.toString(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+            tts.speak("Color has been Set to "+VoiceCommandsEnum.CHANGE_COLOR_WHITE.getValue(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
 
         }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHNAGE_COLOR_PURPLE.getValue()))
         {
@@ -158,7 +158,7 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
             FileManager.saveToFile(context, hudObject);
             writer.setHUDObject(hudObject);
             writer.writeColor();
-            tts.speak("Color has been Set to"+VoiceCommandsEnum.CHNAGE_COLOR_PURPLE.toString(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+            tts.speak("Color has been Set to "+VoiceCommandsEnum.CHNAGE_COLOR_PURPLE.getValue(),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
 
         }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_BRIGHTNESS.getValue())){
             if (message.toLowerCase().contains("auto")) {
