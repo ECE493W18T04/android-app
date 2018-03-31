@@ -67,6 +67,7 @@ public class BLEService extends Service {
             "com.example.bluetooth.le.EXTRA_DATA";
     public final static String ACTION_GATT_NO_DEVICE_FOUND = "com.example.bluetooth.le.ACTION_GATT_NO_DEVICE_FOUND";
     public final static String ACTION_BOND_STATE_CHANGED = "com.example,bluetooth.le.ACTION_BOND_STATE_CHANGE";
+    public final static String CLOSE_DIALOG = "com.example.bluetooth.le.CLOSE_DIALOG";
     public IBinder getBinder() {
         return mBinder;
     }
@@ -190,6 +191,17 @@ public class BLEService extends Service {
     {
         return bluetoothDevice;
     }
+
+
+
+    private void stopScan()
+    {
+        isScanActive = false;
+        bluetoothAdapter.stopLeScan(mLeScanCallback);
+        mHandler=null;
+    }
+
+
 
 
     @Override
@@ -490,7 +502,6 @@ public class BLEService extends Service {
     }
 
     private static final long SCAN_PERIOD = 10000;
-
     private void scanForDevices()
     {
         Toast.makeText(getApplicationContext(), "About to scan for devices", Toast.LENGTH_SHORT).show();
@@ -515,6 +526,7 @@ public class BLEService extends Service {
 
 
                     bluetoothAdapter.stopLeScan(mLeScanCallback);
+                    broadcastUpdate(CLOSE_DIALOG);
 
                 }
             }, SCAN_PERIOD);
@@ -529,12 +541,7 @@ public class BLEService extends Service {
         }
     }
 
-    private void stopScan()
-    {
-        isScanActive = false;
-        bluetoothAdapter.stopLeScan(mLeScanCallback);
-        mHandler=null;
-    }
+
 
     @Override
     public void onDestroy() {

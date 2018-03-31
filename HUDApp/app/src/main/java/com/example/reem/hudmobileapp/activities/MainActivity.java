@@ -492,6 +492,9 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 updateConnectionState();
                 Log.e("NODEVICE","no device was found");
                 // need to stop the loading page
+            }else if (BLEService.CLOSE_DIALOG.equals(action)){
+                if (dialog!= null && dialog.isShowing())
+                    dialog.hide();
             }
         }
     };
@@ -626,6 +629,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         intentFilter.addAction(BLEService.ACTION_BOND_STATE_CHANGED);
         intentFilter.addAction(BLEService.ACTION_GATT_NO_DEVICE_FOUND);
         intentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        intentFilter.addAction(BLEService.CLOSE_DIALOG);
         return intentFilter;
     }
 }
