@@ -260,7 +260,6 @@ public class BLEService extends Service {
     }
 
 
-    private static final long SCAN_PERIOD = 10000;
 
     @Override
     public void onDestroy() {
@@ -288,6 +287,7 @@ public class BLEService extends Service {
 
         super.onDestroy();
     }
+
 
 
 
@@ -472,6 +472,58 @@ public class BLEService extends Service {
 
 
         };
+
+
+
+
+/*
+        }
+        voiceCommandHandler = new Handler();
+        System.out.println("About to scan for devices: onCreate");
+        mHandler = new Handler();
+
+        scanForDevices();
+//        while (writer==null) {}
+
+
+    }
+*/
+
+
+
+
+    private boolean connect(final String address)
+    {
+
+        if (bluetoothDeviceMACAdress!= null && address.equals(bluetoothDeviceMACAdress) && bluetoothGatt!=null)
+        {
+            return bluetoothGatt.connect();
+        }
+
+        final BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
+        if (device == null)
+        {
+            Log.d(DEBUG_TAG, "Device " + address + " not found, unable to connect");
+            return false;
+        }
+        bluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        Log.d(DEBUG_TAG, "Trying to create a new connection.");
+        bluetoothDeviceMACAdress = address;
+        bluetoothDevice = device;
+//        while (writer == null){}
+//        try {
+//            writer.initialConnectWrite();
+//        } catch (InterruptedException e) {
+//            Log.e(DEBUG_TAG, "Initial writer cannot be created");
+//        }
+//        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
+
+//        if (!macAddresses.contains(bluetoothDeviceMACAdress))
+//            macAddresses.add(bluetoothDeviceMACAdress);
+//        FileManager.saveMACAddress(this,macAddresses);
+        return true;
+
+    }
 
 
 

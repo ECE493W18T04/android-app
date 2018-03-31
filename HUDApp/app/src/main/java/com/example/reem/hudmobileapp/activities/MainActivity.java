@@ -41,10 +41,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     private AlertDialog enableNotificationListenerAlertDialog;
     private boolean activeMode =false;
     private HUDObject hud;
-    private Button navButton;
+    private Switch navButton;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
     private static final int RECORD_AUDIO_PERMISSION = 1;
     private Drawable mDrawable=null;
@@ -92,7 +94,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        navButton = (Button) findViewById(R.id.navButton);
+        navButton = (Switch) findViewById(R.id.toggle);
         getHudItem();
         checkPreviousConnection();
 
@@ -109,55 +111,27 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         final ListView restoreView = (ListView) findViewById(R.id.restoreList);
         preferencesView.setAdapter(itemsAdapter);
         restoreView.setAdapter(restoreAdaptor);
-        mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
+        //mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
 
 
-        navButton.setOnClickListener(new View.OnClickListener() {
+        navButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                if (connectedToDevice == false)
-                {
-                        if (bleService!=null)
-                        {
-                            if (!bleService.initialize()){
-                                return;
-                            }
-
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    if (bleService!=null)
+                        if (!bleService.initialize()){
+                            return;
                         }
-                        mDrawable.setColorFilter(new
-                                PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
-                        navButton.setBackground(mDrawable);
-                        createLoadingDialog();
-
-
-
-                        bleService.connectToDevice();
-
-                        // start the progress bar
-
-
-
-
-                }
-                else {
-                    if (initialized)
-                    {
+                    createLoadingDialog();
+                    bleService.connectToDevice();
+                } else{
+                    //stopBluetoothService();
+                    if (initialized){
                         bleService.disconnectFromDevice();
                     }
-//                    stopBluetoothService();
-//                    navButton.setText("Activate");
-                    mDrawable.setColorFilter(new
-                            PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
-                    navButton.setBackground(mDrawable);
-
                 }
-
             }
         });
-
-
-
-
 
         preferencesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -538,10 +512,9 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             @Override
             public void run() {
                 if (connectedToDevice)
-                    mDrawable.setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.MULTIPLY));
+                    navButton.setChecked(true);
                 else
-                    mDrawable.setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.gray), PorterDuff.Mode.MULTIPLY));
-                navButton.setBackground(mDrawable);
+                   navButton.setChecked(false);
             }
         });
     }

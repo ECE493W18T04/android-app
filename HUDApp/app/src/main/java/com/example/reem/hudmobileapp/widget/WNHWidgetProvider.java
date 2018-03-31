@@ -21,13 +21,15 @@ import static android.content.Context.BIND_AUTO_CREATE;
  */
 
 public class WNHWidgetProvider extends AppWidgetProvider {
-    private Intent bluetoothServiceIntent;
+    private static Intent bluetoothServiceIntent;
+    private static Intent notificationListenerIntent;
     private static boolean serviceRunning = false;
     private final String TOGGLE = "toggle";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] widgetIds)
     {
+
         final int count= widgetIds.length;
         for (int i=0;i<count;i++)
         {
@@ -47,13 +49,20 @@ public class WNHWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent){
 
         if (intent.getAction().equalsIgnoreCase(TOGGLE)) {
+            bluetoothServiceIntent = new Intent(context, BLEService.class);
+            notificationListenerIntent = new Intent(context, WNHNotificationListener.class);
+            if (isMyServiceRunning(BLEService.class, context)){
+                Log.d("WNHWidget", "isMyServiceRunning=True" );
+            }else {
+                Log.d("WNHWidget", "isMyServiceRunning=False" );
+            }
             Log.d("WNHWidget", "Button clicked");
 
-            bluetoothServiceIntent = new Intent(context, BLEService.class);
             if (serviceRunning) {
                 Log.d("WNHWidget", " Stopping Service");
-
+                context.stopService(notificationListenerIntent);
                 context.stopService(bluetoothServiceIntent);
+
 
             }else {
                 Log.d("WNHWidget", " Starting Service");
