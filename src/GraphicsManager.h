@@ -20,6 +20,7 @@ public:
     void drawBuffer();
     void setColor(uint16_t _hue, uint8_t _saturation);
     void setBrightnessConfig(uint8_t brightness);
+    void setMaxCurrent(uint16_t current);
 private:
     uint8_t getCharByte(char c, uint8_t offset);
     void drawChar(char c, int x);

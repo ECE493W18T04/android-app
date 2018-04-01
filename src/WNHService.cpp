@@ -206,7 +206,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     } else if (params->handle == this->maxCurrentCharacteristic.getValueHandle() &&
             params->len == sizeof(uint16_t)) {
         maxCurrent = *((uint16_t*)params->data);
-        // TODO
+        stateMgr.getGfxManager().setMaxCurrent(maxCurrent);
         printf("Max Current: %d\n", maxCurrent);
     } else if (params->handle == this->mapsDirAndUnitsCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
@@ -227,14 +227,8 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
     } else if (params->handle == this->autoBrightCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
         autoBrightness = *(params->data);
-        if (AUTO_BRIGHTNESS_MASK & autoBrightness) {
-            printf("Autobrightness enabled\n");
-        }
         stateMgr.getGfxManager().setBrightnessConfig(autoBrightness);
-    } else {
-        printf("Got Handle: %d\n", params->handle);
     }
-    printf("Got write, len: %d\n", params->len);
 }
 
 void WNHService::beginPairingMode() {

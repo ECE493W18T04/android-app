@@ -383,3 +383,7 @@ void GraphicsManager::drawBuffer() {
 void GraphicsManager::setBrightnessConfig(uint8_t brightness) {
     driver.setBrightnessConfig(brightness);
 }
+
+void GraphicsManager::setMaxCurrent(uint16_t current) {
+    driver.setMaxCurrent(current);
+}

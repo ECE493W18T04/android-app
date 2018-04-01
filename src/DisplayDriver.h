@@ -4,6 +4,7 @@
 #include "mbed.h"
 #include "mbed_events.h"
 #include "AutoBrightnessAlgorithm.h"
+#include "EnvironmentManager.h"
 #include "TSL2561_I2C.h"
 
 class DisplayDriver {
@@ -13,6 +14,8 @@ public:
     void draw();
     uint32_t getColor(uint16_t hue, uint8_t sat);
     void setBrightnessConfig(uint8_t brightness);
+    void setBrightnessLimit(uint8_t limit);
+    void setMaxCurrent(uint16_t current);
 private:
     double Hue_2_RGB( double v1, double v2, double vH );
     uint32_t getColorRGB(uint8_t red, uint8_t green, uint8_t blue);
@@ -23,6 +26,8 @@ private:
     SPI port;
     TSL2561_I2C luxDevice;
     AutoBrightnessAlg alg;
+    EnvironmentManager envMgr;
+    uint8_t maxBrightness;
     uint8_t brightness;
     uint16_t width;
     uint16_t height;

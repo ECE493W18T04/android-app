@@ -6,7 +6,7 @@
 #define AUTO_BRIGHTNESS_MASK 0x80
 #define DEFAULT_BRIGHTNESS 5
 
-DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK), luxDevice(I2C_SDA0, I2C_SCL0), brightness(DEFAULT_BRIGHTNESS) {
+DisplayDriver::DisplayDriver(PinName MOSI, PinName MISO, PinName SCLK, uint32_t clockSpeed, EventQueue& _eventQueue) : port(MOSI, MISO, SCLK), luxDevice(I2C_SDA0, I2C_SCL0), envMgr(*this), maxBrightness(DEFAULT_BRIGHTNESS), brightness(DEFAULT_BRIGHTNESS) {
     port.format(8,3);
     port.frequency(clockSpeed);
     _eventQueue.call_every(200, this, &DisplayDriver::handleTick); // 5Hz
@@ -53,14 +53,23 @@ void DisplayDriver::draw() {
      */
     innerDraw();
     innerDraw();
+
+    uint16_t count = 0;
+    for (int i = 0; i < width*height; i++) {
+        if (0x00FFFFFF & buffer[i]) {
+            count++;
+        }
+    }
+    envMgr.addSample(count);
 }
 
 // alg from https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
 uint32_t DisplayDriver::getColor(uint16_t hue, uint8_t sat) {
+    double      current_brightness = min((~AUTO_BRIGHTNESS_MASK & brightness), maxBrightness);
     double      hh, p, q, t, ff, r, g, b;
     long        i;
     double      s = sat / MAX_SAT;
-    double      v = (~AUTO_BRIGHTNESS_MASK & brightness) / MAX_BRIGHTNESS;
+    double      v = current_brightness / MAX_BRIGHTNESS;
 
     if(s <= 0.0) {       // < is bogus, just shuts up warnings
         r = v;
@@ -133,7 +142,14 @@ void DisplayDriver::handleTick() {
     }
 }
 
-
 void DisplayDriver::setBrightnessConfig(uint8_t brightness) {
     this->brightness = brightness;
+}
+
+void DisplayDriver::setBrightnessLimit(uint8_t limit) {
+    maxBrightness = limit;
+}
+
+void DisplayDriver::setMaxCurrent(uint16_t current) {
+    envMgr.setCurrentLimit(current);
 }
