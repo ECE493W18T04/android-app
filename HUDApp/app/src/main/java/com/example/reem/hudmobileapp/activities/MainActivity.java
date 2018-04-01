@@ -460,11 +460,15 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 }
 
                 Log.e("WORKED","yay it worked");
-                vMonitor = new VehicleMonitoringService(bleService.getWriter());
-                if(vMonitor.VehicleManager == null) {
-                    Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
-                    bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+                if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED)
+                {
+                    vMonitor = new VehicleMonitoringService(bleService.getWriter());
+                    if(vMonitor.VehicleManager == null) {
+                        Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
+                        bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+                    }
                 }
+
 
             } else if (BLEService.ACTION_DATA_AVAILABLE.equals(action)) {
 //                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
@@ -476,8 +480,15 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                         Log.e("BONDER", "properly bonded");
                         try {
                             bleService.initialWriteCharacteristics();
+                            vMonitor = new VehicleMonitoringService(bleService.getWriter());
+                            if(vMonitor.VehicleManager == null) {
+
+                                Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
+                                bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+                            }
                             if (dialog != null && dialog.isShowing())
                                 dialog.hide();
+
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -614,7 +625,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             bleService.disconnectFromDevice();
 
         }
-        stopService(new Intent(this,BLEService.class));
+        stopService(bluetoothServiceIntent);
         stopService(new Intent(this, WNHNotificationListener.class));
     }
 
