@@ -38,8 +38,8 @@
         android:layout_height="100dp"
         android:layout_below="@+id/title"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
         android:src="@drawable/wnh_icon_blue" />
 
     <TextView
@@ -94,14 +94,6 @@
         android:layout_below="@+id/userPreferences2"
         android:background="@android:color/white" />
 
-    <View
-        android:id="@+id/horizontalTitle"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/title"
-        android:background="@android:color/white" />
-
 
     <ListView
         android:id="@+id/preferencesList"
@@ -153,5 +145,17 @@
         android:layout_marginTop="270dp"
         android:text="Auto"
         android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/maxCurrentText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="365dp"
+        android:textColor="@android:color/white"
+        android:text="1000mA" />
+
+
 </RelativeLayout>
 

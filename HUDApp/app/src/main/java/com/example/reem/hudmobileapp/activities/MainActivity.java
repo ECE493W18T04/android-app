@@ -174,7 +174,8 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
             brightness.setText("Auto");
         else
             brightness.setText(hud.getBrightness()+"%");
-
+        TextView maxCurrentView = (TextView)findViewById(R.id.maxCurrentText);
+        maxCurrentView.setText(hud.getCurrent()+"mA");
         startBluetoothService();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         updateConnectionState();
@@ -683,6 +684,8 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
         Integer maxCurrent =  Integer.parseInt(maxCurrentText.getText().toString());
         hudObject.setCurrent(maxCurrent);
         FileManager.saveToFile(this,hudObject);
+        TextView maxCurrentView = (TextView)findViewById(R.id.maxCurrentText);
+        maxCurrentView.setText(hudObject.getCurrent()+"mA");
     }
 
     @Override
