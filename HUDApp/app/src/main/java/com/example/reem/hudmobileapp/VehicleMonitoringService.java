@@ -49,7 +49,6 @@ public class VehicleMonitoringService extends Service {
 
     private TurnSignalStatus.Listener turnSignalListener;
     private String signalPosition = "OFF";
-    private final CharacteristicWriter writer;
     private FuelLevel.Listener fuelListener;
     private double fuelLevel = 0.0;
 
@@ -81,8 +80,8 @@ public class VehicleMonitoringService extends Service {
     }
 
     //maybe add requested listeners as arguments
-    public VehicleMonitoringService (final CharacteristicWriter writer) {
-        this.writer = writer;
+    public VehicleMonitoringService () {
+
 
 
         /*
@@ -105,7 +104,7 @@ public class VehicleMonitoringService extends Service {
                         //do nothing
                     } else if (bleService.isInitialWriteCompleted()){
                         try {
-                            writer.writeVehicleSpeed(rawSpeed);
+                            bleService.getWriter().writeVehicleSpeed(rawSpeed);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -153,7 +152,7 @@ public class VehicleMonitoringService extends Service {
                 if (!connectedToBLEService) {
                     //do nothing
                 } else if (bleService.isInitialWriteCompleted()){
-                    writer.writeTurnSignal((content));
+                    bleService.getWriter().writeTurnSignal((content));
                 }
                 Log.d("Vehicle Monitor",signalPosition);
             }
@@ -175,7 +174,7 @@ public class VehicleMonitoringService extends Service {
                 if (!connectedToBLEService) {
 
                 }else if (bleService.isInitialWriteCompleted()) {
-                    writer.writeFuelLevel(rawFuel);
+                    bleService.getWriter().writeFuelLevel(rawFuel);
                 }
             }
         };
