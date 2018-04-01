@@ -44,7 +44,6 @@ public class WNHNotificationListener extends NotificationListenerService
     private static final String GOOGLE_SMS = "com.google.android.apps.messaging";
     private static final String SPOTIFY = "com.spotify.music";
     private boolean bluetoothServiceConnected = false;
-    private boolean Fuck =false;
     private ArrayList<Pair<Long, Integer>> resArray;
     BLEService bleService;
     Intent bluetoothServiceIntent;
@@ -87,13 +86,22 @@ public class WNHNotificationListener extends NotificationListenerService
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
             bleService = mBinder.getService();
-            bluetoothServiceConnected = true;
+
+            bluetoothServiceConnected = bleService.initialize();
+            if (!bleService.isConnectedToDevice()) {
+                bleService.connectToDevice();
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             Log.d(DEBUG_TAG, "ON Service Disconnected");
             bluetoothServiceConnected = false;
+            if (bleService != null) {
+                if (bleService.isConnectedToDevice()) {
+                    bleService.disconnectFromDevice();
+                }
+            }
         }
     };
     @Override
@@ -169,7 +177,14 @@ public class WNHNotificationListener extends NotificationListenerService
             }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
                 bleService.getWriter().writeCallInfo(("\0").getBytes());
             }
+        }else if (sbn.getPackageName().equalsIgnoreCase(GOOGLE_MAPS)) {
+            if (!bluetoothServiceConnected) { //Listener is not connected to BLEService
+                //do nothing
+            }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
+                bleService.getWriter().writeNavigationEnded(("\0").getBytes());
+            }
         }
+
     }
 
 
@@ -182,6 +197,7 @@ public class WNHNotificationListener extends NotificationListenerService
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unbindService(mConnection);
         Log.d(DEBUG_TAG, "Destroyed");
     }
 
