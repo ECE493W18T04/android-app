@@ -103,7 +103,7 @@ public class VehicleMonitoringService extends Service {
                     ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
                     if (!connectedToBLEService) {
                         //do nothing
-                    } else if (bleService.isConnectedToDevice()){
+                    } else if (bleService.isInitialWriteCompleted()){
                         try {
                             writer.writeVehicleSpeed(rawSpeed);
                         } catch (InterruptedException e) {
@@ -152,7 +152,7 @@ public class VehicleMonitoringService extends Service {
                 content[0] = signal[0];
                 if (!connectedToBLEService) {
                     //do nothing
-                } else if (bleService.isConnectedToDevice()){
+                } else if (bleService.isInitialWriteCompleted()){
                     writer.writeTurnSignal((content));
                 }
                 Log.d("Vehicle Monitor",signalPosition);
@@ -172,8 +172,11 @@ public class VehicleMonitoringService extends Service {
                 int currentfuel = (int)Math.round(fuelLevel*100);
                 rawFuel[0] = (byte) (currentfuel & 0xFF);
                 ByteBuffer.wrap(rawFuel).order(ByteOrder.LITTLE_ENDIAN);
+                if (!connectedToBLEService) {
 
-                //writer.writeFuelLevel(rawFuel);
+                }else if (bleService.isInitialWriteCompleted()) {
+                    writer.writeFuelLevel(rawFuel);
+                }
             }
         };
 

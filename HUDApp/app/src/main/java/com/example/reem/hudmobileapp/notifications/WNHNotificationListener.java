@@ -116,7 +116,7 @@ public class WNHNotificationListener extends NotificationListenerService
                 Log.d(DEBUG_TAG, "Binding Bluetooth Service");
                 bluetoothServiceIntent = new Intent(this, BLEService.class);
                 bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
-            }else if (bleService.isConnectedToDevice()) {
+            }else if (bleService.isInitialWriteCompleted()) {
                 RemoteViews rv = sbn.getNotification().bigContentView;
                 RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
                 notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
@@ -129,7 +129,7 @@ public class WNHNotificationListener extends NotificationListenerService
 
             if (!bluetoothServiceConnected) { //Listener is not connecte to BLEService
                 //do nothing
-            }else if(bleService.isConnectedToDevice()) { //BLEService is connected to a device.
+            }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
                 notificationManager = new CallNotificationManager(sbn);
                 content=notificationManager.getContent();
                 bleService.getWriter().writeCallInfo(content);
@@ -147,7 +147,7 @@ public class WNHNotificationListener extends NotificationListenerService
 
             if (!bluetoothServiceConnected) {
                 //do nothing
-            }else if (bleService.isConnectedToDevice()) {
+            }else if (bleService.isInitialWriteCompleted()) {
                 notificationManager = new SpotifyMusicNotificationManager(sbn);
                 content = notificationManager.getContent();
                 Log.d(DEBUG_TAG,"Writing Music");
@@ -166,7 +166,7 @@ public class WNHNotificationListener extends NotificationListenerService
         if(sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)||sbn.getPackageName().equalsIgnoreCase(GOOGLE_CALLER)){
             if (!bluetoothServiceConnected) { //Listener is not connected to BLEService
                 //do nothing
-            }else if(bleService.isConnectedToDevice()) { //BLEService is connected to a device.
+            }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
                 bleService.getWriter().writeCallInfo(("\0").getBytes());
             }
         }
