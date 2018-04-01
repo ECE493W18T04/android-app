@@ -36,6 +36,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -82,14 +83,16 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     private static final int RECORD_AUDIO_PERMISSION = 1;
     private Drawable mDrawable=null;
     private VehicleMonitoringService vMonitor;
-
+    private ListView preferencesView;
+    private ListView restoreView;
     BLEService bleService;
     Intent bluetoothServiceIntent;
 
     private boolean connectedToDevice;
     private boolean initialized = false;
     ProgressDialog dialog = null;
-
+    private String[] options;
+    private String[]  restore;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,38 +103,37 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
 
 
-        String[] options = new String[]{"Priority Queue","Brightness Control","HUD Color", "Maximum Current"};
+        options = new String[]{"Priority Queue","Brightness Control","HUD Color", "Maximum Current"};
         ArrayAdapter<String> itemsAdapter =
                 new ArrayAdapter<String>(this, R.layout.list_item, options);
-        String[] restore = new String[]{"Restore Default HUD Settings"};
+        restore = new String[]{"Restore Default HUD Settings"};
         ArrayAdapter<String> restoreAdaptor =
                 new ArrayAdapter<String>(this, R.layout.list_item, restore);
 
-        final ListView preferencesView = (ListView) findViewById(R.id.preferencesList);
-        final ListView restoreView = (ListView) findViewById(R.id.restoreList);
+        preferencesView = (ListView) findViewById(R.id.preferencesList);
+        restoreView = (ListView) findViewById(R.id.restoreList);
         preferencesView.setAdapter(itemsAdapter);
         restoreView.setAdapter(restoreAdaptor);
         //mDrawable = this.getDrawable(android.R.drawable.ic_lock_power_off);
 
 
-        navButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        navButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b) {
+            public void onClick(View v) {
+                if (navButton.isChecked()){
                     if (bleService!=null)
                         if (!bleService.initialize()){
                             return;
                         }
                     createLoadingDialog();
                     bleService.connectToDevice();
-                } else{
-                    //stopBluetoothService();
+                }else{
                     if (initialized){
                         bleService.disconnectFromDevice();
                     }
                 }
             }
-        });
+        } );
 
         preferencesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -470,13 +472,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 }
 
 
-            } else if (BLEService.ACTION_DATA_AVAILABLE.equals(action)) {
-//                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action))
+            }  else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action))
             {
                 if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
                     {
                         connectedToDevice = true;
+                        updateConnectionState();
                         Log.e("BONDER", "properly bonded");
                         try {
                             bleService.initialWriteCharacteristics();
@@ -522,10 +523,57 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (connectedToDevice)
+                if (connectedToDevice) {
                     navButton.setChecked(true);
-                else
-                   navButton.setChecked(false);
+                    ArrayAdapter<String> itemsAdapter =
+                            new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, options){
+                                @Override
+                                public View getView(int position, View convertView, ViewGroup parent){
+                                    View view = super.getView(position, convertView, parent);
+                                    TextView tv = (TextView) view.findViewById(R.id.list_item);
+                                    tv.setTextColor(Color.LTGRAY);
+                                    return view;
+                                }
+                            };
+                    ArrayAdapter<String> restoreAdaptor =
+                            new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, restore){
+                                @Override
+                                public View getView(int position, View convertView, ViewGroup parent){
+                                    View view = super.getView(position, convertView, parent);
+                                    TextView tv = (TextView) view.findViewById(R.id.list_item);
+                                    tv.setTextColor(Color.LTGRAY);
+                                    return view;
+                                }
+                            };
+                    preferencesView.setAdapter(itemsAdapter);
+                    restoreView.setAdapter(restoreAdaptor);
+                    preferencesView.setOnItemClickListener(null);
+                    restoreView.setOnItemClickListener(null);
+
+
+                }
+                else{
+                    navButton.setChecked(false);
+                    ArrayAdapter<String> itemsAdapter =
+                            new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, options);
+                    ArrayAdapter<String> restoreAdaptor =
+                            new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, restore);
+                    preferencesView.setAdapter(itemsAdapter);
+                    restoreView.setAdapter(restoreAdaptor);
+                    preferencesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            getItemClicked(parent,view,position,id);
+                        }
+                    });
+                    restoreView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            restore();
+                        }
+                    });
+                }
+
             }
         });
     }

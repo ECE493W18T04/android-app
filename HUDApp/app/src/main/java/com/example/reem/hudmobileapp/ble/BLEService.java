@@ -70,6 +70,7 @@ public class BLEService extends Service {
     public final static String ACTION_GATT_NO_DEVICE_FOUND = "com.example.bluetooth.le.ACTION_GATT_NO_DEVICE_FOUND";
     public final static String ACTION_BOND_STATE_CHANGED = "com.example,bluetooth.le.ACTION_BOND_STATE_CHANGE";
     public final static String CLOSE_DIALOG = "com.example.bluetooth.le.CLOSE_DIALOG";
+    private boolean initialWriteCompleted=false;
     public IBinder getBinder() {
         return mBinder;
     }
@@ -198,6 +199,7 @@ public class BLEService extends Service {
         }catch(IllegalArgumentException e){
             // do nothing/ƒ
         }
+        initialWriteCompleted=false;
         if (bluetoothGatt != null)
         {
             Log.e(DEBUG_TAG,bluetoothGatt.toString());
@@ -354,9 +356,14 @@ public class BLEService extends Service {
         HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
         writer.setHUDObject(hudObject);
         writer.initialConnectWrite();
+        initialWriteCompleted=true;
     }
 
 
+    public boolean isInitialWriteCompleted()
+    {
+        return isInitialWriteCompleted();
+    }
 
 
         private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
