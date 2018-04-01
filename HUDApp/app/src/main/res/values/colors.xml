@@ -7,4 +7,7 @@
     <color name="green">#00FF00</color>
     <color name="gray">#aaa</color>
     <color name="darkGray">#4c4c4c</color>
+    <color name="disable_forground_grey">#42221f1f</color>
+    <color name="disable_thumb_grey">#1c000000</color>
+    <color name="enable_thumb_green">@android:color/holo_blue_light</color>
 </resources>
