@@ -171,7 +171,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
             params->len <= MAX_CHAR_LENGTH) {
         char * str = (char*)params->data;
         NavigationNotification * maps = (NavigationNotification*)stateMgr.getState(NAVIGATION_INDEX);
-        maps->update(str, params->len);
+        maps->update(str);
     } else if (params->handle == this->musicSongNameCharacteristic.getValueHandle() &&
             params->len <= MAX_CHAR_LENGTH) {
         char * str = (char*)params->data;
@@ -207,7 +207,6 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
             params->len == sizeof(uint16_t)) {
         maxCurrent = *((uint16_t*)params->data);
         stateMgr.getGfxManager().setMaxCurrent(maxCurrent);
-        printf("Max Current: %d\n", maxCurrent);
     } else if (params->handle == this->mapsDirAndUnitsCharacteristic.getValueHandle() &&
             params->len == sizeof(uint8_t)) {
         mapsDirectionAndUnits = *(params->data);

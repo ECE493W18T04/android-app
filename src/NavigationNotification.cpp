@@ -12,6 +12,12 @@
 #define NAV_IMAGE_RIGHT       7
 #define NAV_IMAGE_RIGHT_BACK  8
 #define NAV_IMAGE_RIGHT_UTURN 9
+#define DISTANCE_SCALE        10.0
+#define NAV_UNITS_KM          0
+#define NAV_UNITS_M           1
+#define NAV_UNITS_MI          2
+#define NAV_UNITS_YD          3
+#define NAV_UNITS_UNKNOWN     5
 
 const uint8_t uturn[]       = {0x00, 0x3e, 0x22, 0xaa, 0xfa, 0x72, 0x22, 0x02};
 const uint8_t left_back[]   = {0x04, 0x0C, 0x94, 0xA4, 0xC4, 0xF4};
@@ -23,12 +29,51 @@ const uint8_t right[]       = {0x30, 0x18, 0xfc, 0x98, 0xb0, 0x80, 0x80, 0x80};
 const uint8_t right_back[]  = {0x80, 0xC0, 0xA4, 0x94, 0x8C, 0xBC};
 const uint8_t right_uturn[] = {0x00, 0xF8, 0x88, 0xAA, 0xBE, 0x9C, 0x88, 0x80};
 
+const char* KM_TEXT = "km";
+const char* M_TEXT = "m";
+const char* MI_TEXT = "mi";
+const char* YD_TEXT = "yd";
+const char* EMPTY_TEXT = "";
+
 NavigationNotification::NavigationNotification(StateManager& _stateMgr) : TempState(_stateMgr),direction(NAV_IMAGE_NONE) {
 }
 
 bool NavigationNotification::tick() {
     GraphicsManager& gfx = getManager().getGfxManager();
+    char textBuffer[MAX_CHAR_LENGTH * 2];
+    const char* unit;
+    int offset;
+    static int slide = 0;
     gfx.erase();
+    switch (direction) {
+    case NAV_UNITS_KM:
+        unit = KM_TEXT;
+        break;
+    case NAV_UNITS_M:
+        unit = M_TEXT;
+        break;
+    case NAV_UNITS_MI:
+        unit = MI_TEXT;
+        break;
+    case NAV_UNITS_YD:
+        unit = YD_TEXT;
+        break;
+    case NAV_UNITS_UNKNOWN:
+    default:
+        unit = EMPTY_TEXT;
+        break;
+    }
+    sprintf(textBuffer, "%s, %.1f%s", street, distance, unit);
+    gfx.placeText(textBuffer, slide--);
+    if (direction == NAV_IMAGE_NONE) {
+        offset = 0;
+    } else {
+        offset = 7;
+        gfx.eraseSection(0, 0, 7, 8);
+    }
+    if (slide < -((int)strlen(textBuffer)*CHARACTER_WIDTH) + offset) {
+        slide = DISPLAY_WIDTH;
+    }
     switch (direction) {
     case NAV_IMAGE_NONE:
         break;
@@ -68,16 +113,23 @@ bool NavigationNotification::kick() {
     return true;
 }
 
-void NavigationNotification::update(char street[], int len) {
-    printf("Navigation Street: %s\n", street);
+void NavigationNotification::update(char street[]) {
+    if (strlen(street) == 0) {
+        setActive(false);
+    } else {
+        setActive(true);
+        strncpy(this->street, street, MAX_CHAR_LENGTH);
+    }
+    getManager().updateStates();
 }
 
 void NavigationNotification::update(uint8_t direction, uint8_t distanceUnits) {
-    printf("Navigation direction: %d, units: %d\n", direction, distanceUnits);
     this->direction = direction;
     this->distanceUnits = distanceUnits;
+    getManager().updateStates();
 }
 
 void NavigationNotification::update(uint32_t distance) {
-    printf("Navigation: Distance %lu, %d, %d, %d, %d\n", distance, distance >> 24, (distance >> 16) & 0xFF, (distance >> 8) & 0xFF, distance & 0xFF);
+    this->distance = distance / DISTANCE_SCALE;
+    getManager().updateStates();
 }
