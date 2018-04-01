@@ -59,7 +59,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity  implements BrightnessDialog.BrightnessDialogListener, MaxCurrentDialog.MaxCurrentDialogListener{
+public class MainActivity extends AppCompatActivity implements BrightnessDialog.BrightnessDialogListener, MaxCurrentDialog.MaxCurrentDialogListener{
 
 //    private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 getItemClicked(parent,view,position,id);
             }
         });
+
         restoreView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -153,7 +154,14 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         super.onStart();
 
         getHudItem();
+        View view = (View)findViewById(R.id.rectangle_at_the_top);
+        view.setBackgroundColor(Color.HSVToColor(getColor()));
         checkPreviousConnection();
+        TextView brightness = (TextView)findViewById(R.id.brightness_text);
+        if (hud.isAuto_brightness())
+            brightness.setText("Auto");
+        else
+            brightness.setText(hud.getBrightness()+"%");
 
         startBluetoothService();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
@@ -243,17 +251,9 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 startActivity(intent);
            }else if (position == PreferencesEnum.COLOR_CONTROL.getValue())
            {
-               HUDObject hudObject = FileManager.loadFromFile(this);
-               float hue=hudObject.getHue();
-               DecimalFormat df = new DecimalFormat(".00");
-               float saturation = hudObject.getSaturation();
-               saturation = Float.parseFloat(df.format(saturation/100));
 
-               float brightness = hudObject.getHsvBrightness();
-
-               float[] hsv = {hue,saturation,brightness};
-               int  color = Color.HSVToColor(hsv);
-               String rgbString = "Color Saved: "+"R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color)+"Hue: "+hue+" Saturation: "+saturation+" Brightness: "+brightness;
+               int  color = Color.HSVToColor(getColor());
+               String rgbString = "Color Saved: "+"R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color);
                Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
                int initialColor = color;
 
@@ -262,6 +262,8 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                     @Override
                     public void onColorSelected(int color) {
                         saveColor(color);
+                        View view = (View)findViewById(R.id.rectangle_at_the_top);
+                        view.setBackgroundColor(color);
                     }
 
                 });
@@ -295,6 +297,18 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
            }
     }
 
+    public float[] getColor(){
+        HUDObject hudObject = FileManager.loadFromFile(this);
+        float hue=hudObject.getHue();
+        DecimalFormat df = new DecimalFormat(".00");
+        float saturation = hudObject.getSaturation();
+        saturation = Float.parseFloat(df.format(saturation/100));
+
+        float brightness = hudObject.getHsvBrightness();
+
+        float[] hsv = {hue,saturation,brightness};
+        return hsv;
+    }
 
     /**
      * Is Notification Service Enabled.
@@ -367,6 +381,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
             bleService = mBinder.getService();
+            updateConnectionState();
             initialized = true;
 //            if (!bleService.initialize()){
 //                Log.e("UNABLETOINITIALIZEBLE", "Unable to initialize Bluetooth");
@@ -526,7 +541,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                                 public View getView(int position, View convertView, ViewGroup parent){
                                     View view = super.getView(position, convertView, parent);
                                     TextView tv = (TextView) view.findViewById(R.id.list_item);
-                                    tv.setTextColor(Color.LTGRAY);
+                                    tv.setTextColor(Color.GRAY);
                                     return view;
                                 }
                             };
@@ -536,7 +551,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                                 public View getView(int position, View convertView, ViewGroup parent){
                                     View view = super.getView(position, convertView, parent);
                                     TextView tv = (TextView) view.findViewById(R.id.list_item);
-                                    tv.setTextColor(Color.LTGRAY);
+                                    tv.setTextColor(Color.GRAY);
                                     return view;
                                 }
                             };
@@ -633,6 +648,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         Integer brightness = seekBar.getProgress();
         hudObject.setBrightness(brightness);
         FileManager.saveToFile(this,hudObject);
+        TextView brightnessview = (TextView)findViewById(R.id.brightness_text);
+        if (hudObject.isAuto_brightness()){
+            brightnessview.setText("Auto");
+        }else{
+            brightnessview.setText(hudObject.getBrightness()+"%");
+        }
     }
 
     @Override
@@ -672,6 +693,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         stopService(bluetoothServiceIntent);
         stopService(new Intent(this, WNHNotificationListener.class));
     }
+
 
 
     private static IntentFilter makeGattUpdateIntentFilter() {

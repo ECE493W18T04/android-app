@@ -493,23 +493,6 @@ public class BLEService extends Service {
 
 
 
-/*
-        }
-        voiceCommandHandler = new Handler();
-        System.out.println("About to scan for devices: onCreate");
-        mHandler = new Handler();
-
-        scanForDevices();
-//        while (writer==null) {}
-
-
-    }
-*/
-
-
-
-
-
 
 
 }

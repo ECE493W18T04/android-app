@@ -18,6 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/preferencesList"
+        android:layout_marginTop="20dp"
         android:text="Restore"
         android:textColor="@android:color/background_light" />
 <!--
@@ -37,8 +38,9 @@
         android:layout_height="100dp"
         android:layout_below="@+id/title"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
         android:layout_marginTop="24dp"
-        android:src="@drawable/wnh_icon_blue"/>
+        android:src="@drawable/wnh_icon_blue" />
 
     <TextView
         android:id="@+id/title"
@@ -58,11 +60,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:thumbTint="@color/colorPrimary"
-        android:trackTint="@color/colorPrimaryDark"
+
+
+        android:layout_below="@+id/logo"
+        android:layout_marginBottom="-20dp"
         android:text="Active Mode"
         android:textColor="#FFFFFF"
-        android:layout_below="@+id/logo"/>
+        android:theme="@style/onswitch" />
 
     <TextView
         android:id="@+id/userPreferences"
@@ -70,7 +74,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/toggle"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="0dp"
         android:text="User Preferences"
         android:textColor="@android:color/background_light" />
 
@@ -118,6 +122,36 @@
         android:divider="@android:color/white"
         android:dividerHeight="1px"/>
 
+    <!--<View-->
+        <!--android:id="@+id/rectangle_at_the_top"-->
+        <!--android:layout_width="20dp"-->
+        <!--android:layout_height="20dp"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_marginLeft="300dp"-->
+        <!--android:layout_marginRight="-10dp"-->
+        <!---->
+        <!--android:layout_marginTop="317dp"-->
+        <!--android:background="@android:color/white"-->
+        <!--android:visibility="visible" />-->
 
+    <View
+        android:id="@+id/rectangle_at_the_top"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="317dp"
+        android:background="@android:color/white" />
+
+    <TextView
+        android:id="@+id/brightness_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="270dp"
+        android:text="Auto"
+        android:textColor="@android:color/white" />
 </RelativeLayout>
 

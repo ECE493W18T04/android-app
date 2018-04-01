@@ -31,4 +31,10 @@
         <item name="android:background">@color/darkGray</item>
     </style>
 
+    <style name="onswitch" parent="Theme.AppCompat.Light">
+
+        <item name="android:colorControlActivated">@android:color/holo_blue_light</item>
+        <item name="android:colorForeground">@android:color/white</item>
+    </style>
+
 </resources>
