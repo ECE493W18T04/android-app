@@ -122,15 +122,36 @@
         android:divider="@android:color/white"
         android:dividerHeight="1px"/>
 
+    <!--<View-->
+        <!--android:id="@+id/rectangle_at_the_top"-->
+        <!--android:layout_width="20dp"-->
+        <!--android:layout_height="20dp"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_marginLeft="300dp"-->
+        <!--android:layout_marginRight="-10dp"-->
+        <!---->
+        <!--android:layout_marginTop="317dp"-->
+        <!--android:background="@android:color/white"-->
+        <!--android:visibility="visible" />-->
+
     <View
         android:id="@+id/rectangle_at_the_top"
         android:layout_width="20dp"
         android:layout_height="20dp"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="300dp"
-        android:layout_marginRight="-10dp"
+        android:layout_marginRight="5dp"
         android:layout_marginTop="317dp"
-        android:background="@android:color/white"
-        android:visibility="visible" />
+        android:background="@android:color/white" />
+
+    <TextView
+        android:id="@+id/brightness_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="270dp"
+        android:text="Auto"
+        android:textColor="@android:color/white" />
 </RelativeLayout>
 

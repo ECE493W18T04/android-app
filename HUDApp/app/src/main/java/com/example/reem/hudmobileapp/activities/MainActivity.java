@@ -70,7 +70,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 
-public class MainActivity extends AppCompatActivity  implements BrightnessDialog.BrightnessDialogListener, MaxCurrentDialog.MaxCurrentDialogListener{
+public class MainActivity extends AppCompatActivity implements BrightnessDialog.BrightnessDialogListener, MaxCurrentDialog.MaxCurrentDialogListener{
 
 //    private Intent mServiceIntent;
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
@@ -169,6 +169,11 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         View view = (View)findViewById(R.id.rectangle_at_the_top);
         view.setBackgroundColor(Color.HSVToColor(getColor()));
         checkPreviousConnection();
+        TextView brightness = (TextView)findViewById(R.id.brightness_text);
+        if (hud.isAuto_brightness())
+            brightness.setText("Auto");
+        else
+            brightness.setText(hud.getBrightness()+"%");
 
         startBluetoothService();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
@@ -390,6 +395,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
             bleService = mBinder.getService();
+            updateConnectionState();
             initialized = true;
 //            if (!bleService.initialize()){
 //                Log.e("UNABLETOINITIALIZEBLE", "Unable to initialize Bluetooth");
@@ -656,6 +662,12 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         Integer brightness = seekBar.getProgress();
         hudObject.setBrightness(brightness);
         FileManager.saveToFile(this,hudObject);
+        TextView brightnessview = (TextView)findViewById(R.id.brightness_text);
+        if (hudObject.isAuto_brightness()){
+            brightnessview.setText("Auto");
+        }else{
+            brightnessview.setText(hudObject.getBrightness()+"%");
+        }
     }
 
     @Override

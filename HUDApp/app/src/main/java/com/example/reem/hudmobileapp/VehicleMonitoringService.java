@@ -196,12 +196,12 @@ public class VehicleMonitoringService extends Service {
                 //VehicleManager.addListener(EngineSpeed.class, rpmListener);
                 VehicleManager.addListener(TurnSignalStatus.class, turnSignalListener);
                 VehicleManager.addListener(FuelLevel.class, fuelListener);
-
-                if (isMyServiceRunning(BLEService.class)){
-                    if (!connectedToBLEService)
-                        bluetoothServiceIntent = new Intent(getApplicationContext(), BLEService.class);
-                    bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
-                }
+//
+//                if (isMyServiceRunning(BLEService.class)){
+//                    if (!connectedToBLEService)
+//                        bluetoothServiceIntent = new Intent(getApplicationContext(), BLEService.class);
+//                    bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+//                }
 
 
             }
