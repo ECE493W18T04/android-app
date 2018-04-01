@@ -246,6 +246,11 @@ public class CharacteristicWriter {
         gatt.writeCharacteristic(turnSignal);
 
     }
+    public void writeNavigationEnded(byte[] content) {
+        BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_STREET_CHARACTERISTIC_UUID));
+        BGC.setValue(content);
+        gatt.writeCharacteristic(BGC);
+    }
     public void writeNavigationInfo( byte[] content) {
         if (content.length > 5) {
             byte[] directionAndDistanceUnit = new byte[1];

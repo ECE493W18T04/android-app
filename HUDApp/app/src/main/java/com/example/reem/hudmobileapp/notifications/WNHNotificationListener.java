@@ -177,7 +177,14 @@ public class WNHNotificationListener extends NotificationListenerService
             }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
                 bleService.getWriter().writeCallInfo(("\0").getBytes());
             }
+        }else if (sbn.getPackageName().equalsIgnoreCase(GOOGLE_MAPS)) {
+            if (!bluetoothServiceConnected) { //Listener is not connected to BLEService
+                //do nothing
+            }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
+                bleService.getWriter().writeNavigationEnded(("\0").getBytes());
+            }
         }
+
     }
 
 
