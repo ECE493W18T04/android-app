@@ -1,11 +1,14 @@
 package com.example.reem.hudmobileapp.notifications;
 
 import android.app.ActivityManager;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -100,7 +103,7 @@ public class WNHNotificationListener extends NotificationListenerService
         NotificationManager notificationManager;
         byte[] content;
 
-        if (isMyServiceRunning(BLEService.class)){
+        if (isMyServiceRunning(BLEService.class) && !bluetoothServiceConnected){
             bluetoothServiceIntent = new Intent(this, BLEService.class);
             bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
         }
@@ -161,15 +164,14 @@ public class WNHNotificationListener extends NotificationListenerService
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn){
         if(sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)||sbn.getPackageName().equalsIgnoreCase(GOOGLE_CALLER)){
-            if (!bluetoothServiceConnected) { //Listener is not connecte to BLEService
+            if (!bluetoothServiceConnected) { //Listener is not connected to BLEService
                 //do nothing
             }else if(bleService.isConnectedToDevice()) { //BLEService is connected to a device.
                 bleService.getWriter().writeCallInfo(("\0").getBytes());
             }
-
-
         }
     }
+
 
 
     @Override

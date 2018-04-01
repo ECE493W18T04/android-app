@@ -166,14 +166,15 @@ public class BLEService extends Service {
             Log.d(DEBUG_TAG,"onReceive: Action Found");
             if (action.equals(BluetoothDevice.ACTION_FOUND)){
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (device.getName().equals("WNH"))
-                {
-                    bluetoothDevice = device;
-                    if (!connect()){
-                        Log.e("UNABLETOCONNECT","Unable to connect to device: "+bluetoothDevice.getName());
-                        broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                if (device.getName() != null) {
+                    if (device.getName().equals("WNH")) {
+                        bluetoothDevice = device;
+                        if (!connect()) {
+                            Log.e("UNABLETOCONNECT", "Unable to connect to device: " + bluetoothDevice.getName());
+                            broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                        }
+                        Log.e(DEBUG_TAG, "found device with name: " + device.getName() + "and address: " + device.getAddress());
                     }
-                    Log.e(DEBUG_TAG,"found device with name: "+device.getName()+"and address: "+device.getAddress());
                 }
             }else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)){
                 if (!isConnected){

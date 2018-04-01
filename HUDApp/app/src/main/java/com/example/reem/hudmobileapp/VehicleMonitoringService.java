@@ -1,15 +1,22 @@
 package com.example.reem.hudmobileapp;
 
+import android.app.ActivityManager;
 import android.app.Service;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
 
+import com.example.reem.hudmobileapp.activities.MainActivity;
+import com.example.reem.hudmobileapp.ble.BLEService;
 import com.example.reem.hudmobileapp.ble.CharacteristicWriter;
+import com.example.reem.hudmobileapp.helper.FileManager;
 import com.openxc.VehicleManager;
 import com.openxc.measurements.EngineSpeed;
 import com.openxc.measurements.FuelLevel;
@@ -19,6 +26,7 @@ import com.openxc.measurements.VehicleSpeed;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 
 /**
  * Created by navjeetdhaliwal on 2018-03-05.
@@ -26,6 +34,11 @@ import java.nio.ByteOrder;
 
 public class VehicleMonitoringService extends Service {
     public VehicleManager VehicleManager;
+
+    private Intent bluetoothServiceIntent;
+    private BLEService bleService;
+    private boolean connectedToBLEService = false;
+
     private static final String TAG = "VehicleMonitoring";
 
     private VehicleSpeed.Listener speedListener;
@@ -70,6 +83,8 @@ public class VehicleMonitoringService extends Service {
     //maybe add requested listeners as arguments
     public VehicleMonitoringService (final CharacteristicWriter writer) {
         this.writer = writer;
+
+
         /*
          * Define Listeners
          */
@@ -77,6 +92,8 @@ public class VehicleMonitoringService extends Service {
             @Override
             public void receive(Measurement measurement) {
                 final VehicleSpeed speed = (VehicleSpeed) measurement;
+
+
                 if (counter > 100) {
                     vSpeed = speed.getValue().doubleValue();
                     byte[] rawSpeed = new byte[2];
@@ -84,10 +101,14 @@ public class VehicleMonitoringService extends Service {
                     rawSpeed[0] = (byte) ((int) Math.round(vSpeed) & 0xFF);
                     rawSpeed[1] = (byte) (((int) Math.round(vSpeed) >> 8) & 0xFF);
                     ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
-                    try {
-                        writer.writeVehicleSpeed(rawSpeed);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if (!connectedToBLEService) {
+                        //do nothing
+                    } else if (bleService.isConnectedToDevice()){
+                        try {
+                            writer.writeVehicleSpeed(rawSpeed);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                     counter = 0;
                 }else {
@@ -95,20 +116,21 @@ public class VehicleMonitoringService extends Service {
                 }
             }
         };
-        /*
-        rpmListener = new EngineSpeed.Listener() {
-            @Override
-            public void receive(Measurement measurement) {
-                final EngineSpeed eSpeed = (EngineSpeed) measurement;
-                rpm = eSpeed.getValue().doubleValue();
-            }
-        };
-        */
+
+//        rpmListener = new EngineSpeed.Listener() {
+//            @Override
+//            public void receive(Measurement measurement) {
+//                final EngineSpeed eSpeed = (EngineSpeed) measurement;
+//                rpm = eSpeed.getValue().doubleValue();
+//            }
+//        };
+
         turnSignalListener = new TurnSignalStatus.Listener() {
             @Override
             public void receive(Measurement measurement) {
                 final TurnSignalStatus turnSignalStatus = (TurnSignalStatus) measurement;
                 signalPosition = turnSignalStatus.toString();
+
                 byte[] signal = new byte[4];
                 switch (signalPosition){
                     case "off":
@@ -128,22 +150,30 @@ public class VehicleMonitoringService extends Service {
 
                 byte[] content = new byte[1];
                 content[0] = signal[0];
-                writer.writeTurnSignal((content));
-
-
-                Log.d("Vehicle Mobitor",signalPosition);
+                if (!connectedToBLEService) {
+                    //do nothing
+                } else if (bleService.isConnectedToDevice()){
+                    writer.writeTurnSignal((content));
+                }
+                Log.d("Vehicle Monitor",signalPosition);
             }
         };
+
         fuelListener = new FuelLevel.Listener() {
             @Override
             public void receive(Measurement measurement) {
                 fuelLevel = ((FuelLevel) measurement).getValue().doubleValue();
+                if (isMyServiceRunning(BLEService.class)){
+                    bluetoothServiceIntent = new Intent(getApplicationContext(), BLEService.class);
+                    bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+                }
+
                 byte[] rawFuel = new byte[1];
                 int currentfuel = (int)Math.round(fuelLevel*100);
                 rawFuel[0] = (byte) (currentfuel & 0xFF);
                 ByteBuffer.wrap(rawFuel).order(ByteOrder.LITTLE_ENDIAN);
 
-                writer.writeFuelLevel(rawFuel);
+                //writer.writeFuelLevel(rawFuel);
             }
         };
 
@@ -161,9 +191,16 @@ public class VehicleMonitoringService extends Service {
                 VehicleManager = ((VehicleManager.VehicleBinder) service).getService();
 
                 VehicleManager.addListener(VehicleSpeed.class, speedListener);
-                VehicleManager.addListener(EngineSpeed.class, rpmListener);
+                //VehicleManager.addListener(EngineSpeed.class, rpmListener);
                 VehicleManager.addListener(TurnSignalStatus.class, turnSignalListener);
                 VehicleManager.addListener(FuelLevel.class, fuelListener);
+
+                if (isMyServiceRunning(BLEService.class)){
+                    if (!connectedToBLEService)
+                        bluetoothServiceIntent = new Intent(getApplicationContext(), BLEService.class);
+                    bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+                }
+
 
             }
 
@@ -171,6 +208,7 @@ public class VehicleMonitoringService extends Service {
             public void onServiceDisconnected(ComponentName className) {
                 Log.w(TAG, "VehicleManager Service  disconnected unexpectedly");
                 VehicleManager = null;
+
             }
         };
     }
@@ -179,19 +217,41 @@ public class VehicleMonitoringService extends Service {
     public void onDestroy() {
         if(VehicleManager != null) {
 
-            VehicleManager.removeListener(EngineSpeed.class, rpmListener);
+            //VehicleManager.removeListener(EngineSpeed.class, rpmListener);
             VehicleManager.removeListener(VehicleSpeed.class, speedListener);
             VehicleManager.removeListener(TurnSignalStatus.class, turnSignalListener);
             VehicleManager.removeListener(FuelLevel.class, fuelListener);
+
 
             VehicleManager = null;
         }
         super.onDestroy();
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.d(TAG, "On Service Connected");
+            BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
+            bleService = mBinder.getService();
+            connectedToBLEService = true;
+        }
 
-
-
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.d(TAG, "ON Service Disconnected");
+            connectedToBLEService = false;
+        }
+    };
 
 }
