@@ -51,7 +51,8 @@ public class CharacteristicWriter {
     public void initialConnectWrite() throws InterruptedException {
 
         Thread.sleep(1000);
-        writeMaxCurrent();
+        writePriorityQueue();
+
         Thread.sleep(200);
         writeHUDBrightness();
         Thread.sleep(200);
@@ -59,7 +60,7 @@ public class CharacteristicWriter {
         Thread.sleep(200);
         writeColor();
         Thread.sleep(200);
-        writePriorityQueue();
+        writeMaxCurrent();
         Thread.sleep(200);
 //        writeHUDBrightness();
     }

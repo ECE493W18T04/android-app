@@ -70,6 +70,7 @@ public class BLEService extends Service {
     public final static String ACTION_GATT_NO_DEVICE_FOUND = "com.example.bluetooth.le.ACTION_GATT_NO_DEVICE_FOUND";
     public final static String ACTION_BOND_STATE_CHANGED = "com.example,bluetooth.le.ACTION_BOND_STATE_CHANGE";
     public final static String CLOSE_DIALOG = "com.example.bluetooth.le.CLOSE_DIALOG";
+    private boolean initialWriteCompleted=false;
     public IBinder getBinder() {
         return mBinder;
     }
@@ -127,18 +128,23 @@ public class BLEService extends Service {
     public void discoverDevices()
     {
 
-        ArrayList<String> macAddresses = FileManager.readMACAddress(BLEService.this);
-        if (macAddresses != null){
-            for (String macAddress: macAddresses){
-                BluetoothDevice device =  bluetoothAdapter.getRemoteDevice(macAddress);
-                bluetoothDevice = device;
-                if (!connect()){
-                    bluetoothDevice = null;
-                    bluetoothDeviceMACAdress = null;
-                    isConnected= false;
-                }else{
-                    isConnected=true;
-                    break;
+        Log.d("ABOUTTODISCOVER","About to discover devices");
+//        ArrayList<String> macAddresses = FileManager.readMACAddress(BLEService.this);
+        Set<BluetoothDevice> devices = bluetoothAdapter.getBondedDevices();
+        if (devices != null){
+            for (BluetoothDevice device: devices){
+                if ("WNH".equals(device.getName()))
+//                BluetoothDevice device =  bluetoothAdapter.getRemoteDevice(macAddress);
+                {
+                    bluetoothDevice = device;
+                    if (!connect()){
+                        bluetoothDevice = null;
+                        bluetoothDeviceMACAdress = null;
+                        isConnected= false;
+                    }else{
+                        isConnected=true;
+                        break;
+                    }
                 }
 
             }
@@ -148,6 +154,7 @@ public class BLEService extends Service {
             Log.d(DEBUG_TAG,"Cancelling Discovery");
 
         }
+        Log.e("CONNECTION",Boolean.toString(isConnected));
         if (!isConnected) {
             bluetoothAdapter.startDiscovery();
             IntentFilter discoverDevicesIntent = new IntentFilter();
@@ -171,7 +178,7 @@ public class BLEService extends Service {
                         bluetoothDevice = device;
                         if (!connect()) {
                             Log.e("UNABLETOCONNECT", "Unable to connect to device: " + bluetoothDevice.getName());
-                            broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                            broadcastUpdate(BLEService.ACTION_GATT_DISCONNECTED);
                         }
                         Log.e(DEBUG_TAG, "found device with name: " + device.getName() + "and address: " + device.getAddress());
                     }
@@ -192,6 +199,7 @@ public class BLEService extends Service {
         }catch(IllegalArgumentException e){
             // do nothing/ƒ
         }
+        initialWriteCompleted=false;
         if (bluetoothGatt != null)
         {
             Log.e(DEBUG_TAG,bluetoothGatt.toString());
@@ -214,7 +222,7 @@ public class BLEService extends Service {
 
                 bluetoothGatt = null;
 
-                broadcastUpdate(ACTION_GATT_DISCONNECTED);
+                broadcastUpdate(BLEService.ACTION_GATT_DISCONNECTED);
             }
 
         }
@@ -348,9 +356,14 @@ public class BLEService extends Service {
         HUDObject hudObject=FileManager.loadFromFile(BLEService.this);
         writer.setHUDObject(hudObject);
         writer.initialConnectWrite();
+        initialWriteCompleted=true;
     }
 
 
+    public boolean isInitialWriteCompleted()
+    {
+        return isInitialWriteCompleted();
+    }
 
 
         private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -395,7 +408,10 @@ public class BLEService extends Service {
                         public void run() {
                             try {
                                 if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE)
+                                {
+                                    Log.d("CREATEBOND","never been bonded");
                                     bluetoothDevice.createBond();
+                                }
                                 else
                                     initialWriteCharacteristics();
                                 servicesDiscovered = true;
@@ -491,40 +507,6 @@ public class BLEService extends Service {
 */
 
 
-
-
-    private boolean connect(final String address)
-    {
-
-        if (bluetoothDeviceMACAdress!= null && address.equals(bluetoothDeviceMACAdress) && bluetoothGatt!=null)
-        {
-            return bluetoothGatt.connect();
-        }
-
-        final BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-        if (device == null)
-        {
-            Log.d(DEBUG_TAG, "Device " + address + " not found, unable to connect");
-            return false;
-        }
-        bluetoothGatt = device.connectGatt(this, false, mGattCallback);
-        Log.d(DEBUG_TAG, "Trying to create a new connection.");
-        bluetoothDeviceMACAdress = address;
-        bluetoothDevice = device;
-//        while (writer == null){}
-//        try {
-//            writer.initialConnectWrite();
-//        } catch (InterruptedException e) {
-//            Log.e(DEBUG_TAG, "Initial writer cannot be created");
-//        }
-//        ArrayList<String> macAddresses=FileManager.readMACAddress(this);
-
-//        if (!macAddresses.contains(bluetoothDeviceMACAdress))
-//            macAddresses.add(bluetoothDeviceMACAdress);
-//        FileManager.saveMACAddress(this,macAddresses);
-        return true;
-
-    }
 
 
 
