@@ -98,10 +98,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         navButton = (Switch) findViewById(R.id.toggle);
-        getHudItem();
-        checkPreviousConnection();
-
-
 
         options = new String[]{"Priority Queue","Brightness Control","HUD Color", "Maximum Current"};
         ArrayAdapter<String> itemsAdapter =
@@ -148,6 +144,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 restore();
             }
         });
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSIONS);
@@ -156,14 +153,37 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
 
         Log.e("servicecheck","about to check if service running");
 
+
+        //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
+        //startService(notificationIntent);
+
+    }
+
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+
+        getHudItem();
+        View view = (View)findViewById(R.id.rectangle_at_the_top);
+        view.setBackgroundColor(Color.HSVToColor(getColor()));
+        checkPreviousConnection();
+
+        startBluetoothService();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        updateConnectionState();
+
         if(!isNotificationServiceEnabled()){
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
             enableNotificationListenerAlertDialog.show();
         }
 
-        //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
-        //startService(notificationIntent);
-
+        vMonitor = new VehicleMonitoringService();
+        if(vMonitor.VehicleManager == null) {
+            Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
+            bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
+        }
     }
 
 
@@ -471,11 +491,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                 Log.e("WORKED","yay it worked");
                 if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED)
                 {
-                    vMonitor = new VehicleMonitoringService(bleService.getWriter());
-                    if(vMonitor.VehicleManager == null) {
-                        Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
-                        bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
-                    }
+
                 }
 
 
@@ -488,12 +504,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
                         Log.e("BONDER", "properly bonded");
                         try {
                             bleService.initialWriteCharacteristics();
-                            vMonitor = new VehicleMonitoringService(bleService.getWriter());
-                            if(vMonitor.VehicleManager == null) {
 
-                                Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
-                                bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
-                            }
                             if (dialog != null && dialog.isShowing())
                                 dialog.hide();
 
@@ -684,16 +695,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         stopService(new Intent(this, WNHNotificationListener.class));
     }
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-        View view = (View)findViewById(R.id.rectangle_at_the_top);
-        view.setBackgroundColor(Color.HSVToColor(getColor()));
-        startBluetoothService();
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        updateConnectionState();
-    }
 
 
     private static IntentFilter makeGattUpdateIntentFilter() {

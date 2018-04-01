@@ -362,7 +362,7 @@ public class BLEService extends Service {
 
     public boolean isInitialWriteCompleted()
     {
-        return isInitialWriteCompleted();
+        return initialWriteCompleted;
     }
 
 
