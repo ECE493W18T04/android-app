@@ -19,30 +19,21 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
-
-import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 
-import android.speech.RecognizerIntent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -62,12 +53,10 @@ import com.example.reem.hudmobileapp.dialogs.ColorPickerDialog;
 import com.example.reem.hudmobileapp.dialogs.MaxCurrentDialog;
 import com.example.reem.hudmobileapp.helper.FileManager;
 import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
-import com.openxc.VehicleManager;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 
 public class MainActivity extends AppCompatActivity  implements BrightnessDialog.BrightnessDialogListener, MaxCurrentDialog.MaxCurrentDialogListener{
@@ -81,12 +70,13 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
     private Switch navButton;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
     private static final int RECORD_AUDIO_PERMISSION = 1;
-    private Drawable mDrawable=null;
-    private VehicleMonitoringService vMonitor;
+    private Intent vehicleMonitorIntent;
     private ListView preferencesView;
     private ListView restoreView;
     BLEService bleService;
     Intent bluetoothServiceIntent;
+
+
 
     private boolean connectedToDevice;
     private boolean initialized = false;
@@ -153,8 +143,6 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
         Log.e("servicecheck","about to check if service running");
 
 
-        //Intent notificationIntent = new Intent(MainActivity.this, WNHNotificationListener.class);
-        //startService(notificationIntent);
 
     }
 
@@ -175,12 +163,10 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
             enableNotificationListenerAlertDialog.show();
         }
+        Log.d("MainActivity", "Starting Vehicle Monitor");
+        vehicleMonitorIntent = new Intent(this, VehicleMonitoringService.class);
+        startService(vehicleMonitorIntent);
 
-        vMonitor = new VehicleMonitoringService();
-        if(vMonitor.VehicleManager == null) {
-            Intent vehicleIntent = new Intent(getApplicationContext(), VehicleManager.class);
-            bindService(vehicleIntent, vMonitor.connection, Context.BIND_AUTO_CREATE);
-        }
     }
 
 
@@ -682,6 +668,7 @@ public class MainActivity extends AppCompatActivity  implements BrightnessDialog
             bleService.disconnectFromDevice();
 
         }
+        stopService(vehicleMonitorIntent);
         stopService(bluetoothServiceIntent);
         stopService(new Intent(this, WNHNotificationListener.class));
     }

@@ -49,7 +49,7 @@
             </intent-filter>
         </service>
         <service android:name="com.openxc.VehicleManager"/>
-
+        <service android:name=".VehicleMonitoringService"/>
 
 
     </application>
