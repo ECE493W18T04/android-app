@@ -51,6 +51,6 @@ float AutoBrightnessAlg::map(float x, float in_min, float in_max, float out_min,
 }
 
 uint8_t AutoBrightnessAlg::getState() {
-    return _current_state;
+    return min(_current_state, 100);
 }
 
