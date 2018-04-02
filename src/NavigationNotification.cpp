@@ -118,7 +118,7 @@ void NavigationNotification::update(char street[]) {
         setActive(false);
     } else {
         setActive(true);
-        strncpy(this->street, street, MAX_CHAR_LENGTH);
+        strcpy(this->street, street);
     }
     getManager().updateStates();
 }

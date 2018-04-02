@@ -17,7 +17,7 @@ bool MusicNotification::tick() {
     if (slide < -((int)(strlen(notification) * (CHARACTER_WIDTH + 1)))) {
         slide = DISPLAY_WIDTH;
     }
-    gfx.eraseSection(0, 0, 8, 6);
+    gfx.eraseSection(0, 0, 5, 8);
     gfx.drawBitmap(note, 0, 1, 5, 6);
     gfx.drawBuffer();
     return TimedState::tick();
@@ -35,7 +35,7 @@ void MusicNotification::update(char data[]) {
     } else {
         resetTicks();
         setActive(true);
-        strncpy(notification, data, MAX_CHAR_LENGTH);
+        strcpy(notification, data);
     }
     getManager().updateStates();
 }

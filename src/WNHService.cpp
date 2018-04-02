@@ -181,7 +181,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
             params->len <= MAX_CHAR_LENGTH) {
         char * str = (char*)params->data;
         PhoneNotification * phone = (PhoneNotification *)stateMgr.getState(PHONE_INDEX);
-        phone->update(str, params->len);
+        phone->update(str);
     } else if (params->handle == this->mapsDistanceNumberCharacteristic.getValueHandle() &&
             params->len == sizeof(uint32_t)) {
         mapsDistanceNumber = *((uint32_t*)params->data);

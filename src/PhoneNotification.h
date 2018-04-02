@@ -8,7 +8,7 @@ public:
     PhoneNotification(StateManager& _stateMgr);
     bool tick();
     bool kick();
-    void update(char data[], int len);
+    void update(char data[]);
 private:
     char name[MAX_CHAR_LENGTH];
 };
