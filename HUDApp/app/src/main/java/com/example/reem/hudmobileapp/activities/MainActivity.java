@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private AlertDialog enableNotificationListenerAlertDialog;
-    private boolean activeMode =false;
     private HUDObject hud;
     private Switch navButton;
     private static final int COARSE_LOCATION_PERMISSIONS = 0;
@@ -76,13 +75,12 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
     BLEService bleService;
     Intent bluetoothServiceIntent;
 
-
-
     private boolean connectedToDevice;
     private boolean initialized = false;
     ProgressDialog dialog = null;
     private String[] options;
     private String[]  restore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -364,15 +362,6 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
     }
 
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 
 
     ServiceConnection mConnection = new ServiceConnection() {

@@ -44,6 +44,7 @@ public class WNHNotificationListener extends NotificationListenerService
     private static final String GOOGLE_SMS = "com.google.android.apps.messaging";
     private static final String SPOTIFY = "com.spotify.music";
     private boolean bluetoothServiceConnected = false;
+    private boolean navigationStartedBluetooth = false;
     private ArrayList<Pair<Long, Integer>> resArray;
     BLEService bleService;
     Intent bluetoothServiceIntent;
@@ -86,11 +87,8 @@ public class WNHNotificationListener extends NotificationListenerService
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
             bleService = mBinder.getService();
+            bluetoothServiceConnected = true;
 
-            bluetoothServiceConnected = bleService.initialize();
-            if (!bleService.isConnectedToDevice()) {
-                bleService.connectToDevice();
-            }
         }
 
         @Override
@@ -130,6 +128,12 @@ public class WNHNotificationListener extends NotificationListenerService
                 notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
                 content = notificationManager.getContent();
                 bleService.getWriter().writeNavigationInfo(content);
+            } else {
+                bleService.initialize();
+                if (!bleService.isConnectedToDevice()) {
+                    bleService.connectToDevice();
+                    navigationStartedBluetooth = true;
+                }
             }
 
         }
@@ -182,6 +186,13 @@ public class WNHNotificationListener extends NotificationListenerService
                 //do nothing
             }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
                 bleService.getWriter().writeNavigationEnded(("\0").getBytes());
+
+                if (bleService != null && navigationStartedBluetooth) {
+                    if (bleService.isConnectedToDevice()) {
+                        bleService.disconnectFromDevice();
+                    }
+                }
+
             }
         }
 

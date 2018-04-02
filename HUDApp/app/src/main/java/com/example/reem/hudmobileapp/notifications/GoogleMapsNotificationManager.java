@@ -123,7 +123,7 @@ public class GoogleMapsNotificationManager extends NotificationManager {
                 case "mi":
                     unit = 2;
                     break;
-                case "fd":
+                case "yd":
                     unit = 3;
                     break;
                 default:

@@ -6,19 +6,9 @@
     android:background="#55000000">
 
 
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Wireless Navigation HUD"
-        android:textSize="@dimen/abc_text_size_large_material"
-        android:textStyle="bold"/>
-
-    <Button
+    <ImageButton
         android:id="@+id/actionButton"
+        android:background="@drawable/wnh_toggle_off"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
