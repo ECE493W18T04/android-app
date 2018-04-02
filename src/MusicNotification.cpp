@@ -11,15 +11,31 @@ MusicNotification::MusicNotification(StateManager& _stateMgr) : TimedState(_stat
 
 bool MusicNotification::tick() {
     GraphicsManager& gfx = getManager().getGfxManager();
+    static int slide = DISPLAY_WIDTH;
     gfx.erase();
+    gfx.placeText(notification, slide--);
+    if (slide < -((int)(strlen(notification) * (CHARACTER_WIDTH + 1)))) {
+        slide = DISPLAY_WIDTH;
+    }
+    gfx.eraseSection(0, 0, 8, 6);
     gfx.drawBitmap(note, 0, 1, 5, 6);
     gfx.drawBuffer();
     return TimedState::tick();
 }
 
 bool MusicNotification::kick() {
+    setActive(true);
+    resetTicks();
     return true;
 }
 
-void MusicNotification::update(char data[], int len) {
+void MusicNotification::update(char data[]) {
+    if (strlen(data) == 0) {
+        setActive(false);
+    } else {
+        resetTicks();
+        setActive(true);
+        strncpy(notification, data, MAX_CHAR_LENGTH);
+    }
+    getManager().updateStates();
 }

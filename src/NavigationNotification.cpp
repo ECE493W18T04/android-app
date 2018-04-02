@@ -71,7 +71,7 @@ bool NavigationNotification::tick() {
         offset = 7;
         gfx.eraseSection(0, 0, 7, 8);
     }
-    if (slide < -((int)strlen(textBuffer)*CHARACTER_WIDTH) + offset) {
+    if (slide < -((int)strlen(textBuffer)*(CHARACTER_WIDTH + 1)) + offset) {
         slide = DISPLAY_WIDTH;
     }
     switch (direction) {

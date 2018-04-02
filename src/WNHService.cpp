@@ -176,7 +176,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
             params->len <= MAX_CHAR_LENGTH) {
         char * str = (char*)params->data;
         MusicNotification * music = (MusicNotification *)stateMgr.getState(MUSIC_INDEX);
-        music->update(str, params->len);
+        music->update(str);
     } else if (params->handle == this->callNameCharacteristic.getValueHandle() &&
             params->len <= MAX_CHAR_LENGTH) {
         char * str = (char*)params->data;
