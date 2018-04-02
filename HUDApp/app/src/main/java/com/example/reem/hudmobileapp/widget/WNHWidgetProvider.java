@@ -91,7 +91,7 @@ public class WNHWidgetProvider extends AppWidgetProvider {
                 views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
                 testState = 2;
             }else {
-                views.setImageViewIcon(R.id.actionButton, R.drawable.wnh_toggle_off);
+                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
                 testState = 0;
             }
             /*
