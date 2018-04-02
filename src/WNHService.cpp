@@ -297,7 +297,6 @@ void WNHService::setupGapAdvertising(bool discoverable) {
     uint8_t flags = GapAdvertisingData::BREDR_NOT_SUPPORTED;
     bool enableBonding = true;
     bool requireMITM   = true;
-    // const static SecurityManager::Passkey_t key = {'0', '0', '0', '0', '0', '0'};
 
     ble.securityManager().init(enableBonding, requireMITM, SecurityManager::IO_CAPS_DISPLAY_ONLY);
     if (discoverable) {

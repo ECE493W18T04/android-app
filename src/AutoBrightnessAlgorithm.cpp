@@ -10,9 +10,9 @@
 #define LOCK_TICK_THRESHOLD 16
 #define DEFAULT_ALPHA 0.15
 
-AutoBrightnessAlg::AutoBrightnessAlg() : _alpha(DEFAULT_ALPHA), _current_value(0), _current_state(0), _internal_state(UNLOCKED), _ticks_in_current_state(0) {}
+AutoBrightnessAlg::AutoBrightnessAlg() : _alpha(DEFAULT_ALPHA), _current_value(0), _current_state(5), _internal_state(UNLOCKED), _ticks_in_current_state(0) {}
 
-AutoBrightnessAlg::AutoBrightnessAlg(double alpha) : _alpha(alpha), _current_value(0), _current_state(0), _internal_state(UNLOCKED), _ticks_in_current_state(0) {}
+AutoBrightnessAlg::AutoBrightnessAlg(double alpha) : _alpha(alpha), _current_value(0), _current_state(5), _internal_state(UNLOCKED), _ticks_in_current_state(0) {}
 
 void AutoBrightnessAlg::addSample(float dataSample) {
     // exponential decay to smooth out the value
@@ -51,6 +51,6 @@ float AutoBrightnessAlg::map(float x, float in_min, float in_max, float out_min,
 }
 
 uint8_t AutoBrightnessAlg::getState() {
-    return min(_current_state, 100);
+    return max(min(_current_state, MAX_STATE), MIN_STATE);
 }
 

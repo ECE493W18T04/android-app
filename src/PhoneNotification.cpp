@@ -15,7 +15,7 @@ bool PhoneNotification::tick() {
     if (slide < -((int)(strlen(name) * (CHARACTER_WIDTH + 1)))) {
         slide = DISPLAY_WIDTH;
     }
-    gfx.eraseSection(0, 0, 2, 8);
+    gfx.eraseSection(0, 0, 3, 8);
     gfx.drawBitmap(phone, 1, 0, 2, 7);
     gfx.drawBuffer();
     return TempState::tick();
