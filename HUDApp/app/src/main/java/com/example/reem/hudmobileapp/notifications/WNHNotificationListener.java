@@ -1,14 +1,9 @@
 package com.example.reem.hudmobileapp.notifications;
 
 import android.app.ActivityManager;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,13 +16,11 @@ import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 
 import com.example.reem.hudmobileapp.ble.BLEService;
-import com.example.reem.hudmobileapp.constants.CharacteristicUUIDs;
 import com.example.reem.hudmobileapp.helper.ImagePHash;
 import com.example.reem.hudmobileapp.R;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.UUID;
 
 /**
  * Created by Reem on 2018-03-09.
@@ -38,18 +31,19 @@ public class WNHNotificationListener extends NotificationListenerService
     private final String DEBUG_TAG = this.getClass().getSimpleName();
 
     private static final String GOOGLE_MAPS = "com.google.android.apps.maps";
-    private static final String GOOGLE_CALLER = "com.android.dialer";
+    private static final String GOOGLE_CALLER = "com.google.android.dialer";
+    private static final String ANDRIOD_CALLER = "com.android.dialer";
     private static final String SAMSUNG_CALLER = "com.samsung.android.incallui";
     private static final String SAMSUNG_SMS = "com.samsung.android.messaging";
     private static final String GOOGLE_SMS = "com.google.android.apps.messaging";
     private static final String SPOTIFY = "com.spotify.music";
+
     private boolean bluetoothServiceConnected = false;
     private boolean navigationStartedBluetooth = false;
-    private ArrayList<Pair<Long, Integer>> resArray;
     BLEService bleService;
     Intent bluetoothServiceIntent;
 
-
+    private ArrayList<Pair<Long, Integer>> resArray;
     @Override
     public void onCreate() {
         Field[] ID_Fields = R.drawable.class.getFields();
@@ -137,7 +131,9 @@ public class WNHNotificationListener extends NotificationListenerService
             }
 
         }
-        if (sbn.getPackageName().equals(GOOGLE_CALLER)||sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)) {
+        if (sbn.getPackageName().equals(GOOGLE_CALLER)
+                ||sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)
+                ||sbn.getPackageName().equalsIgnoreCase(ANDRIOD_CALLER)) {
 
             if (!bluetoothServiceConnected) { //Listener is not connecte to BLEService
                 //do nothing
@@ -191,8 +187,12 @@ public class WNHNotificationListener extends NotificationListenerService
                 bleService.getWriter().writeNavigationEnded(("\0").getBytes());
 
                 if (bleService != null && navigationStartedBluetooth) {
+                    Log.d(DEBUG_TAG, "Google notification removed and stopping BLE");
+
+                    bluetoothServiceConnected = false;
                     if (bleService.isConnectedToDevice()) {
                         bleService.disconnectFromDevice();
+                        unbindService(mConnection);
                     }
                 }
 
