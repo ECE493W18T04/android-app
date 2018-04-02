@@ -176,9 +176,12 @@ public class WNHNotificationListener extends NotificationListenerService
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn){
         if(sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)||sbn.getPackageName().equalsIgnoreCase(GOOGLE_CALLER)){
+            Log.d(DEBUG_TAG, "Phone Notification Removed");
             if (!bluetoothServiceConnected) { //Listener is not connected to BLEService
                 //do nothing
             }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
+                Log.d(DEBUG_TAG, "Phone Notification writing null terminator");
+
                 bleService.getWriter().writeCallInfo(("\0").getBytes());
             }
         }else if (sbn.getPackageName().equalsIgnoreCase(GOOGLE_MAPS)) {

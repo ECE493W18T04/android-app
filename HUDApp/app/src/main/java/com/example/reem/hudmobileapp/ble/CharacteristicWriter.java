@@ -216,6 +216,8 @@ public class CharacteristicWriter {
         gatt.writeCharacteristic(BGC);
     }
     public void writeMusicInfo(byte[] content){
+        Log.d("Writing","Music Info");
+
         BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MUSIC_SONG_CHARACTERISTIC_UUID));
         BGC.setValue(content);
         gatt.writeCharacteristic(BGC);

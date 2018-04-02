@@ -34,11 +34,11 @@ public class HUDObject {
 
     private void addItemsToPriorityQueue()
     {
-        priorityQueue.add(PriorityQueueEnum.FUEL_LEVEL.getValue());
-        priorityQueue.add(PriorityQueueEnum.SPEED_LEVEL.getValue());
+        priorityQueue.add(PriorityQueueEnum.NAVIGATION_DISPLAY.getValue());
         priorityQueue.add(PriorityQueueEnum.MUSIC_DISPLAY.getValue());
         priorityQueue.add(PriorityQueueEnum.CALL_DISPLAY.getValue());
-        priorityQueue.add(PriorityQueueEnum.NAVIGATION_DISPLAY.getValue());
+        priorityQueue.add(PriorityQueueEnum.SPEED_LEVEL.getValue());
+        priorityQueue.add(PriorityQueueEnum.FUEL_LEVEL.getValue());
         priorityQueue.add(PriorityQueueEnum.CLOCK_DISPLAY.getValue());
 
     }

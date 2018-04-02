@@ -126,8 +126,37 @@ public class WNHWidgetProvider extends AppWidgetProvider {
             */
             (AppWidgetManager.getInstance(context)).updateAppWidget( appWidgetId, views );
 
-        }
+        } else if (BLEService.ACTION_GATT_CONNECTED.equals(intent.getAction())) {
+            connectedToDevice = true;
+            RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
+            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
+        } else if (BLEService.ACTION_GATT_DISCONNECTED.equals(intent.getAction())) {
+            connectedToDevice = false;
+            RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
+            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
+        } else if (BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(intent.getAction())) {
 
+            Log.e("WORKED","yay it worked");
+
+        } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {
+            if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
+                connectedToDevice = true;
+                RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
+                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
+                Log.e("BONDER", "properly bonded");
+            }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
+                connectedToDevice = false;
+                RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
+                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
+
+            }
+
+        }else if (BLEService.ACTION_GATT_NO_DEVICE_FOUND.equals(intent.getAction())) {
+            connectedToDevice = false;
+            RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
+            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
+            Log.e("NODEVICE","no device was found");
+        }
 
         super.onReceive(context, intent);
     }
@@ -141,7 +170,6 @@ public class WNHWidgetProvider extends AppWidgetProvider {
         }
         return false;
     }
-
 
     /**
      * Is Notification Service Enabled.
@@ -166,7 +194,6 @@ public class WNHWidgetProvider extends AppWidgetProvider {
         }
         return false;
     }
-
     /**
      * Build Notification Listener Alert Dialog.
      * Builds the alert dialog that pops up if the user has not turned
@@ -195,18 +222,12 @@ public class WNHWidgetProvider extends AppWidgetProvider {
         return(alertDialogBuilder.create());
     }
 
-    public void startBluetoothService(Context context)
-    {
-
+    public void startBluetoothService(Context context) {
         Log.d("BINDINGSERVICE", "Binding Bluetooth Service");
-        if (bleService == null)
-        {
+        if (bleService == null) {
             bluetoothServiceIntent = new Intent(context, BLEService.class);
             context.bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
         }
-
-
-
     }
 
     ServiceConnection mConnection = new ServiceConnection() {
@@ -223,46 +244,6 @@ public class WNHWidgetProvider extends AppWidgetProvider {
         public void onServiceDisconnected(ComponentName componentName) {
             Log.d("SERVICECONNECTION", "ON Service Disconnected");
             bleService = null;
-        }
-    };
-
-
-
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BLEService.ACTION_GATT_CONNECTED.equals(action)) {
-                connectedToDevice = true;
-                RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
-            } else if (BLEService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                connectedToDevice = false;
-                RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
-            } else if (BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-
-                Log.e("WORKED","yay it worked");
-
-            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
-                if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
-                    connectedToDevice = true;
-                    RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-                    views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
-                    Log.e("BONDER", "properly bonded");
-                }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
-                    connectedToDevice = false;
-                    RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-                    views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
-
-                }
-
-            }else if (BLEService.ACTION_GATT_NO_DEVICE_FOUND.equals(action)) {
-                connectedToDevice = false;
-                RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
-                Log.e("NODEVICE","no device was found");
-            }
         }
     };
 

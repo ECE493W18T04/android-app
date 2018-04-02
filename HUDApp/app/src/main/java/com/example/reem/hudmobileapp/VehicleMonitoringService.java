@@ -54,7 +54,7 @@ public class VehicleMonitoringService extends Service {
         public void receive(Measurement measurement) {
             final VehicleSpeed speed = (VehicleSpeed) measurement;
 
-            if (counter > 100) {
+            if (counter > 20) {
                 double vSpeed = speed.getValue().doubleValue();
                 byte[] rawSpeed = new byte[2];
                  rawSpeed[0] = (byte) ((int) Math.round(vSpeed) & 0xFF);

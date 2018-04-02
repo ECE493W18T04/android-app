@@ -107,9 +107,9 @@ public class GoogleMapsNotificationManager extends NotificationManager {
         int dir = 0;
         if (distance.length() > 1) {
             /* DISTANCE VALUE */
-            String distanceValue = distance.split("\\s")[0];
-            int dist = (int) Math.round(Double.parseDouble(distanceValue));
-            ByteBuffer.wrap(rawDistance).order(ByteOrder.LITTLE_ENDIAN).putInt(dist*10);
+            //String distanceValue = distance.split("\\s")[0];
+            int dist = (int) Math.round(Double.parseDouble(distance)*10);
+            ByteBuffer.wrap(rawDistance).order(ByteOrder.LITTLE_ENDIAN).putInt(dist);
 
             /* DISTANCE UNIT */
             String distanceUnit = distance.split("\\s")[1];
