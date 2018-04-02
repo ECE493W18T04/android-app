@@ -179,23 +179,25 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
 
                 }
             }
-            Log.d("VoiceCommand", message);
-            String number = message.replaceAll("[^0-9]", "");
-            Log.d("VoiceCommand", number);
-            if(number.isEmpty()) {
-                tts.speak("No Brightness given, Please select a value between 0 and 100",TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+            else {
+                Log.d("VoiceCommand", message);
+                String number = message.replaceAll("[^0-9]", "");
+                Log.d("VoiceCommand", number);
+                if (number.isEmpty()) {
+                    tts.speak("No Brightness given, Please select a value between 0 and 100", TextToSpeech.QUEUE_FLUSH, null, "speak");
 
-            }
-            int num = Integer.parseInt(number);
-            if(num > 100 || num < 0) {
-                tts.speak("an Invalid brightness, Please select a value between 0 and 100",TextToSpeech.QUEUE_FLUSH ,null, "speak" );
-            }else {
-                hudObject.setBrightness(num);
-                hudObject.setAuto_brightness(false);
-                FileManager.saveToFile(context, hudObject);
-                writer.setHUDObject(hudObject);
-                writer.writeHUDBrightness();
-                tts.speak("Brightness has been Set to"+number,TextToSpeech.QUEUE_FLUSH ,null, "speak" );
+                }
+                int num = Integer.parseInt(number);
+                if (num > 100 || num < 0) {
+                    tts.speak("an Invalid brightness, Please select a value between 0 and 100", TextToSpeech.QUEUE_FLUSH, null, "speak");
+                } else {
+                    hudObject.setBrightness(num);
+                    hudObject.setAuto_brightness(false);
+                    FileManager.saveToFile(context, hudObject);
+                    writer.setHUDObject(hudObject);
+                    writer.writeHUDBrightness();
+                    tts.speak("Brightness has been Set to" + number, TextToSpeech.QUEUE_FLUSH, null, "speak");
+                }
             }
         }else if (message.toLowerCase().contains(VoiceCommandsEnum.CHANGE_OVERRIDE.getValue()))
         {

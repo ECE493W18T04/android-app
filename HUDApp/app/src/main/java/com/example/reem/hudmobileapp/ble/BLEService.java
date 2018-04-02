@@ -156,6 +156,7 @@ public class BLEService extends Service {
         }
         Log.e("CONNECTION",Boolean.toString(isConnected));
         if (!isConnected) {
+            bluetoothDevice = null;
             bluetoothAdapter.startDiscovery();
             IntentFilter discoverDevicesIntent = new IntentFilter();
             discoverDevicesIntent.addAction(BluetoothDevice.ACTION_FOUND);
@@ -332,10 +333,10 @@ public class BLEService extends Service {
     {
 
         String address = bluetoothDevice.getAddress();
-        if (bluetoothDeviceMACAdress!= null && address.equals(bluetoothDeviceMACAdress) && bluetoothGatt!=null)
-        {
-            return bluetoothGatt.connect();
-        }
+//        if (bluetoothDeviceMACAdress!= null && address.equals(bluetoothDeviceMACAdress) && bluetoothGatt!=null)
+//        {
+//            return bluetoothGatt.connect();
+//        }
 
         final BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
         if (device == null)
@@ -344,6 +345,9 @@ public class BLEService extends Service {
             return false;
         }
         bluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        if (bluetoothGatt==null){
+            return false;
+        }
         Log.d(DEBUG_TAG, "Trying to create a new connection.");
         bluetoothDeviceMACAdress = address;
         bluetoothDevice = device;
@@ -380,7 +384,9 @@ public class BLEService extends Service {
                 String intentAction = ACTION_GATT_DISCONNECTED;
                 isConnected = false;
                 if (bluetoothGatt != null)
+                {
                     bluetoothGatt.close();
+                }
                 broadcastUpdate(intentAction);
                 Log.d(DEBUG_TAG, "Disconnected from Bluetooth");
 
