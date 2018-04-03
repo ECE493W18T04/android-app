@@ -52,6 +52,7 @@ import com.example.reem.hudmobileapp.dialogs.BrightnessDialog;
 import com.example.reem.hudmobileapp.dialogs.ColorPickerDialog;
 import com.example.reem.hudmobileapp.dialogs.MaxCurrentDialog;
 import com.example.reem.hudmobileapp.helper.FileManager;
+import com.example.reem.hudmobileapp.helper.VoiceCommandManager;
 import com.example.reem.hudmobileapp.notifications.WNHNotificationListener;
 
 import java.io.File;
@@ -152,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
         super.onStart();
 
         getHudItem();
-        View view = (View)findViewById(R.id.rectangle_at_the_top);
+        View view = findViewById(R.id.rectangle_at_the_top);
         view.setBackgroundColor(Color.HSVToColor(getColor()));
         checkPreviousConnection();
         TextView brightness = (TextView)findViewById(R.id.brightness_text);
@@ -176,6 +177,21 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
 
     }
 
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (bleService!=null)
+        {
+            if (bleService.isConnectedToDevice()){
+                connectedToDevice = true;
+            }else{
+                connectedToDevice = false;
+            }
+            updateConnectionState();
+        }
+
+    }
 
 
     public void createLoadingDialog()
@@ -513,6 +529,24 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
             }else if (BLEService.CLOSE_DIALOG.equals(action)){
                 if (dialog!= null && dialog.isShowing())
                     dialog.hide();
+            }else if (VoiceCommandManager.VOICE_COMMAND_UPDATE.equals(action))
+            {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        HUDObject hudObject = FileManager.loadFromFile(MainActivity.this);
+                        TextView maxCurrentView = (TextView)findViewById(R.id.maxCurrentText);
+                        maxCurrentView.setText(hudObject.getCurrent()+"mA");
+                        TextView brightnessview = (TextView)findViewById(R.id.brightness_text);
+                        if (hudObject.isAuto_brightness()){
+                            brightnessview.setText("Auto");
+                        }else{
+                            brightnessview.setText(hudObject.getBrightness()+"%");
+                        }
+                        View view = (View)findViewById(R.id.rectangle_at_the_top);
+                        view.setBackgroundColor(Color.HSVToColor(getColor()));
+                    }
+                });
             }
         }
     };
@@ -698,6 +732,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
         intentFilter.addAction(BLEService.ACTION_GATT_NO_DEVICE_FOUND);
         intentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         intentFilter.addAction(BLEService.CLOSE_DIALOG);
+        intentFilter.addAction(VoiceCommandManager.VOICE_COMMAND_UPDATE);
         return intentFilter;
     }
 }
