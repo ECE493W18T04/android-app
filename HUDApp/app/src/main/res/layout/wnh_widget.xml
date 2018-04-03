@@ -8,10 +8,8 @@
 
     <ImageButton
         android:id="@+id/actionButton"
-        android:background="@drawable/wnh_toggle_off"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Activate"/>
+        android:layout_weight="1"/>
 
 </LinearLayout>

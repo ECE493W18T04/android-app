@@ -50,7 +50,7 @@ public class WNHWidgetProvider extends AppWidgetProvider {
     private final String TOGGLE = "toggle";
     BLEService bleService;
 
-    int testState;
+    private static int testState;
 
 
     @Override
@@ -63,11 +63,13 @@ public class WNHWidgetProvider extends AppWidgetProvider {
             watchWidget = new ComponentName( context, WNHWidgetProvider.class );
 
             views = new RemoteViews(context.getPackageName(), R.layout.wnh_widget);
+            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
+
             Intent intent = new Intent(context, WNHWidgetProvider.class);
             intent.setAction(TOGGLE);
             intent.putExtra("appWidgetId", widgetId);
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context,0,intent,0);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context,i,intent,0);
 
             views.setOnClickPendingIntent(R.id.actionButton,pendingIntent);
             appWidgetManager.updateAppWidget(widgetId,views);
@@ -81,16 +83,19 @@ public class WNHWidgetProvider extends AppWidgetProvider {
         if (intent.getAction().equalsIgnoreCase(TOGGLE)) {
             Log.d("Widget", "Button pressed");
             int appWidgetId = intent.getIntExtra("appWidgetId", -1);
-
+            Log.d("Wdiget", String.valueOf(testState));
             views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget );
             if (testState == 0){
+                Log.d("Wdiget", "setting to transition");
                 views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_transition);
                 testState = 1;
 
             }else if (testState == 1) {
+                Log.d("Wdiget", "setting to on");
                 views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
                 testState = 2;
             }else {
+                Log.d("Wdiget", "setting to off");
                 views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
                 testState = 0;
             }
