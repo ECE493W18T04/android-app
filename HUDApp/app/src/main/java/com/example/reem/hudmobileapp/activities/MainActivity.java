@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
         super.onStart();
 
         getHudItem();
-        View view = (View)findViewById(R.id.rectangle_at_the_top);
+        View view = findViewById(R.id.rectangle_at_the_top);
         view.setBackgroundColor(Color.HSVToColor(getColor()));
         checkPreviousConnection();
         TextView brightness = (TextView)findViewById(R.id.brightness_text);
@@ -176,6 +176,21 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
 
     }
 
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (bleService!=null)
+        {
+            if (bleService.isConnectedToDevice()){
+                connectedToDevice = true;
+            }else{
+                connectedToDevice = false;
+            }
+            updateConnectionState();
+        }
+
+    }
 
 
     public void createLoadingDialog()
