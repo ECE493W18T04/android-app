@@ -16,10 +16,12 @@ import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.reem.hudmobileapp.activities.MainActivity;
+import com.example.reem.hudmobileapp.ble.BLEService;
 import com.example.reem.hudmobileapp.ble.CharacteristicWriter;
 import com.example.reem.hudmobileapp.constants.HUDObject;
 import com.example.reem.hudmobileapp.constants.StateOverrideEnum;
@@ -44,7 +46,7 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
     private Intent intent;
     private Context context;
     private CharacteristicWriter writer;
-
+    public static String VOICE_COMMAND_UPDATE = "VOICE_COMMAND_UPDATE";
     public VoiceCommandManager(Context context, CharacteristicWriter writer) {
         this.context = context;
         this.writer = writer;
@@ -103,8 +105,14 @@ public class VoiceCommandManager implements TextToSpeech.OnInitListener, Recogni
 
         //tts.speak(results.get(0),TextToSpeech.QUEUE_FLUSH ,null, "speak" );
         processText(results.get(0));
-    }
+        broadcastUpdate(VOICE_COMMAND_UPDATE);
 
+    }
+    private void broadcastUpdate(final String action)
+    {
+        final Intent intent = new Intent(action);
+        context.sendBroadcast(intent);
+    }
 
     public void processText(String message)
     {
