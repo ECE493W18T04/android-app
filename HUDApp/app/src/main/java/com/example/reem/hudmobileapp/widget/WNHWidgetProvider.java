@@ -44,32 +44,25 @@ public class WNHWidgetProvider extends AppWidgetProvider {
     private static boolean initialized = false;
     private static boolean connectedToDevice = false;
     private AlertDialog enableNotificationListenerAlertDialog;
-    private ComponentName watchWidget;
     private RemoteViews views;
 
     private final String TOGGLE = "toggle";
-    BLEService bleService;
-
-    private static int testState;
+    private static BLEService bleService;
 
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] widgetIds) {
-        //context.getApplicationContext().registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        testState = 0;
+        context.getApplicationContext().registerReceiver(BLEUpdateReceiver, makeGattUpdateIntentFilter());
         final int count= widgetIds.length;
         for (int i=0;i<count;i++) {
             int widgetId = widgetIds[i];
-            watchWidget = new ComponentName( context, WNHWidgetProvider.class );
-
             views = new RemoteViews(context.getPackageName(), R.layout.wnh_widget);
-            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
 
             Intent intent = new Intent(context, WNHWidgetProvider.class);
             intent.setAction(TOGGLE);
             intent.putExtra("appWidgetId", widgetId);
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context,i,intent,0);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context,0,intent,0);
 
             views.setOnClickPendingIntent(R.id.actionButton,pendingIntent);
             appWidgetManager.updateAppWidget(widgetId,views);
@@ -79,29 +72,11 @@ public class WNHWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onReceive(Context context, Intent intent){
+        views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget );
+        int appWidgetId = intent.getIntExtra("appWidgetId", -1);
 
         if (intent.getAction().equalsIgnoreCase(TOGGLE)) {
             Log.d("Widget", "Button pressed");
-            int appWidgetId = intent.getIntExtra("appWidgetId", -1);
-            Log.d("Wdiget", String.valueOf(testState));
-            views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget );
-            if (testState == 0){
-                Log.d("Wdiget", "setting to transition");
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_transition);
-                testState = 1;
-
-            }else if (testState == 1) {
-                Log.d("Wdiget", "setting to on");
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
-                testState = 2;
-            }else {
-                Log.d("Wdiget", "setting to off");
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
-                testState = 0;
-            }
-            /*
-            RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_transition);
 
             if(!isNotificationServiceEnabled(context)){
                 enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog(context);
@@ -109,18 +84,19 @@ public class WNHWidgetProvider extends AppWidgetProvider {
             }
             if (isMyServiceRunning(VehicleMonitoringService.class, context)) {
                 vehicleMonitorIntent = new Intent(context, VehicleMonitoringService.class);
-                context.startService(vehicleMonitorIntent);
+                context.getApplicationContext().startService(vehicleMonitorIntent);
             }
             if (bleService == null) {
                 startBluetoothService(context);
             }
             if (!connectedToDevice) {
                 Log.d("WNHWidget", " Starting Service");
-                if (bleService!=null)
-                    if (!bleService.initialize()){
+                if (bleService!=null) {
+                    if (! bleService.initialize()) {
                         return;
                     }
-                bleService.connectToDevice();
+                    bleService.connectToDevice();
+                }
             } else{
                 //stopBluetoothService();
                 if (initialized){
@@ -128,39 +104,7 @@ public class WNHWidgetProvider extends AppWidgetProvider {
                     bleService.disconnectFromDevice();
                 }
             }
-            */
-            (AppWidgetManager.getInstance(context)).updateAppWidget( appWidgetId, views );
 
-        } else if (BLEService.ACTION_GATT_CONNECTED.equals(intent.getAction())) {
-            connectedToDevice = true;
-            RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
-        } else if (BLEService.ACTION_GATT_DISCONNECTED.equals(intent.getAction())) {
-            connectedToDevice = false;
-            RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
-        } else if (BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(intent.getAction())) {
-
-            Log.e("WORKED","yay it worked");
-
-        } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {
-            if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
-                connectedToDevice = true;
-                RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_on);
-                Log.e("BONDER", "properly bonded");
-            }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
-                connectedToDevice = false;
-                RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-                views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
-
-            }
-
-        }else if (BLEService.ACTION_GATT_NO_DEVICE_FOUND.equals(intent.getAction())) {
-            connectedToDevice = false;
-            RemoteViews views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget);
-            views.setImageViewResource(R.id.actionButton, R.drawable.wnh_toggle_off);
-            Log.e("NODEVICE","no device was found");
         }
 
         super.onReceive(context, intent);
@@ -228,17 +172,17 @@ public class WNHWidgetProvider extends AppWidgetProvider {
     }
 
     public void startBluetoothService(Context context) {
-        Log.d("BINDINGSERVICE", "Binding Bluetooth Service");
+        Log.d("WNHWidgetBINDINGSERVICE", "Binding Bluetooth Service");
         if (bleService == null) {
             bluetoothServiceIntent = new Intent(context, BLEService.class);
-            context.bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
+            context.getApplicationContext().bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
         }
     }
 
     ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            Log.d("SERVICECONNECTION", "On Service Connected");
+            Log.d("WNHWidSERVICECONNECTION", "On Service Connected");
 
             BLEService.BLEBinder mBinder = (BLEService.BLEBinder) iBinder;
             bleService = mBinder.getService();
@@ -247,12 +191,46 @@ public class WNHWidgetProvider extends AppWidgetProvider {
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            Log.d("SERVICECONNECTION", "ON Service Disconnected");
+            Log.d("WDIGETSERVICECONNECTION", "ON Service Disconnected");
             bleService = null;
         }
     };
 
-/*
+    private final BroadcastReceiver BLEUpdateReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            views = new RemoteViews( context.getPackageName(), R.layout.wnh_widget );
+            if (BLEService.ACTION_GATT_CONNECTED.equals(intent.getAction())) {
+                connectedToDevice = true;
+                views.setTextViewText(R.id.actionButton, "Deactivate");
+            } else if (BLEService.ACTION_GATT_DISCONNECTED.equals(intent.getAction())) {
+                connectedToDevice = false;
+                views.setTextViewText(R.id.actionButton, "Activate");
+            } else if (BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(intent.getAction())) {
+                Log.e("WNHWidget","yay it worked");
+
+            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {
+                if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
+                    connectedToDevice = true;
+                    views.setTextViewText(R.id.actionButton, "Deactivate");
+                    Log.e("WNHWidgetBONDER", "properly bonded");
+                }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
+                    connectedToDevice = false;
+                    views.setTextViewText(R.id.actionButton, "Activate");
+                }
+
+            }else if (BLEService.ACTION_GATT_NO_DEVICE_FOUND.equals(intent.getAction())) {
+                connectedToDevice = false;
+                views.setTextViewText(R.id.actionButton, "Activate");
+
+                Log.e("WNHWidgetNODEVICE","no device was found");
+            }
+            (AppWidgetManager.getInstance(context)).updateAppWidget(new ComponentName(context,
+                    WNHWidgetProvider.class), views);
+        }
+    };
+
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BLEService.ACTION_GATT_CONNECTED);
@@ -265,6 +243,6 @@ public class WNHWidgetProvider extends AppWidgetProvider {
         intentFilter.addAction(BLEService.CLOSE_DIALOG);
         return intentFilter;
     }
-*/
+
 
 }

@@ -184,6 +184,8 @@ public class WNHNotificationListener extends NotificationListenerService
             if (!bluetoothServiceConnected) { //Listener is not connected to BLEService
                 //do nothing
             }else if(bleService.isInitialWriteCompleted()) { //BLEService is connected to a device.
+                Log.d(DEBUG_TAG, "Google notification removed");
+
                 bleService.getWriter().writeNavigationEnded(("\0").getBytes());
 
                 if (bleService != null && navigationStartedBluetooth) {
@@ -211,7 +213,9 @@ public class WNHNotificationListener extends NotificationListenerService
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbindService(mConnection);
+        if(mConnection != null) {
+            unbindService(mConnection);
+        }
         Log.d(DEBUG_TAG, "Destroyed");
     }
 

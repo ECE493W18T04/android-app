@@ -5,11 +5,11 @@
     android:padding="@dimen/widget_margin"
     android:background="#55000000">
 
-
-    <ImageButton
+    <Button
         android:id="@+id/actionButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:text="Activate"
         android:layout_weight="1"/>
 
 </LinearLayout>
