@@ -257,6 +257,22 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
                 HUDObject hudObject= new HUDObject();
                 FileManager.saveToFile(MainActivity.this,hudObject);
                 hud = hudObject;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        HUDObject hudObject = FileManager.loadFromFile(MainActivity.this);
+                        TextView maxCurrentView = (TextView)findViewById(R.id.maxCurrentText);
+                        maxCurrentView.setText(hudObject.getCurrent()+"mA");
+                        TextView brightnessview = (TextView)findViewById(R.id.brightness_text);
+                        if (hudObject.isAuto_brightness()){
+                            brightnessview.setText("Auto");
+                        }else{
+                            brightnessview.setText(hudObject.getBrightness()+"%");
+                        }
+                        View view = (View)findViewById(R.id.rectangle_at_the_top);
+                        view.setBackgroundColor(Color.HSVToColor(getColor()));
+                    }
+                });
                 dialog.dismiss();
             }
 
@@ -465,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
             final String action = intent.getAction();
             if (BLEService.ACTION_GATT_CONNECTED.equals(action)) {
                 if (dialog != null && dialog.isShowing())
-                    dialog.hide();//                if (dialog.isShowing())
+                    dialog.dismiss();//                if (dialog.isShowing())
 //                    dialog.hide();
                 connectedToDevice = true;
 
@@ -474,13 +490,13 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
             } else if (BLEService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 connectedToDevice = false;
                 if (dialog != null && dialog.isShowing())
-                    dialog.hide();
+                    dialog.dismiss();
                 updateConnectionState();
 
             } else if (BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // need to stop the loading
                 if (dialog!= null && dialog.isShowing())
-                    dialog.hide();
+                    dialog.dismiss();
                 ArrayList<String> addresses=FileManager.readMACAddress(MainActivity.this);
 
                     if (addresses==null){
@@ -518,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
                             bleService.initialWriteCharacteristics();
 
                             if (dialog != null && dialog.isShowing())
-                                dialog.hide();
+                                dialog.dismiss();
 
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -527,7 +543,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
                 }else if (bleService.getDevice().getBondState() == BluetoothDevice.BOND_NONE){
                     connectedToDevice = false;
                     if ( dialog!= null && dialog.isShowing())
-                        dialog.hide();
+                        dialog.dismiss();
                     updateConnectionState();
                 }
                 // need to stop the loading page
@@ -536,13 +552,13 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
             {
                 connectedToDevice = false;
                 if (dialog!= null && dialog.isShowing())
-                    dialog.hide();
+                    dialog.dismiss();
                 updateConnectionState();
                 Log.e("NODEVICE","no device was found");
                 // need to stop the loading page
             }else if (BLEService.CLOSE_DIALOG.equals(action)){
                 if (dialog!= null && dialog.isShowing())
-                    dialog.hide();
+                    dialog.dismiss();
             }else if (VoiceCommandManager.VOICE_COMMAND_UPDATE.equals(action))
             {
                 runOnUiThread(new Runnable() {

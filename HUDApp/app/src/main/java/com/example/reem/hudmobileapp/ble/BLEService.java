@@ -121,12 +121,16 @@ public class BLEService extends Service {
 
     public void connectToDevice()
     {
-        discoverDevices();
+        try {
+            discoverDevices();
+        }catch(InterruptedException e)
+        {
+            Log.e("UNABLETOSLEEP","unable to sleep");
+        }
 //        scanForDevices();
     }
 
-    public void discoverDevices()
-    {
+    public void discoverDevices() throws InterruptedException {
 
         Log.d("ABOUTTODISCOVER","About to discover devices");
 //        ArrayList<String> macAddresses = FileManager.readMACAddress(BLEService.this);
@@ -154,6 +158,7 @@ public class BLEService extends Service {
             Log.d(DEBUG_TAG,"Cancelling Discovery");
 
         }
+        Thread.sleep(1000);
         Log.e("CONNECTION",Boolean.toString(isConnected));
         if (!isConnected) {
             bluetoothDevice = null;
