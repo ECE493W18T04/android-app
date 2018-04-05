@@ -43,6 +43,10 @@ public class WNHNotificationListener extends NotificationListenerService
     BLEService bleService;
     Intent bluetoothServiceIntent;
 
+    private static byte[] lastNavigationWrite;
+    private static byte[] lastMusicWrite;
+
+
     private ArrayList<Pair<Long, Integer>> resArray;
     @Override
     public void onCreate() {
@@ -121,7 +125,10 @@ public class WNHNotificationListener extends NotificationListenerService
                 RelativeLayout rl = (RelativeLayout) rv.apply(getApplicationContext(), null);
                 notificationManager = new GoogleMapsNotificationManager(rl, this, resArray);
                 content = notificationManager.getContent();
-                bleService.getWriter().writeNavigationInfo(content);
+                if (content != lastNavigationWrite){
+                    bleService.getWriter().writeNavigationInfo(content);
+                    lastNavigationWrite = content;
+                }
             } else {
                 bleService.initialize();
                 if (!bleService.isConnectedToDevice()) {
@@ -159,7 +166,10 @@ public class WNHNotificationListener extends NotificationListenerService
                 notificationManager = new SpotifyMusicNotificationManager(sbn);
                 content = notificationManager.getContent();
                 Log.d(DEBUG_TAG,"Writing Music");
-                bleService.getWriter().writeMusicInfo(content);
+                if (content != lastMusicWrite) {
+                    bleService.getWriter().writeMusicInfo(content);
+                    lastMusicWrite = content;
+                }
             }
 
         }
