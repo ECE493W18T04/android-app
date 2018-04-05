@@ -35,7 +35,7 @@ const char* MI_TEXT = "mi";
 const char* YD_TEXT = "yd";
 const char* EMPTY_TEXT = "";
 
-NavigationNotification::NavigationNotification(StateManager& _stateMgr) : TempState(_stateMgr), street("N/A"), direction(NAV_IMAGE_NONE) {
+NavigationNotification::NavigationNotification(StateManager& _stateMgr) : TempState(_stateMgr), street("N/A"), direction(NAV_IMAGE_NONE), distance(0) {
 }
 
 bool NavigationNotification::tick() {
