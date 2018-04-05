@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
                 if (navButton.isChecked()){
                     if (bleService!=null)
                         if (!bleService.initialize()){
+                            bleNotInitializedDialog();
                             return;
                         }
                     createLoadingDialog();
@@ -146,6 +147,19 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
 
     }
 
+    public void bleNotInitializedDialog()
+    {
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this,R.style.Theme_AlertDialog).create();
+        alertDialog.setTitle("Unable to connect");
+        alertDialog.setMessage("Please make sure Bluetooth is turned on.");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+    }
 
     @Override
     public void onStart()
@@ -269,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
 
                int  color = Color.HSVToColor(getColor());
                String rgbString = "Color Saved: "+"R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color);
-               Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
+//               Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
                int initialColor = color;
 
                 ColorPickerDialog colorPickerDialog = new ColorPickerDialog(MainActivity.this, initialColor, new ColorPickerDialog.OnColorSelectedListener() {
@@ -423,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements BrightnessDialog.
         hudObject.setHsvBrightness(value);
         FileManager.saveToFile(this,hudObject);
         String rgbString = "R: " + Color.red(color) + " B: " + Color.blue(color) + " G: " + Color.green(color)+ "Hue: "+hue+" Saturation: "+saturation+" Brightness: "+value;
-        Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, rgbString, Toast.LENGTH_SHORT).show();
     }
 
 

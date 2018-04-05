@@ -193,7 +193,14 @@ public class WNHNotificationListener extends NotificationListenerService
 
                     bluetoothServiceConnected = false;
                     if (bleService.isConnectedToDevice()) {
+                        Log.e("GOOGLEDISCONNECT","Will disconnect now");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         bleService.disconnectFromDevice();
+
                         unbindService(mConnection);
                     }
                 }

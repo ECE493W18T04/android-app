@@ -233,7 +233,7 @@ public class BLEService extends Service {
     public boolean initialize()
     {
 
-        Toast.makeText(getApplicationContext(), "Checking if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getApplicationContext(), "Checking if Bluetooth is enabled", Toast.LENGTH_SHORT).show();
         if (bluetoothManager == null) {
             bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (bluetoothManager == null) {
@@ -253,7 +253,7 @@ public class BLEService extends Service {
         }else if (!bluetoothAdapter.isEnabled()) {
 
             broadcastUpdate(BLEService.ACTION_GATT_DISCONNECTED);
-            Toast.makeText(getApplicationContext(), "Please turn on Bluetooth before starting", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "Please turn on Bluetooth before starting", Toast.LENGTH_SHORT).show();
             return false;
         }
         voiceCommandHandler = new Handler();
