@@ -40,6 +40,9 @@ public class VehicleMonitoringService extends Service {
     private static final String TAG = "VehicleMonitoring";
     private static int counter = 0;
 
+    private static double lastSpeed = 0.0;
+    private static double lastFuel = 0.0;
+
     // required but does nothing
     @Override
     public IBinder onBind(Intent intent) {
@@ -54,22 +57,26 @@ public class VehicleMonitoringService extends Service {
         public void receive(Measurement measurement) {
             final VehicleSpeed speed = (VehicleSpeed) measurement;
 
-            if (counter > 20) {
+            if (counter > 10) {
                 double vSpeed = speed.getValue().doubleValue();
-                byte[] rawSpeed = new byte[2];
-                 rawSpeed[0] = (byte) ((int) Math.round(vSpeed) & 0xFF);
-                rawSpeed[1] = (byte) (((int) Math.round(vSpeed) >> 8) & 0xFF);
-                ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
-                if (!connectedToBLEService) {
-                    //do nothing
-                } else if (bleService.isInitialWriteCompleted()){
-                    try {
-                        bleService.getWriter().writeVehicleSpeed(rawSpeed);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                if (vSpeed != lastSpeed) {
+                    lastSpeed = vSpeed;
+
+                    byte[] rawSpeed = new byte[2];
+                    rawSpeed[0] = (byte) ((int) Math.round(vSpeed) & 0xFF);
+                    rawSpeed[1] = (byte) (((int) Math.round(vSpeed) >> 8) & 0xFF);
+                    ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
+                    if (!connectedToBLEService) {
+                        //do nothing
+                    } else if (bleService.isInitialWriteCompleted()) {
+                        try {
+                            bleService.getWriter().writeVehicleSpeed(rawSpeed);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    counter = 0;
                 }
-                counter = 0;
             }else {
                 counter++;
             }
@@ -119,20 +126,17 @@ public class VehicleMonitoringService extends Service {
         @Override
         public void receive(Measurement measurement) {
             double fuelLevel = ((FuelLevel) measurement).getValue().doubleValue();
-            /*
-            if (isMyServiceRunning(BLEService.class, c)){
-                bluetoothServiceIntent = new Intent(getApplicationContext(), BLEService.class);
-                bindService(bluetoothServiceIntent, mConnection, BIND_AUTO_CREATE);
-            }
-            */
-            byte[] rawFuel = new byte[1];
-            int currentfuel = (int)Math.round(fuelLevel*100);
-            rawFuel[0] = (byte) (currentfuel & 0xFF);
-            ByteBuffer.wrap(rawFuel).order(ByteOrder.LITTLE_ENDIAN);
-            if (!connectedToBLEService) {
-                //do nothing
-            }else if (bleService.isInitialWriteCompleted()) {
-                bleService.getWriter().writeFuelLevel(rawFuel);
+            if (fuelLevel != lastFuel) {
+                lastFuel = fuelLevel;
+                byte[] rawFuel = new byte[1];
+                int currentfuel = (int) Math.round(fuelLevel * 100);
+                rawFuel[0] = (byte) (currentfuel & 0xFF);
+                ByteBuffer.wrap(rawFuel).order(ByteOrder.LITTLE_ENDIAN);
+                if (!connectedToBLEService) {
+                    //do nothing
+                } else if (bleService.isInitialWriteCompleted()) {
+                    bleService.getWriter().writeFuelLevel(rawFuel);
+                }
             }
         }
     };
