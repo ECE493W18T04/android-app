@@ -4,7 +4,7 @@
 
 const uint8_t phone[] = {0xC0, 0xC0, 0x80, 0x80, 0x80, 0xC0, 0xC0};
 
-PhoneNotification::PhoneNotification(StateManager& _stateMgr) : TempState(_stateMgr) {
+PhoneNotification::PhoneNotification(StateManager& _stateMgr) : TempState(_stateMgr), name("N/A") {
 }
 
 bool PhoneNotification::tick() {
@@ -26,7 +26,8 @@ bool PhoneNotification::kick() {
 }
 
 void PhoneNotification::update(char data[]) {
-    if (strlen(name) == 0) {
+    if (strlen(data) == 0) {
+        strcpy(name, "N/A");
         setActive(false);
     } else {
         setActive(true);
