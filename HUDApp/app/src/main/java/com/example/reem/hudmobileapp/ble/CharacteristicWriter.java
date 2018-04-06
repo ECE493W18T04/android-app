@@ -31,6 +31,9 @@ public class CharacteristicWriter {
     private BluetoothGattService gattService;
     private BluetoothGatt gatt;
     private HUDObject hudObject;
+    private static byte[] lastDistance;
+    private static byte[] lastStreetname;
+    private static byte lastDirection;
     public CharacteristicWriter(BluetoothGattService gattService, HUDObject hudObject, BluetoothGatt gatt)
     {
         this.gattService=gattService;
@@ -235,7 +238,7 @@ public class CharacteristicWriter {
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).put((byte) 0);
         speedUnits.setValue(bytes);
         gatt.writeCharacteristic(speedUnits);
-        Thread.sleep(50);
+        Thread.sleep(100);
         Log.d("Writing","Vehicle Speed");
         BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.SPEED_VALUE_CHARACTERISTIC_UUID));
         BGC.setValue(content);
@@ -255,39 +258,58 @@ public class CharacteristicWriter {
     }
     public void writeNavigationInfo( byte[] content) {
         if (content.length > 5) {
+            BluetoothGattCharacteristic BGC;
+
             byte[] directionAndDistanceUnit = new byte[1];
             directionAndDistanceUnit[0] = content[0];
+            if (lastDirection != directionAndDistanceUnit[0]) {
+                lastDirection = directionAndDistanceUnit[0];
+                BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_DIRECTION_AND_UNITS_CHARACTERISTIC_UUID));
+                BGC.setValue(directionAndDistanceUnit);
+                gatt.writeCharacteristic(BGC);
+            }
+            try {
+                Thread.sleep(100);
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+            byte[] streetName = new byte[content.length - 5];
+            for (int i=5; i<content.length; i++){
+                streetName[i-5] = content[i];
+            }
+            if (lastStreetname != streetName) {
+                BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_STREET_CHARACTERISTIC_UUID));
+                BGC.setValue(streetName);
+                gatt.writeCharacteristic(BGC);
+                lastStreetname = streetName;
+            }
+
+
+            try {
+                Thread.sleep(100);
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
             byte[] distance = new byte[4];
             distance[0] = content[1];
             distance[1] = content[2];
             distance[2] = content[3];
             distance[3] = content[4];
-            byte[] streetName = new byte[content.length - 5];
-            for (int i=5; i<content.length; i++){
-                streetName[i-5] = content[i];
+
+            if (lastDistance != distance) {
+                BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_DISTANCE_CHARACTERISTIC_UUID));
+                BGC.setValue(distance);
+                gatt.writeCharacteristic(BGC);
+                lastDistance = distance;
             }
 
-            BluetoothGattCharacteristic BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_DISTANCE_CHARACTERISTIC_UUID));
-            BGC.setValue(distance);
-            gatt.writeCharacteristic(BGC);
-            try {
-                Thread.sleep(100);
 
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-            BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_DIRECTION_AND_UNITS_CHARACTERISTIC_UUID));
-            BGC.setValue(directionAndDistanceUnit);
-            gatt.writeCharacteristic(BGC);
-            try {
-                Thread.sleep(100);
 
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-            BGC = gattService.getCharacteristic(UUID.fromString(CharacteristicUUIDs.MAPS_STREET_CHARACTERISTIC_UUID));
-            BGC.setValue(streetName);
-            gatt.writeCharacteristic(BGC);
+
         }
     }
 

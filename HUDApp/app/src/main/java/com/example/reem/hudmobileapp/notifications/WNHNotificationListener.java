@@ -34,6 +34,8 @@ public class WNHNotificationListener extends NotificationListenerService
     private static final String GOOGLE_CALLER = "com.google.android.dialer";
     private static final String ANDRIOD_CALLER = "com.android.dialer";
     private static final String SAMSUNG_CALLER = "com.samsung.android.incallui";
+    private static final String TELECOM_CALLER = "com.android.server.telecom";
+
     private static final String SAMSUNG_SMS = "com.samsung.android.messaging";
     private static final String GOOGLE_SMS = "com.google.android.apps.messaging";
     private static final String SPOTIFY = "com.spotify.music";
@@ -140,7 +142,8 @@ public class WNHNotificationListener extends NotificationListenerService
         }
         if (sbn.getPackageName().equals(GOOGLE_CALLER)
                 ||sbn.getPackageName().equalsIgnoreCase(SAMSUNG_CALLER)
-                ||sbn.getPackageName().equalsIgnoreCase(ANDRIOD_CALLER)) {
+                ||sbn.getPackageName().equalsIgnoreCase(ANDRIOD_CALLER)
+                ||sbn.getPackageName().equalsIgnoreCase(TELECOM_CALLER)) {
 
             if (!bluetoothServiceConnected) { //Listener is not connecte to BLEService
                 //do nothing

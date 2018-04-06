@@ -25,6 +25,7 @@ import com.openxc.measurements.VehicleSpeed;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 /**
@@ -38,7 +39,7 @@ public class VehicleMonitoringService extends Service {
     private boolean connectedToBLEService = false;
 
     private static final String TAG = "VehicleMonitoring";
-    private static int counter = 0;
+    private static int counter = 18;
 
     private static double lastSpeed = 0.0;
     private static double lastFuel = 0.0;
@@ -57,26 +58,22 @@ public class VehicleMonitoringService extends Service {
         public void receive(Measurement measurement) {
             final VehicleSpeed speed = (VehicleSpeed) measurement;
 
-            if (counter > 10) {
+            if (counter > 20) {
                 double vSpeed = speed.getValue().doubleValue();
-                if (vSpeed != lastSpeed) {
-                    lastSpeed = vSpeed;
-
-                    byte[] rawSpeed = new byte[2];
-                    rawSpeed[0] = (byte) ((int) Math.round(vSpeed) & 0xFF);
-                    rawSpeed[1] = (byte) (((int) Math.round(vSpeed) >> 8) & 0xFF);
-                    ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
-                    if (!connectedToBLEService) {
-                        //do nothing
-                    } else if (bleService.isInitialWriteCompleted()) {
-                        try {
-                            bleService.getWriter().writeVehicleSpeed(rawSpeed);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                byte[] rawSpeed = new byte[2];
+                rawSpeed[0] = (byte) ((int) Math.round(vSpeed) & 0xFF);
+                rawSpeed[1] = (byte) (((int) Math.round(vSpeed) >> 8) & 0xFF);
+                ByteBuffer.wrap(rawSpeed).order(ByteOrder.LITTLE_ENDIAN);
+                if (!connectedToBLEService) {
+                    //do nothing
+                } else if (bleService.isInitialWriteCompleted()) {
+                    try {
+                        bleService.getWriter().writeVehicleSpeed(rawSpeed);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    counter = 0;
                 }
+                counter = 0;
             }else {
                 counter++;
             }
@@ -126,8 +123,12 @@ public class VehicleMonitoringService extends Service {
         @Override
         public void receive(Measurement measurement) {
             double fuelLevel = ((FuelLevel) measurement).getValue().doubleValue();
-            if (fuelLevel != lastFuel) {
-                lastFuel = fuelLevel;
+
+            DecimalFormat twoDForm = new DecimalFormat("#.##");
+            double roundedFuel = Double.valueOf(twoDForm.format(fuelLevel));
+
+            if (roundedFuel != lastFuel) {
+                lastFuel = roundedFuel;
                 byte[] rawFuel = new byte[1];
                 int currentfuel = (int) Math.round(fuelLevel * 100);
                 rawFuel[0] = (byte) (currentfuel & 0xFF);
