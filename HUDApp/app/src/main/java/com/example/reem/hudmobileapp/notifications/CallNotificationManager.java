@@ -44,9 +44,12 @@ public class CallNotificationManager extends NotificationManager {
 
         // Text: Incoming call
         //Log.d("Text",text);
-        byte[] content = (title+"\0").getBytes();
-        ByteBuffer.wrap(content).order(ByteOrder.LITTLE_ENDIAN);
+        if (!title.toLowerCase().contains("missed call")){
+            byte[] content = (title+"\0").getBytes();
+            ByteBuffer.wrap(content).order(ByteOrder.LITTLE_ENDIAN);
+            return content;
+        }
+        return new byte[0];
 
-        return content;
     }
 }
