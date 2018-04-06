@@ -100,7 +100,7 @@ WNHService::WNHService(BLEDevice &_ble, EventQueue &_eventQueue) :
     GattService         WNHBLEService(WNH_SERVICE_UUID, charTable, sizeOfGattCharTable);
     ble_error_t err = ble.gattServer().addService(WNHBLEService);
     if (BLE_ERROR_NONE != err) {
-        printf("there was an error adding the service: %d\n", err);
+        //printf("there was an error adding the service: %d\n", err);
     }
 
     pairingCb.attach(this, &WNHService::passkeyDisplayCallback);
@@ -118,7 +118,7 @@ void WNHService::scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackConte
 void WNHService::disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
 {
     setupGapAdvertising(false);
-    printf("Device Disconnected\n");
+   // printf("Device Disconnected\n");
     connected = false;
     stateMgr.powerOff();
 }
@@ -133,7 +133,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
             params->len == sizeof(uint8_t)) {
         stateOverride = *(params->data);
         stateMgr.forceState(stateOverride);
-        printf("State Override: %d\n", stateOverride);
+        //printf("State Override: %d\n", stateOverride);
     } else if (params->handle == this->disconnectCharacteristic.getValueHandle()) {
         // Disconnect Handler, does not handle data
         ble.gap().disconnect(params->connHandle, Gap::REMOTE_USER_TERMINATED_CONNECTION);
@@ -142,7 +142,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         clockMapsPriority = *(params->data);
         uint8_t clockPriority = UPPER_NIBBLE(clockMapsPriority);
         uint8_t mapsPriority =  LOWER_NIBBLE(clockMapsPriority);
-        printf("Priority: Clock: %d, Maps: %d\n", clockPriority, mapsPriority);
+        //printf("Priority: Clock: %d, Maps: %d\n", clockPriority, mapsPriority);
         ClockNotification * clk = (ClockNotification*)stateMgr.getState(CLOCK_INDEX);
         NavigationNotification * maps = (NavigationNotification*)stateMgr.getState(NAVIGATION_INDEX);
         clk->setPriority(clockPriority);
@@ -152,7 +152,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         callMusicPriority = *(params->data);
         uint8_t callPriority = UPPER_NIBBLE(callMusicPriority);
         uint8_t musicPriority = LOWER_NIBBLE(callMusicPriority);
-        printf("Priority: Phone: %d, Music: %d\n", callPriority, musicPriority);
+        //printf("Priority: Phone: %d, Music: %d\n", callPriority, musicPriority);
         PhoneNotification * phone = (PhoneNotification *)stateMgr.getState(PHONE_INDEX);
         MusicNotification * music = (MusicNotification *)stateMgr.getState(MUSIC_INDEX);
         phone->setPriority(callPriority);
@@ -162,7 +162,7 @@ void WNHService::onDataWrittenCallback(const GattWriteCallbackParams *params) {
         speedFuelPriority = *(params->data);
         uint8_t speedPriority = UPPER_NIBBLE(speedFuelPriority);
         uint8_t fuelPriority = LOWER_NIBBLE(speedFuelPriority);
-        printf("Priority: Speed: %d, Fuel: %d\n", speedPriority, fuelPriority);
+        //printf("Priority: Speed: %d, Fuel: %d\n", speedPriority, fuelPriority);
         VehicleSpeed * speed = (VehicleSpeed *)stateMgr.getState(VEHICLE_SPEED_INDEX);
         FuelLevel * fuel = (FuelLevel *)stateMgr.getState(FUEL_LEVEL_INDEX);
         speed->setPriority(speedPriority);
@@ -263,13 +263,13 @@ void callPasskeyDisplayCallback(Gap::Handle_t handle, const SecurityManager::Pas
 
 void WNHService::passkeyDisplayCallback(Gap::Handle_t handle, const SecurityManager::Passkey_t passkey)
 {
-    printf("Input passKey: ");
+    //printf("Input passKey: ");
     for (unsigned i = 0; i < Gap::ADDR_LEN; i++) {
-        printf("%c ", passkey[i]);
+        //printf("%c ", passkey[i]);
     }
     PairingState* pairState = (PairingState*) stateMgr.getState(PAIRING_INDEX);
     pairState->update(passkey);
-    printf("\r\n");
+    //printf("\r\n");
 }
 
 void callSecuritySetupCompletedCallback(Gap::Handle_t handle, SecurityManager::SecurityCompletionStatus_t status) {
@@ -287,9 +287,9 @@ void WNHService::securitySetupCompletedCallback(Gap::Handle_t handle, SecurityMa
     setupGapAdvertising(false);
 
     if (status == SecurityManager::SEC_STATUS_SUCCESS) {
-        printf("Security success\r\n");
+        //printf("Security success\r\n");
     } else {
-        printf("Security failed: %d\r\n", status);
+        //printf("Security failed: %d\r\n", status);
     }
 }
 
@@ -314,7 +314,7 @@ void WNHService::setupGapAdvertising(bool discoverable) {
 }
 
 void WNHService::connectionCallback(const Gap::ConnectionCallbackParams_t *params) {
-    printf("Connected\n");
+    //printf("Connected\n");
     stateMgr.powerOn();
     connected = true;
 }
@@ -325,11 +325,11 @@ void printMacAddress()
     Gap::AddressType_t addr_type;
     Gap::Address_t address;
     BLE::Instance().gap().getAddress(&addr_type, address);
-    printf("DEVICE MAC ADDRESS: ");
+    //printf("DEVICE MAC ADDRESS: ");
     for (int i = 5; i >= 1; i--){
-            printf("%02x:", address[i]);
+            //printf("%02x:", address[i]);
         }
-    printf("%02x\r\n", address[0]);
+    //printf("%02x\r\n", address[0]);
 }
 
 /**

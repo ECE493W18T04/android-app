@@ -14,12 +14,6 @@ int main(void)
     BLE &ble = BLE::Instance();
     WNHService wnhService(ble, eventQueue);
 
-    // if (!luxDevice.enablePower()) {}
-    // luxDevice.setIntegrationTime(101);
-    // while(1) {
-    //     printf("%f\n", luxDevice.getLux());
-    // }
-
     eventQueue.dispatch_forever();
     return 0;
 }

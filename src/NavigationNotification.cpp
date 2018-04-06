@@ -45,7 +45,8 @@ bool NavigationNotification::tick() {
     int offset;
     static int slide = 0;
     gfx.erase();
-    switch (direction) {
+    switch (distanceUnits) {
+
     case NAV_UNITS_KM:
         unit = KM_TEXT;
         break;

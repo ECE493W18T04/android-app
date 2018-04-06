@@ -17,7 +17,6 @@ bool ClockNotification::tick() {
 }
 
 void ClockNotification::update(uint32_t time) {
-    printf("Current time %lu\n", time);
     setActive(true);
     getManager().updateStates();
     set_time(time);
