@@ -35,7 +35,7 @@ void MusicNotification::update(char data[]) {
     } else {
         resetTicks();
         setActive(true);
-        strcpy(notification, data);
+        strncpy(notification, data, MAX_CHAR_LENGTH);
     }
     getManager().updateStates();
 }

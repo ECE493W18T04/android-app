@@ -27,11 +27,11 @@ bool PhoneNotification::kick() {
 
 void PhoneNotification::update(char data[]) {
     if (strlen(data) == 0) {
-        strcpy(name, "N/A");
+        strncpy(name, "N/A", MAX_CHAR_LENGTH);
         setActive(false);
     } else {
         setActive(true);
-        strcpy(name, data);
+        strncpy(name, data, MAX_CHAR_LENGTH);
     }
     getManager().updateStates();
 }
