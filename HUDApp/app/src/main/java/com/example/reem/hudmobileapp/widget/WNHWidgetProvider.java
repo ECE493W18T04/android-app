@@ -150,7 +150,7 @@ public class WNHWidgetProvider extends AppWidgetProvider {
      * @return An alert dialog which leads to the notification enabling screen
      */
     private AlertDialog buildNotificationServiceAlertDialog(final Context context){
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context.getApplicationContext());
         alertDialogBuilder.setTitle("Notification Listener Service");
         alertDialogBuilder.setMessage("For the the app. to work you need to enable the Notification Listener Service. Enable it now?");
         alertDialogBuilder.setPositiveButton("yes",
