@@ -1,6 +1,12 @@
 #ifndef MUSICNOTIFICATION_h
 #define MUSICNOTIFICATION_h
 
+/**
+ * Handles Music state for displaying
+ *
+ * Satisfies: REQ-A-4.3.3.2
+ */
+
 #include "TimedState.h"
 
 class MusicNotification : public TimedState {

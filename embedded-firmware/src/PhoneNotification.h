@@ -1,6 +1,12 @@
 #ifndef PHONENOTIFICATION_h
 #define PHONENOTIFICATION_h
 
+/**
+ * Handles phone displaying notification
+ *
+ * Satisfies: REQ-A-4.4.3.1
+ */
+
 #include "TempState.h"
 
 class PhoneNotification : public TempState {

@@ -1,6 +1,12 @@
 #ifndef NAVIGATIONNOTIFICATION_h
 #define NAVIGATIONNOTIFICATION_h
 
+/**
+ * Handles the navigational state of the system
+ *
+ * Satisfies: Notification Relaying - Navigation
+ */
+
 #include "TempState.h"
 
 class NavigationNotification : public TempState {

@@ -1,6 +1,12 @@
 #ifndef STATEMANAGER_h
 #define STATEMANAGER_h
 
+/**
+ * Manages the state machine
+ *
+ * Satisfies: REQ-A-4.5.3.3, REQ-B-4.7.3.3, REQ-B-4.7.3.2
+ */
+
 #include "mbed.h"
 #include <events/mbed_events.h>
 #include "GraphicsManager.h"

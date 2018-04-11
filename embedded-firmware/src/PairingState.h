@@ -1,6 +1,12 @@
 #ifndef PAIRINGSTATE_h
 #define PAIRINGSTATE_h
 
+/**
+ * Handles pairing in state manager
+ *
+ * Satisfies: REQ-A-4.1.3.1
+ */
+
 #include "TempState.h"
 #include "StateManager.h"
 

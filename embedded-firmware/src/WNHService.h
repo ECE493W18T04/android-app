@@ -1,6 +1,12 @@
 #ifndef __WNH_BLE_SERVICE_H__
 #define __WNH_BLE_SERVICE_H__
 
+/**
+ * Manages the BLE interface
+ *
+ * Satisfies: REQ-A-4.1.3.1, REQ-A-4.1.3.2, REQ-A-4.5.3.2, REQ-A-4.5.3.3, REQ-A-4.5.3.4
+ */
+
 #include <events/mbed_events.h>
 #include "ble/BLE.h"
 #include "mbed.h"

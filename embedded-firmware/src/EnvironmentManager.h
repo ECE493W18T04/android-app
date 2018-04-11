@@ -1,6 +1,12 @@
 #ifndef ENVIRONMENTMANAGER_h
 #define ENVIRONMENTMANAGER_h
 
+/**
+ * Handles environment limitations and pass out limits
+ *
+ * Satisfies: 5.1.2
+ */
+
 #include "mbed.h"
 
 #define SAMPLE_SIZE 50

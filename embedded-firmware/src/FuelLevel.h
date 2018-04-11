@@ -1,6 +1,12 @@
 #ifndef FUELLEVEL_h
 #define FUELLEVEL_h
 
+/**
+ * Helps handle temporary timed states for the priority queue
+ *
+ * Satisfies: REQ-A-4.5.3.3
+ */
+
 #include "mbed.h"
 #include "TimedState.h"
 

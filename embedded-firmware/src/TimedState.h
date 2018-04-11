@@ -1,6 +1,12 @@
 #ifndef TIMEDSTATE_h
 #define TIMEDSTATE_h
 
+/**
+ * Handles states with specific time limits
+ *
+ * Satisfies: REQ-A-4.5.3.3
+ */
+
 #include "State.h"
 
 class TimedState : public State {

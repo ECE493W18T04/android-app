@@ -1,6 +1,12 @@
 #ifndef VEHICLESPEED_h
 #define VEHICLESPEED_h
 
+/**
+ * Handles the vehicle speed display state
+ *
+ * Satisfies: REQ-B-4.6.3.2
+ */
+
 #include "DefaultState.h"
 
 class VehicleSpeed : public DefaultState {

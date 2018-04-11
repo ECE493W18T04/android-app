@@ -1,6 +1,12 @@
 #ifndef GRAPHICSMANAGER_h
 #define GRAPHICSMANAGER_h
 
+/**
+ * Graphics manager to handle image drawing and character drawing
+ *
+ * Satisfies: REQ-A-4.2.3.2, REQ-A-4.3.3.2, REQ-A-4.5.3.2, REQ-A-4.5.3.1, REQ-A-4.5.3.4, REQ-B-4.6.3.2
+ */
+
 #include "mbed.h"
 #include "DisplayDriver.h"
 

@@ -1,6 +1,12 @@
 #ifndef __WNH_BTN_MANAGER_H__
 #define __WNH_BTN_MANAGER_H__
 
+/**
+ * This class handles button events and forwards the events into the event queue to run in the correct context
+ *
+ * Satisfies: REQ-A-4.1.3.1, REQ-B-4.7.3.1
+ */
+
 #include <mbed_events.h>
 #include "mbed.h"
 

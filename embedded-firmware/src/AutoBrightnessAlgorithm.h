@@ -1,6 +1,11 @@
 #ifndef AUTOBRIGHTNESSALG_H
 #define AUTOBRIGHTNESSALG_H
 
+/**
+ * This is the autobrightness algorithm API for the autobrightness display feature
+ *
+ * Satisfies: REQ-A-4.5.3.1
+ */
 #include <mbed.h>
 
 #define min(x, y) (x < y ? x : y)
