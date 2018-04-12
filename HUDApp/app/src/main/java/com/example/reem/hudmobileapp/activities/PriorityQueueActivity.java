@@ -42,6 +42,8 @@ import java.util.List;
  * An item in the listview is selected via a long press event and is then
  * moved around by tracking and following the movement of the user's finger.
  * When the item is released, it animates to its new position within the listview.
+ *
+ * Meets requirements REQ-A-4.5.3.3
  */
 public class PriorityQueueActivity extends Activity {
 

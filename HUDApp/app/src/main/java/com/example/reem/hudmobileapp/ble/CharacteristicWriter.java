@@ -24,7 +24,15 @@ import java.util.UUID;
 
 /**
  * Created by Reem on 2018-03-21.
+ *
+ * This class will be reponsible for relaying information for the HUD.
+ * The requirements satisfied are:
+ * REQ-A-4.2.3.2;
+ * REQ-A-4.3.3.2;
+ * REQ-B-4.6.3.2
+
  */
+
 
 public class CharacteristicWriter {
 

@@ -38,6 +38,12 @@ import java.util.UUID;
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
 /**
  * Created by Reem on 2018-03-02.
+ *
+ * This class holds the code for BLE service. All the BLE requirements are satisfied in this class
+ * REQ-A-4.5.3.3;
+ * REQ-A-4.1.3.2;
+ * REQ-A-4.1.3.3;
+ *
  */
 
 public class BLEService extends Service {

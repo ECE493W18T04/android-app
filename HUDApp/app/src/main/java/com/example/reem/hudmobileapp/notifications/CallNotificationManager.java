@@ -11,6 +11,9 @@ import java.nio.ByteOrder;
 
 /**
  * Created by Reem on 2018-03-09.
+ *
+ * This class handles the notifications for calling. It meets requirements:
+ * REQ-A-4.4.3.1
  */
 
 public class CallNotificationManager extends NotificationManager {

@@ -19,6 +19,9 @@ import com.example.reem.hudmobileapp.helper.FileManager;
 
 /**
  * Created by Reem on 2018-03-16.
+ *
+ * This the brightness dialog class for the user. Meets requirements:
+ * REQ-A-4.5.3.2
  */
 
 public class BrightnessDialog extends DialogFragment {

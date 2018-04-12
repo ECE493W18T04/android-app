@@ -30,6 +30,10 @@ import java.util.ArrayList;
 
 /**
  * Created by navjeetdhaliwal on 2018-03-05.
+ * This class handles all the openXC API calls
+ * Meets Requirements: REQ-B-4.6.3.1;
+ * REQ-B-4.6.3.2
+ *
  */
 
 public class VehicleMonitoringService extends Service {

@@ -35,6 +35,12 @@ import static android.app.Activity.RESULT_OK;
 
 /**
  * Created by navjeetdhaliwal on 2018-03-19.
+ * This class is the Voice Command Manager. Handles all the Voice commands.
+ * Meets requirements:
+ * REQ-B-4.7.3.2;
+ * REQ-B-4.7.3.1;
+ * REQ-B-4.7.3.3;
+ *
  */
 
 public class VoiceCommandManager implements TextToSpeech.OnInitListener, RecognitionListener {

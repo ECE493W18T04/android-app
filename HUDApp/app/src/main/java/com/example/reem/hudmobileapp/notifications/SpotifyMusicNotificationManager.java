@@ -8,6 +8,9 @@ import android.util.Log;
 
 /**
  * Created by Reem on 2018-03-09.
+ * This class scrapes spotify music:
+ * REQ-A-4.3.3.1;
+ * REQ-A-4.3.3.2
  */
 
 public class SpotifyMusicNotificationManager extends NotificationManager {

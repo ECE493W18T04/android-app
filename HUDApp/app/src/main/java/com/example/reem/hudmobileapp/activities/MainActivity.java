@@ -59,7 +59,13 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-
+/**
+ * Main Activity of the screen. The main activity will contain features for brightness control
+ * , priotity queue brightness and control control. This is required to meet requirments:
+ * REQ-A-4.5.3.2 - HUD brightness control
+ * REQ-A-4.5.3.3 - Priority Queue
+ * REQ-A-4.5.3.4 - HUD color control
+ */
 public class MainActivity extends AppCompatActivity implements BrightnessDialog.BrightnessDialogListener, MaxCurrentDialog.MaxCurrentDialogListener{
 
 //    private Intent mServiceIntent;

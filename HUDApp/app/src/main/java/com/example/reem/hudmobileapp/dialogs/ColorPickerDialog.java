@@ -10,6 +10,9 @@ import com.example.reem.hudmobileapp.views.ColorPicker;
 
 /**
  * Created by Reem on 2018-03-14.
+ *
+ * This class is the color picker for the user.
+ * Meets requirements: REQ-A-4.5.3.4
  */
 
 public class ColorPickerDialog extends AlertDialog{

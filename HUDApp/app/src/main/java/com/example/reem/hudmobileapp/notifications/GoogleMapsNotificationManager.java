@@ -23,6 +23,10 @@ import java.util.ArrayList;
 
 /**
  * Created by Reem on 2018-03-09.
+ * This class handles scraping for GoogleMaps.
+ * Meets requirements:
+ * REQ-A-4.2.3.1;
+ * REQ-A-4.2.3.2
  */
 
 public class GoogleMapsNotificationManager extends NotificationManager {
