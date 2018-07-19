@@ -33,7 +33,8 @@ and to build and load the firmware onto the device, plug in a USB cable and inst
   * Time
 * Press button 2 to trigger the voice control from the app. Valid commands are
   * `"Set colour to <color name>"` for example "Set colour to red"
-  * `"Set brightneess to <Brightness>"` where brightness is a number between 1 and 100 or "auto" for auto brightness
+  * `"Set brightness to <Brightness>"` where brightness is a number between 1 and 100
+  * `"Set auto brightness <on/off>"` to disable or enable autobrightness
   * `"Force <Notification>"` this will override the priority queue (see in app for the current order of the queue.) **this command may not behave as desired as the behavior is not well handled when notifications have not been initially posted**
 * Shine a flashlight over the main hardware unit (phone light works fine) when in autobrightness mode to demo how the unit handles ambient brightness changes.
 * Other notifications that are supported (but the hardware/software is more complex to setup, due to OpenXC requirement for interfacing with the vehicle)
