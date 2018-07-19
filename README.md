@@ -1,5 +1,7 @@
 # WNHHUD
 
+Repo: https://github.com/ECE493W18T04/android-app
+
 ## Usage
 
 ### Android app
